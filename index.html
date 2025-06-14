@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZENITH AI V4X PREDICTOR - INJECTOR</title>
+    <title>ZENITH AI V1 - INJECTOR</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;700&display=swap');
 
@@ -753,6 +753,12 @@
             padding: 2px 6px;
             border-radius: 10px;
             font-family: 'Share Tech Mono', monospace;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .streak-counter.visible {
+            opacity: 1;
         }
 
         .streak-counter.positive {
@@ -881,6 +887,99 @@
             70% { transform: scale(1.05); box-shadow: 0 0 20px rgba(0, 240, 255, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 rgba(0, 240, 255, 0); }
         }
+
+        /* New 3D effect for prediction box */
+        .prediction-box-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .prediction-box-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(0, 240, 255, 0.1) 0%, 
+                rgba(0, 144, 255, 0.1) 50%, 
+                rgba(123, 0, 255, 0.1) 100%);
+            transform: translateZ(-20px);
+            border-radius: 10px;
+            z-index: -1;
+        }
+
+        /* New digital font for numbers */
+        .digital-font {
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* New cyberpunk-style border */
+        .cyber-border {
+            position: relative;
+            border: none;
+        }
+
+        .cyber-border::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 2px solid transparent;
+            border-image: linear-gradient(45deg, 
+                var(--primary), 
+                var(--secondary), 
+                var(--accent)) 1;
+            border-radius: 12px;
+            z-index: -1;
+            animation: borderRotate 10s linear infinite;
+        }
+
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* New info panel */
+        .info-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-dim);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .prediction-box:hover .info-panel {
+            opacity: 0.8;
+        }
+
+        /* New prediction accuracy meter */
+        .accuracy-meter {
+            height: 6px;
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .accuracy-level {
+            height: 100%;
+            background: var(--win);
+            width: 0%;
+            transition: width 1s ease;
+        }
     </style>
 </head>
 <body>
@@ -937,12 +1036,12 @@
             <div class="injector-logo">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgZD0iTTI1NiA4QzExOSA4IDggMTE5IDggMjU2czExMSAyNDggMjQ4IDI0OCAyNDgtMTExIDI0OC0yNDhTMzkzIDggMjU2IDh6bTAgNDQ4Yy0xMTAuNSAwLTIwMC04OS41LTIwMC0yMDBTMTQ1LjUgNTYgMjU2IDU2czIwMCA4OS41IDIwMCAyMDAtODkuNSAyMDAtMjAwIDIwMHptMTIwLTI0MGMtMTUuNS0xMi0zNS0xOS01Ni0xOXMtNDAuNSA3LTU2IDE5bC02NC00OGMtLTguMS02LjEtMTktNC41LTI0LjUgNC4xLTUuNSA4LjYtMy44IDIwIDQuMyAyNmw4NCA2NGMxNi41IDEyIDM1IDE5IDU2IDE5czM5LjUtNyA1Ni0xOWw4NC02NGM4LjEtNiAxMC0xNy40IDQuMy0yNi01LjQtOC43LTE2LjUtMTAuMi0yNC41LTQuMWwtNjQgNDh6Ii8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwZjBmZiIvPjxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjMDA4NGZmIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjN2IwMGZmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+" alt="ZENITH AI Logo">
                 <div class="zenith-logo">
-                    ZENITH <span>AI V4X</span>
+                    ZENITH <span>AI V1</span>
                 </div>
             </div>
         </div>
         <div class="injector-content">
-            <div class="prediction-box glow-effect quantum-pulse">
+            <div class="prediction-box glow-effect quantum-pulse prediction-box-3d cyber-border">
                 <div class="matrix-rain"></div>
                 <div class="energy-wave"></div>
                 <div class="binary-grid"></div>
@@ -961,9 +1060,13 @@
                 <div class="confidence-meter">
                     <div class="confidence-level" id="confidenceLevel" data-confidence="0%"></div>
                 </div>
+                <div class="accuracy-meter">
+                    <div class="accuracy-level" id="accuracyLevel"></div>
+                </div>
                 <div class="streak-indicator" id="streakIndicator">
                     <div class="streak-counter" id="streakCounter">0</div>
                 </div>
+                <div class="info-panel"></div>
             </div>
         </div>
     </div>
@@ -978,7 +1081,7 @@
             item.addEventListener('click', () => {
                 const gameUrl = item.getAttribute('data-url');
                 gameFrame.src = gameUrl;
-                gameSelection.style.display = 'none';  // This line hides the game selection page
+                gameSelection.style.display = 'none';
                 gameFrame.classList.remove('hidden');
                 
                 // Add visual feedback
@@ -987,164 +1090,7 @@
             });
         });
 
-        // Prime checker
-        function is_prime(n) {
-            if (n <= 1) return false;
-            for (let i = 2; i <= Math.sqrt(n); i++) {
-                if (n % i === 0) return false;
-            }
-            return true;
-        }
-
-        // Strategy 1: Euler sum + product logic
-        function logic_euler(period_number) {
-            const digits = period_number.slice(-4).split('').map(Number);
-            const total_sum = digits.reduce((a, b) => a + b, 0);
-            const total_product = digits.reduce((a, b) => a * b, 1);
-            const val = (total_sum + total_product) % 10;
-            return val >= 5 ? "BIG" : "SMALL";
-        }
-
-        // Strategy 2: Prime sum logic
-        function logic_prime_sum(period_number) {
-            const digits = period_number.slice(-4).split('').map(Number);
-            return is_prime(digits.reduce((a, b) => a + b, 0)) ? "BIG" : "SMALL";
-        }
-
-        // Strategy 3: Odd/Even digit sum
-        function logic_odd_even(period_number) {
-            const digits = period_number.slice(-4).split('').map(Number);
-            return digits.reduce((a, b) => a + b, 0) % 2 !== 0 ? "BIG" : "SMALL";
-        }
-
-        // Strategy 4: Pattern repeat logic
-        function logic_repeat_pattern(period_number) {
-            const digits = period_number.slice(-4).split('');
-            return new Set(digits).size <= 2 ? "BIG" : "SMALL";
-        }
-
-        // Strategy 5: Digit sequence trend logic
-        function logic_digit_trend(period_number) {
-            const digits = period_number.slice(-4).split('').map(Number);
-            const sorted = [...digits].sort((a, b) => a - b);
-            const reverseSorted = [...digits].sort((a, b) => b - a);
-            return JSON.stringify(digits) === JSON.stringify(sorted) || 
-                   JSON.stringify(digits) === JSON.stringify(reverseSorted) ? "BIG" : "SMALL";
-        }
-
-        // Strategy 6: Middle digit average logic
-        function logic_middle_avg(period_number) {
-            const digits = period_number.slice(-4).split('').map(Number);
-            const avg = (digits[1] + digits[2]) / 2;
-            return avg >= 5 ? "BIG" : "SMALL";
-        }
-
-        // Strategy 7: Trap pattern detection (avoid flip)
-        function logic_trap_avoidance(period_number) {
-            const digits = period_number.slice(-4).split('').map(Number);
-            if (digits[0] === digits[3] || digits[1] === digits[2]) {
-                return "SMALL";  // Trap likely, avoid false BIG
-            }
-            return "BIG";
-        }
-
-        // Strategy 8: Fibonacci-weighted sum
-        function logic_fib_weight(period_number) {
-            const fib_weights = [1, 1, 2, 3];
-            const digits = period_number.slice(-4).split('').map(Number);
-            const total = digits.reduce((sum, digit, index) => sum + (digit * fib_weights[index]), 0);
-            return total % 10 >= 5 ? "BIG" : "SMALL";
-        }
-
-        // Master Prediction Function (AI-enhanced deterministic logic)
-        function advanced_prediction(period_number) {
-            const strategies = [
-                logic_euler,
-                logic_prime_sum,
-                logic_odd_even,
-                logic_repeat_pattern,
-                logic_digit_trend,
-                logic_middle_avg,
-                logic_trap_avoidance,
-                logic_fib_weight,
-            ];
-            
-            const results = strategies.map(strategy => strategy(period_number));
-            
-            const big_count = results.filter(result => result === "BIG").length;
-            const small_count = results.filter(result => result === "SMALL").length;
-
-            // Internal confidence score
-            const confidence = Math.abs(big_count - small_count) / strategies.length;
-
-            // High-confidence only override (optional)
-            if (confidence >= 0.5) {
-                return {
-                    prediction: big_count > small_count ? "BIG" : "SMALL",
-                    confidence: Math.round(confidence * 100),
-                    strategies: results
-                };
-            } else {
-                // Fallback to trusted core logic (Euler + Fib + Prime)
-                const trusted = [logic_euler, logic_fib_weight, logic_prime_sum];
-                const trust_results = trusted.map(strategy => strategy(period_number));
-                const trust_big = trust_results.filter(result => result === "BIG").length;
-                const trust_small = trust_results.filter(result => result === "SMALL").length;
-                
-                return {
-                    prediction: trust_big >= 2 ? "BIG" : "SMALL",
-                    confidence: Math.round((Math.max(trust_big, trust_small) / trusted.length) * 100),
-                    strategies: results
-                };
-            }
-        }
-
-        // Create floating particles
-        function createParticles() {
-            const colors = ['rgba(0, 240, 255, 0.3)', 'rgba(0, 144, 255, 0.3)', 'rgba(123, 0, 255, 0.3)'];
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const size = Math.random() * 8 + 2;
-                const posX = Math.random() * window.innerWidth;
-                const posY = Math.random() * window.innerHeight;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const duration = Math.random() * 20 + 10;
-                const delay = Math.random() * 5;
-                
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${posX}px`;
-                particle.style.top = `${posY}px`;
-                particle.style.background = color;
-                particle.style.opacity = Math.random() * 0.5 + 0.1;
-                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
-                
-                document.body.appendChild(particle);
-            }
-        }
-
-        // Toggle injector UI with animation
-        const injectorTape = document.getElementById('injectorTape');
-        const injectorUI = document.getElementById('injectorUI');
-
-        injectorTape.addEventListener('click', () => {
-            const isOpen = injectorUI.style.display === 'block';
-            if (isOpen) {
-                injectorUI.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => {
-                    injectorUI.style.display = 'none';
-                    injectorUI.style.animation = '';
-                }, 300);
-            } else {
-                injectorUI.style.display = 'block';
-                injectorUI.style.animation = 'fadeIn 0.3s ease';
-            }
-            injectorTape.classList.toggle('open', !isOpen);
-        });
-
-        // Enhanced prediction logic
+        // Enhanced Prediction Logic
         class PredictionEngine {
             constructor() {
                 this.history = [];
@@ -1153,6 +1099,249 @@
                 this.accuracy = 0;
                 this.totalPredictions = 0;
                 this.correctPredictions = 0;
+                this.strategies = [
+                    this.strategyEulerEnhanced,
+                    this.strategyPrimeAnalysis,
+                    this.strategyParityAdvanced,
+                    this.strategyPatternRecognition,
+                    this.strategyTrendAnalysis,
+                    this.strategyStatistical,
+                    this.strategyPositional,
+                    this.strategyFibonacciAdvanced,
+                    this.strategyEntropyAnalysis
+                ];
+            }
+
+            // Math Utilities
+            digitalRoot(n) { return 1 + (n - 1) % 9 || 0; }
+            
+            isFibonacci(n) {
+                const x = 5 * n * n + 4;
+                const y = 5 * n * n - 4;
+                return Math.sqrt(x) % 1 === 0 || Math.sqrt(y) % 1 === 0;
+            }
+
+            // Enhanced Primality Test (Miller-Rabin)
+            isPrime(n, k=5) {
+                if (n <= 1) return false;
+                if (n <= 3) return true;
+                if (n % 2 === 0) return false;
+
+                let d = n - 1;
+                let s = 0;
+                while (d % 2 === 0) {
+                    d /= 2;
+                    s++;
+                }
+
+                for (let i = 0; i < k; i++) {
+                    const a = 2 + Math.floor(Math.random() * (n - 4));
+                    let x = this.modularPow(a, d, n);
+                    if (x === 1 || x === n - 1) continue;
+                    
+                    let continueLoop = false;
+                    for (let j = 0; j < s - 1; j++) {
+                        x = this.modularPow(x, 2, n);
+                        if (x === n - 1) {
+                            continueLoop = true;
+                            break;
+                        }
+                    }
+                    if (continueLoop) continue;
+                    return false;
+                }
+                return true;
+            }
+
+            modularPow(base, exponent, modulus) {
+                if (modulus === 1) return 0;
+                let result = 1;
+                base = base % modulus;
+                while (exponent > 0) {
+                    if (exponent % 2 === 1) {
+                        result = (result * base) % modulus;
+                    }
+                    exponent = exponent >> 1;
+                    base = (base * base) % modulus;
+                }
+                return result;
+            }
+
+            // Strategy Implementations
+            strategyEulerEnhanced(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const totalSum = digits.reduce((a, b) => a + b, 0);
+                const totalProduct = digits.reduce((a, b) => a * (b || 1), 1);
+                const harmonic = digits.length / digits.reduce((sum, d) => sum + (d ? 1/d : 0), 0);
+                const val = (totalSum + totalProduct + Math.floor(harmonic)) % 10;
+                return val >= 5 ? "BIG" : "SMALL";
+            }
+
+            strategyPrimeAnalysis(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const sum = digits.reduce((a, b) => a + b, 0);
+                const product = digits.reduce((a, b) => a * (b || 1), 1);
+                const conditions = [
+                    this.isPrime(sum),
+                    product > 1 && this.isPrime(product),
+                    digits.some(d => this.isPrime(d)),
+                    this.isPrime(parseInt(periodNumber.slice(-4)))
+                ];
+                return conditions.filter(Boolean).length >= 2 ? "BIG" : "SMALL";
+            }
+
+            strategyParityAdvanced(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const odds = digits.filter(d => d % 2).length;
+                return odds > 2 ? "BIG" : "SMALL";
+            }
+
+            strategyPatternRecognition(periodNumber) {
+                const digits = periodNumber.slice(-4);
+                const unique = new Set(digits).size;
+                const repeated = [...digits].some(d => digits.split(d).length - 1 >= 3);
+                const palindrome = digits === [...digits].reverse().join('');
+                if (repeated || palindrome) return "BIG";
+                return unique >= 3 ? "SMALL" : "BIG";
+            }
+
+            strategyTrendAnalysis(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const diffs = [];
+                for (let i = 0; i < 3; i++) {
+                    diffs.push(digits[i+1] - digits[i]);
+                }
+                
+                if (diffs.every(d => d >= 0) || diffs.every(d => d <= 0)) {
+                    return "BIG";
+                }
+                
+                if (diffs[0] * diffs[1] < 0 && diffs[1] * diffs[2] < 0) {
+                    return "BIG";
+                }
+                
+                return "SMALL";
+            }
+
+            strategyStatistical(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const mean = digits.reduce((a, b) => a + b, 0) / digits.length;
+                
+                if (digits.length === 1) return "SMALL";
+                
+                const variance = digits.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / digits.length;
+                const stdev = Math.sqrt(variance);
+                
+                if (mean > 4.5 || stdev > 2.5) return "BIG";
+                return "SMALL";
+            }
+
+            strategyPositional(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const weights = [4, 2, 1, 3];
+                const weightedSum = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
+                return this.digitalRoot(weightedSum) >= 5 ? "BIG" : "SMALL";
+            }
+
+            strategyFibonacciAdvanced(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const fibWeights = [2, 3, 5, 8];
+                const weighted = digits.reduce((sum, d, i) => sum + d * fibWeights[i], 0);
+                const conditions = [
+                    weighted % 10 >= 5,
+                    digits.some(d => this.isFibonacci(d)),
+                    this.isFibonacci(digits.reduce((a, b) => a + b, 0))
+                ];
+                return conditions.filter(Boolean).length >= 2 ? "BIG" : "SMALL";
+            }
+
+            strategyEntropyAnalysis(periodNumber) {
+                const digits = periodNumber.slice(-4);
+                const freq = {};
+                digits.split('').forEach(d => {
+                    freq[d] = (freq[d] || 0) + 1;
+                });
+                
+                let entropy = 0;
+                const len = digits.length;
+                for (const d in freq) {
+                    const p = freq[d] / len;
+                    entropy -= p * Math.log2(p);
+                }
+                
+                return entropy < 0.8 ? "BIG" : "SMALL";
+            }
+
+            // Master Prediction Function
+            advancedPrediction(periodNumber) {
+                const results = this.strategies.map(strategy => strategy.call(this, periodNumber));
+                const bigCount = results.filter(result => result === "BIG").length;
+                const smallCount = results.length - bigCount;
+                let confidence = (bigCount - smallCount) / this.strategies.length;
+
+                // High confidence direct decision
+                if (Math.abs(confidence) >= 0.4) {
+                    return {
+                        prediction: confidence > 0 ? "BIG" : "SMALL",
+                        confidence: Math.min(100, Math.round((Math.abs(confidence) + 0.4) * 100)),
+                        strategies: results
+                    };
+                }
+
+                // Weighted decision for medium confidence
+                if (Math.abs(confidence) >= 0.2) {
+                    const weightedStrategies = [
+                        { strategy: this.strategyPrimeAnalysis, weight: 1.5 },
+                        { strategy: this.strategyFibonacciAdvanced, weight: 1.3 },
+                        { strategy: this.strategyEulerEnhanced, weight: 1.2 },
+                        { strategy: this.strategyPatternRecognition, weight: 1.1 },
+                        { strategy: this.strategyTrendAnalysis, weight: 1.1 }
+                    ];
+
+                    let score = 0;
+                    weightedStrategies.forEach(({ strategy, weight }) => {
+                        score += (strategy.call(this, periodNumber) === "BIG" ? weight : -weight);
+                    });
+
+                    return {
+                        prediction: score > 0 ? "BIG" : "SMALL",
+                        confidence: Math.min(100, Math.round((Math.abs(score / 6.2) + 0.3) * 100)),
+                        strategies: results
+                    };
+                }
+
+                // Low confidence fallback
+                const coreStrategies = [
+                    this.strategyPrimeAnalysis,
+                    this.strategyFibonacciAdvanced,
+                    this.strategyEulerEnhanced
+                ];
+                const coreResults = coreStrategies.map(strategy => strategy.call(this, periodNumber));
+                const coreBig = coreResults.filter(r => r === "BIG").length;
+                const coreSmall = coreResults.length - coreBig;
+
+                if (coreBig === coreSmall) {
+                    const digits = periodNumber.slice(-4).split('').map(Number);
+                    const sum = digits.reduce((a, b) => a + b, 0);
+                    if (sum % 3 === 0 || digits[3] % 5 === 0) {
+                        return {
+                            prediction: "BIG",
+                            confidence: 55,
+                            strategies: results
+                        };
+                    }
+                    return {
+                        prediction: "SMALL",
+                        confidence: 55,
+                        strategies: results
+                    };
+                }
+
+                return {
+                    prediction: coreBig > coreSmall ? "BIG" : "SMALL",
+                    confidence: Math.round((Math.max(coreBig, coreSmall) / coreStrategies.length) * 100),
+                    strategies: results
+                };
             }
 
             getNextPeriod(current) {
@@ -1216,7 +1405,7 @@
 
             generatePrediction(period, history) {
                 // First get the advanced deterministic prediction
-                const deterministic = advanced_prediction(period);
+                const deterministic = this.advancedPrediction(period);
                 
                 // Then analyze patterns for additional confidence
                 const patternAnalysis = this.analyzePatterns(history);
@@ -1311,9 +1500,11 @@
                 this.periodElement = document.getElementById("predictionPeriod");
                 this.resultElement = document.getElementById("predictionResult");
                 this.confidenceElement = document.getElementById("confidenceLevel");
+                this.accuracyElement = document.getElementById("accuracyLevel");
                 this.streakElement = document.getElementById("streakIndicator");
                 this.streakCounter = document.getElementById("streakCounter");
                 this.predictionBox = document.querySelector(".prediction-box");
+                this.lastHoverTime = 0;
             }
 
             displayPrediction(prediction) {
@@ -1325,9 +1516,10 @@
                     return;
                 }
 
-                this.periodElement.textContent = ` ${prediction.period}`;
+                this.periodElement.textContent = `PERIOD ${prediction.period}`;
                 this.confidenceElement.style.width = `${prediction.confidence}%`;
                 this.confidenceElement.setAttribute('data-confidence', `${prediction.confidence}%`);
+                this.accuracyElement.style.width = `${this.engine.accuracy}%`;
                 
                 // Clear loading animation
                 this.resultElement.innerHTML = '';
@@ -1382,6 +1574,13 @@
                 // Update streak counter
                 this.streakCounter.textContent = this.engine.streak;
                 this.streakCounter.className = 'streak-counter';
+                
+                // Only show streak counter when hovering or for 5 seconds after update
+                const now = Date.now();
+                if (now - this.lastHoverTime < 5000) {
+                    this.streakCounter.classList.add('visible');
+                }
+                
                 if (this.engine.streak > 0) {
                     this.streakCounter.classList.add('positive');
                 } else if (this.engine.streak < 0) {
@@ -1403,7 +1602,67 @@
                 this.ui = new UIManager();
                 this.engine = this.ui.engine;
                 this.engine.loadStats();
-                createParticles();
+                this.createParticles();
+                this.setupEventListeners();
+            }
+
+            createParticles() {
+                const colors = ['rgba(0, 240, 255, 0.3)', 'rgba(0, 144, 255, 0.3)', 'rgba(123, 0, 255, 0.3)'];
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 8 + 2;
+                    const posX = Math.random() * window.innerWidth;
+                    const posY = Math.random() * window.innerHeight;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const duration = Math.random() * 20 + 10;
+                    const delay = Math.random() * 5;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${posX}px`;
+                    particle.style.top = `${posY}px`;
+                    particle.style.background = color;
+                    particle.style.opacity = Math.random() * 0.5 + 0.1;
+                    particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                    
+                    document.body.appendChild(particle);
+                }
+            }
+
+            setupEventListeners() {
+                const injectorTape = document.getElementById('injectorTape');
+                const injectorUI = document.getElementById('injectorUI');
+                const streakCounter = document.getElementById('streakCounter');
+
+                injectorTape.addEventListener('click', () => {
+                    const isOpen = injectorUI.style.display === 'block';
+                    if (isOpen) {
+                        injectorUI.style.animation = 'fadeOut 0.3s ease';
+                        setTimeout(() => {
+                            injectorUI.style.display = 'none';
+                            injectorUI.style.animation = '';
+                        }, 300);
+                    } else {
+                        injectorUI.style.display = 'block';
+                        injectorUI.style.animation = 'fadeIn 0.3s ease';
+                    }
+                });
+
+                // Show streak counter on hover
+                injectorUI.addEventListener('mouseenter', () => {
+                    this.ui.lastHoverTime = Date.now();
+                    streakCounter.classList.add('visible');
+                });
+
+                injectorUI.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        if (Date.now() - this.ui.lastHoverTime > 5000) {
+                            streakCounter.classList.remove('visible');
+                        }
+                    }, 3000);
+                });
             }
 
             async fetchGameData() {
@@ -1460,7 +1719,6 @@
             }
 
             initialize() {
-                injectorUI.style.display = 'none';
                 this.fetchGameData();
                 setInterval(() => this.fetchGameData(), 5000);
             }
