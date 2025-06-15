@@ -1064,7 +1064,7 @@
                     <div class="accuracy-level" id="accuracyLevel"></div>
                 </div>
                 <div class="streak-indicator" id="streakIndicator">
-                    <div class="streak-counter" id="streakCounter">0</div>
+                    <div class="streak-counter" id="streakCounter"></div>
                 </div>
                 <div class="info-panel"></div>
             </div>
@@ -1090,7 +1090,7 @@
             });
         });
 
-        // Enhanced Prediction Logic
+        // Enhanced Prediction Logic with Python Algorithm Integration
         class PredictionEngine {
             constructor() {
                 this.history = [];
@@ -1099,17 +1099,12 @@
                 this.accuracy = 0;
                 this.totalPredictions = 0;
                 this.correctPredictions = 0;
-                this.strategies = [
-                    this.strategyEulerEnhanced,
-                    this.strategyPrimeAnalysis,
-                    this.strategyParityAdvanced,
-                    this.strategyPatternRecognition,
-                    this.strategyTrendAnalysis,
-                    this.strategyStatistical,
-                    this.strategyPositional,
-                    this.strategyFibonacciAdvanced,
-                    this.strategyEntropyAnalysis
-                ];
+                this.memory = {
+                    last_prediction: "",
+                    loss_count: 0,
+                    last_actual: ""
+                };
+                this.loadStats();
             }
 
             // Math Utilities
@@ -1167,7 +1162,7 @@
                 return result;
             }
 
-            // Strategy Implementations
+            // Strategy Implementations from Python Code
             strategyEulerEnhanced(periodNumber) {
                 const digits = periodNumber.slice(-4).split('').map(Number);
                 const totalSum = digits.reduce((a, b) => a + b, 0);
@@ -1272,30 +1267,64 @@
                 return entropy < 0.8 ? "BIG" : "SMALL";
             }
 
-            // Master Prediction Function
-            advancedPrediction(periodNumber) {
-                const results = this.strategies.map(strategy => strategy.call(this, periodNumber));
+            sureShotRecovery(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const weights = [1, 3, 2, 4];
+                const score = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
+                return score % 2 === 0 ? "BIG" : "SMALL";
+            }
+
+            // Master Prediction Function from Python Code
+            predictFinal(periodNumber, actualResult = null) {
+                if (actualResult !== null) {
+                    if (this.memory.last_prediction && actualResult !== this.memory.last_prediction) {
+                        this.memory.loss_count += 1;
+                    } else {
+                        this.memory.loss_count = 0;
+                    }
+                    this.memory.last_actual = actualResult;
+                }
+
+                // Recovery mode
+                if (this.memory.loss_count >= 1) {
+                    const prediction = this.sureShotRecovery(periodNumber);
+                    this.memory.last_prediction = prediction;
+                    return {
+                        prediction: prediction,
+                        confidence: 80 + (this.memory.loss_count * 5),
+                        recoveryMode: true
+                    };
+                }
+
+                // Apply strategies
+                const strategies = [
+                    this.strategyEulerEnhanced,
+                    this.strategyPrimeAnalysis,
+                    this.strategyParityAdvanced,
+                    this.strategyPatternRecognition,
+                    this.strategyTrendAnalysis,
+                    this.strategyStatistical,
+                    this.strategyPositional,
+                    this.strategyFibonacciAdvanced,
+                    this.strategyEntropyAnalysis
+                ];
+                
+                const results = strategies.map(s => s.call(this, periodNumber));
                 const bigCount = results.filter(result => result === "BIG").length;
                 const smallCount = results.length - bigCount;
-                let confidence = (bigCount - smallCount) / this.strategies.length;
+                let confidence = (bigCount - smallCount) / strategies.length;
 
-                // High confidence direct decision
                 if (Math.abs(confidence) >= 0.4) {
                     return {
                         prediction: confidence > 0 ? "BIG" : "SMALL",
                         confidence: Math.min(100, Math.round((Math.abs(confidence) + 0.4) * 100)),
                         strategies: results
                     };
-                }
-
-                // Weighted decision for medium confidence
-                if (Math.abs(confidence) >= 0.2) {
+                } else if (Math.abs(confidence) >= 0.2) {
                     const weightedStrategies = [
-                        { strategy: this.strategyPrimeAnalysis, weight: 1.5 },
-                        { strategy: this.strategyFibonacciAdvanced, weight: 1.3 },
-                        { strategy: this.strategyEulerEnhanced, weight: 1.2 },
-                        { strategy: this.strategyPatternRecognition, weight: 1.1 },
-                        { strategy: this.strategyTrendAnalysis, weight: 1.1 }
+                        { strategy: this.strategyPrimeAnalysis, weight: 1.6 },
+                        { strategy: this.strategyFibonacciAdvanced, weight: 1.4 },
+                        { strategy: this.strategyEulerEnhanced, weight: 1.2 }
                     ];
 
                     let score = 0;
@@ -1305,43 +1334,35 @@
 
                     return {
                         prediction: score > 0 ? "BIG" : "SMALL",
-                        confidence: Math.min(100, Math.round((Math.abs(score / 6.2) + 0.3) * 100)),
+                        confidence: Math.min(100, Math.round((Math.abs(score / 4.2) + 0.3) * 100)),
                         strategies: results
                     };
-                }
+                } else {
+                    const coreStrategies = [
+                        this.strategyPrimeAnalysis,
+                        this.strategyFibonacciAdvanced,
+                        this.strategyEulerEnhanced
+                    ];
+                    const coreResults = coreStrategies.map(s => s.call(this, periodNumber));
+                    const coreBig = coreResults.filter(r => r === "BIG").length;
+                    const coreSmall = coreResults.length - coreBig;
 
-                // Low confidence fallback
-                const coreStrategies = [
-                    this.strategyPrimeAnalysis,
-                    this.strategyFibonacciAdvanced,
-                    this.strategyEulerEnhanced
-                ];
-                const coreResults = coreStrategies.map(strategy => strategy.call(this, periodNumber));
-                const coreBig = coreResults.filter(r => r === "BIG").length;
-                const coreSmall = coreResults.length - coreBig;
-
-                if (coreBig === coreSmall) {
-                    const digits = periodNumber.slice(-4).split('').map(Number);
-                    const sum = digits.reduce((a, b) => a + b, 0);
-                    if (sum % 3 === 0 || digits[3] % 5 === 0) {
+                    if (coreBig === coreSmall) {
+                        const digits = periodNumber.slice(-4).split('').map(Number);
+                        const sum = digits.reduce((a, b) => a + b, 0);
                         return {
-                            prediction: "BIG",
+                            prediction: sum % 3 === 0 || digits[3] % 5 === 0 ? "BIG" : "SMALL",
                             confidence: 55,
                             strategies: results
                         };
                     }
+                    
                     return {
-                        prediction: "SMALL",
-                        confidence: 55,
+                        prediction: coreBig > coreSmall ? "BIG" : "SMALL",
+                        confidence: Math.round((Math.max(coreBig, coreSmall) / coreStrategies.length) * 100),
                         strategies: results
                     };
                 }
-
-                return {
-                    prediction: coreBig > coreSmall ? "BIG" : "SMALL",
-                    confidence: Math.round((Math.max(coreBig, coreSmall) / coreStrategies.length) * 100),
-                    strategies: results
-                };
             }
 
             getNextPeriod(current) {
@@ -1405,7 +1426,7 @@
 
             generatePrediction(period, history) {
                 // First get the advanced deterministic prediction
-                const deterministic = this.advancedPrediction(period);
+                const deterministic = this.predictFinal(period);
                 
                 // Then analyze patterns for additional confidence
                 const patternAnalysis = this.analyzePatterns(history);
@@ -1437,7 +1458,8 @@
                     confidence: finalConfidence,
                     timestamp: Date.now(),
                     pattern: patternAnalysis.pattern,
-                    strategies: deterministic.strategies
+                    strategies: deterministic.strategies,
+                    recoveryMode: deterministic.recoveryMode || false
                 };
 
                 this.lastPrediction = prediction;
@@ -1482,6 +1504,7 @@
 
             loadStats() {
                 const stats = localStorage.getItem("zmxStats");
+                const memory = localStorage.getItem("zmxMemory");
                 
                 if (stats) {
                     const { streak, accuracy, total } = JSON.parse(stats);
@@ -1489,6 +1512,10 @@
                     this.accuracy = accuracy;
                     this.totalPredictions = total;
                     this.correctPredictions = Math.round((accuracy * total) / 100);
+                }
+                
+                if (memory) {
+                    this.memory = JSON.parse(memory);
                 }
             }
         }
@@ -1547,8 +1574,10 @@
                 this.updateStreakIndicator();
                 
                 // Update prediction box style based on prediction
-                this.predictionBox.classList.remove('success', 'failure');
-                if (prediction.confidence >= 75) {
+                this.predictionBox.classList.remove('success', 'failure', 'recovery');
+                if (prediction.recoveryMode) {
+                    this.predictionBox.classList.add('recovery');
+                } else if (prediction.confidence >= 75) {
                     this.predictionBox.classList.add(prediction.label.toLowerCase() === 'big' ? 'success' : 'failure');
                 }
             }
@@ -1601,7 +1630,6 @@
             constructor() {
                 this.ui = new UIManager();
                 this.engine = this.ui.engine;
-                this.engine.loadStats();
                 this.createParticles();
                 this.setupEventListeners();
             }
