@@ -1,30 +1,1586 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Server Maintenance</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZMX TRADER V1 - INJECTOR</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
+
+        :root {
+            --primary: #00f0ff;
+            --primary-dark: #00a8b5;
+            --secondary: #0084ff;
+            --accent: #7b00ff;
+            --win: #00ff88;
+            --loss: #ff0055;
+            --warning: #ffcc00;
+            --bg-dark: #0a0a12;
+            --bg-darker: #05050a;
+            --bg-light: #12121a;
+            --text-dim: rgba(200, 220, 255, 0.7);
+            --text-bright: #ffffff;
+            --glow: 0 0 15px rgba(0, 240, 255, 0.5);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            --success-gradient: linear-gradient(135deg, var(--win), #00c8ff);
+            --danger-gradient: linear-gradient(135deg, var(--loss), #ff00aa);
+            --glass-bg: rgba(10, 15, 30, 0.7);
+            --glass-border: rgba(100, 150, 255, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
+            background-color: var(--bg-dark);
+            color: var(--text-bright);
+            font-family: 'Rajdhani', sans-serif;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(123, 0, 255, 0.05) 0%, transparent 25%),
+                linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            line-height: 1.6;
+        }
+
+        /* Main Injector Container */
+        .injector-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 90vh;
+            z-index: 999999;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), var(--glow);
+            border-radius: 16px;
+            overflow: hidden;
+            display: none;
+            backdrop-filter: blur(12px);
+            transition: var(--transition);
+            transform: translateY(0) scale(1);
+            opacity: 0;
+            transform-origin: top right;
+        }
+
+        .injector-container.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            display: block;
+            animation: injectorAppear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes injectorAppear {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .injector-container.hidden {
+            animation: injectorDisappear 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+        }
+
+        @keyframes injectorDisappear {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(20px) scale(0.95); display: none; }
+        }
+
+        .injector-container::before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border: 1px solid transparent;
+            border-image: var(--gradient) 1;
+            border-radius: 16px;
+            animation: borderPulse 6s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        @keyframes borderPulse {
+            0% { opacity: 0.5; filter: hue-rotate(0deg); }
+            50% { opacity: 1; filter: hue-rotate(30deg); }
+            100% { opacity: 0.5; filter: hue-rotate(0deg); }
+        }
+
+        /* Header Section */
+        .injector-header {
+            background: linear-gradient(90deg, rgba(0,10,20,0.8), rgba(0,80,150,0.3), rgba(0,10,20,0.8));
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+            position: relative;
+            z-index: 2;
+        }
+
+        .injector-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient);
+            animation: borderFlow 8s linear infinite;
+            background-size: 300% 100%;
+            opacity: 0.7;
+        }
+
+        @keyframes borderFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .injector-logo {
+            display: flex;
+            align-items: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: transparent;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .injector-logo img {
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
+            filter: drop-shadow(0 0 8px var(--primary));
+            transition: var(--transition);
+        }
+
+        /* Content Area */
+        .injector-content {
+            padding: 24px;
+            max-height: calc(90vh - 80px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) rgba(0,0,0,0.3);
+        }
+
+        .injector-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .injector-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        .injector-content::-webkit-scrollbar-thumb {
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+
+        /* Prediction Card */
+        .prediction-card {
+            padding: 24px;
+            border-radius: 12px;
+            background: rgba(5, 10, 20, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 0;
+            position: relative;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+            overflow: hidden;
+        }
+
+        .prediction-card::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 0%,
+                transparent 45%,
+                rgba(0, 240, 255, 0.05) 50%,
+                transparent 55%,
+                transparent 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 6s infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(30deg); }
+            100% { transform: translateX(100%) rotate(30deg); }
+        }
+
+        .prediction-card.glow {
+            animation: cardGlow 3s infinite alternate;
+        }
+
+        @keyframes cardGlow {
+            0% { box-shadow: 0 0 20px rgba(0, 240, 255, 0.1); }
+            100% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.3); }
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .card-title::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .prediction-card:hover .card-title::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        /* Current Value Display */
+        .current-value {
+            font-size: 42px;
+            font-weight: 700;
+            margin: 24px 0;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 20px currentColor;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            animation: valuePulse 3s infinite ease-in-out;
+        }
+
+        @keyframes valuePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.03); opacity: 0.9; }
+        }
+
+        /* Prediction Info */
+        .prediction-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-item {
+            background: rgba(0, 10, 20, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .info-value.win {
+            color: var(--win);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .info-value.loss {
+            color: var(--loss);
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.5);
+        }
+
+        /* Confidence Meter */
+        .confidence-container {
+            margin-bottom: 24px;
+        }
+
+        .confidence-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .confidence-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .confidence-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .confidence-meter {
+            height: 8px;
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-level {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            box-shadow: 0 0 10px var(--primary);
+            position: relative;
+            width: 0;
+        }
+
+        .confidence-level::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                to right,
+                rgba(255,255,255,0.3) 0%,
+                transparent 50%,
+                rgba(0,0,0,0.1) 100%
+            );
+            border-radius: 4px;
+        }
+
+        /* Streak Indicator */
+        .streak-container {
+            margin-top: 24px;
+        }
+
+        .streak-indicator {
             display: flex;
             justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            margin: 16px 0;
+            position: relative;
         }
-        .message {
-            font-weight: bold;
-            font-size: 24px;
-            color: #333;
-            text-align: center;
+
+        .streak-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin: 0 6px;
+            background-color: rgba(0, 240, 255, 0.2);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .streak-dot.active {
+            background: var(--win);
+            box-shadow: 0 0 12px var(--win);
+            transform: scale(1.3);
+        }
+
+        .streak-dot.loss {
+            background: var(--loss);
+            box-shadow: 0 0 12px var(--loss);
+            transform: scale(1.3);
+        }
+
+        .streak-counter {
+            position: absolute;
+            top: -24px;
+            right: 0;
+            font-size: 12px;
+            color: var(--text-dim);
+            background: rgba(0, 10, 20, 0.8);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .streak-counter.positive {
+            color: var(--win);
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .streak-counter.negative {
+            color: var(--loss);
+            border-color: rgba(255, 0, 85, 0.3);
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+            position: relative;
+        }
+
+        .status-indicator::after {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            opacity: 0;
+            animation: ripple 1.5s infinite;
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .status-indicator.waiting {
+            background-color: var(--warning);
+            box-shadow: 0 0 12px var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-indicator.win {
+            background-color: var(--win);
+            box-shadow: 0 0 15px var(--win);
+        }
+
+        .status-indicator.loss {
+            background-color: var(--loss);
+            box-shadow: 0 0 15px var(--loss);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            background: rgba(0, 240, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(1px);
+        }
+
+        /* Game Selection Screen */
+        .game-selection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 20, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999999;
+            animation: fadeIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; backdrop-filter: blur(0); }
+            to { opacity: 1; backdrop-filter: blur(10px); }
+        }
+
+        .game-selection::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 240, 255, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 80% 70%, rgba(123, 0, 255, 0.05) 0%, transparent 25%);
+            z-index: -1;
+        }
+
+        .game-selection-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            margin: 0 0 40px;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+            letter-spacing: 3px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .game-selection-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        .game-selection-title.animate::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .game-list-container {
+            width: 100%;
+            max-width: 900px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding: 0 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) rgba(0,0,0,0.3);
+        }
+
+        .game-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .game-list-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        .game-list-container::-webkit-scrollbar-thumb {
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 0 20px 40px;
+        }
+
+        .game-item {
+            background: rgba(10, 15, 30, 0.7);
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            border-radius: 12px;
             padding: 20px;
-            border: 2px solid #333;
-            background-color: #fff;
-            border-radius: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--text-bright);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(4px);
+        }
+
+        .game-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 240, 255, 0.2);
+            background: rgba(15, 20, 40, 0.8);
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        .game-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .game-item:hover::before {
+            opacity: 1;
+        }
+
+        .game-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+            transition: var(--transition);
+        }
+
+        .game-item:hover .game-name {
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .game-url {
+            font-size: 12px;
+            color: var(--text-dim);
+            word-break: break-all;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .game-item:hover .game-url {
+            opacity: 1;
+        }
+
+        /* Iframe and Tape Button */
+        .fullscreen-iframe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .injector-tape {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 70px;
+            height: 70px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9999999;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+            animation: tapeFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes tapeFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .injector-tape:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.7);
+            animation: none;
+        }
+
+        .injector-tape::before {
+            content: "ZMX";
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .injector-container {
+                width: 90%;
+                right: 5%;
+                max-height: 80vh;
+            }
+            
+            .game-list {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .game-selection-title {
+                font-size: 28px;
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .injector-container {
+                width: 95%;
+                right: 2.5%;
+            }
+            
+            .current-value {
+                font-size: 32px;
+            }
+            
+            .game-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-selection-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .injector-tape {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .injector-tape::before {
+                font-size: 14px;
+            }
+        }
+
+        /* Success/Failure States */
+        .prediction-card.success {
+            border-color: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+        }
+
+        .prediction-card.failure {
+            border-color: rgba(255, 0, 85, 0.3);
+            box-shadow: 0 8px 32px rgba(255, 0, 85, 0.2);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(10, 15, 30, 0.95);
+            color: var(--text-bright);
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            font-size: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 15, 30, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px 20px;
+            max-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+            z-index: 99999999;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.success {
+            border-color: rgba(0, 255, 136, 0.3);
+        }
+
+        .notification.error {
+            border-color: rgba(255, 0, 85, 0.3);
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        /* Animation Classes */
+        @keyframes hologramFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(2deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(10px) rotate(-2deg); }
+        }
+
+        @keyframes dataStream {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes quantumPulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--primary); }
+            100% { transform: scale(1.05); box-shadow: 0 0 30px var(--accent); }
+        }
+
+        /* Utility Classes */
+        .text-gradient {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translateX(-1px); }
+            20%, 80% { transform: translateX(2px); }
+            30%, 50%, 70% { transform: translateX(-4px); }
+            40%, 60% { transform: translateX(4px); }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="message">SERVER IN MAINTENANCE PLEASE WAIT</div>
+    <div class="game-selection" id="gameSelection">
+        <div class="game-selection-title" id="gameSelectionTitle">SELECT GAME</div>
+        <div class="game-list-container">
+            <div class="game-list">
+                <div class="game-item" data-url="https://bdginf.com/#/login">
+                    <div class="game-name">BIG DADDY</div>
+                    <div class="game-url">bdginf.com</div>
+                </div>
+                <div class="game-item" data-url="http://Okwin.bio">
+                    <div class="game-name">OK WIN</div>
+                    <div class="game-url">Okwin.bio</div>
+                </div>
+                <div class="game-item" data-url="https://goagamea.com/#/login">
+                    <div class="game-name">GOA GAME</div>
+                    <div class="game-url">goagamea.com</div>
+                </div>
+                <div class="game-item" data-url="https://www.bigmumbaiq.com/#/login">
+                    <div class="game-name">BIG MUMBAI</div>
+                    <div class="game-url">bigmumbaiq.com</div>
+                </div>
+                <div class="game-item" data-url="http://tirangagame.top">
+                    <div class="game-name">TIRANGA</div>
+                    <div class="game-url">tirangagame.top</div>
+                </div>
+                <div class="game-item" data-url="https://51game5.com/#/">
+                    <div class="game-name">51 GAME</div>
+                    <div class="game-url">51game5.com</div>
+                </div>
+                <div class="game-item" data-url="https://bdgwin.cc/#/login">
+                    <div class="game-name">BDG WIN</div>
+                    <div class="game-url">bdgwin.cc</div>
+                </div>
+                <div class="game-item" data-url="http://rajawager.com">
+                    <div class="game-name">RAJA WAGER</div>
+                    <div class="game-url">rajawager.com</div>
+                </div>
+                <div class="game-item" data-url="http://55club.game">
+                    <div class="game-name">55 CLUB</div>
+                    <div class="game-url">55club.game</div>
+                </div>
+                <div class="game-item" data-url="https://dmwin.login.uk.com/">
+                    <div class="game-name">DM WIN</div>
+                    <div class="game-url">dmwin.login.uk.com</div>
+                </div>
+                <div class="game-item" data-url="https://diuwin.bet/#/">
+                    <div class="game-name">DIUWIN</div>
+                    <div class="game-url">diuwin.bet</div>
+                </div>
+                <div class="game-item" data-url="http://91appl.com">
+                    <div class="game-name">91 CLUB</div>
+                    <div class="game-url">91appl.com</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <iframe id="gameFrame" class="fullscreen-iframe hidden"></iframe>
+
+    <div class="injector-tape" id="injectorTape"></div>
+
+    <div class="injector-container" id="injectorUI">
+        <div class="injector-header">
+            <div class="injector-logo">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgZD0iTTI1NiA4QzExOSA4IDggMTE5IDggMjU2czExMSAyNDggMjQ4IDI0OCAyNDgtMTExIDI0OC0yNDhTMzkzIDggMjU2IDh6bTAgNDQ4Yy0xMTAuNSAwLTIwMC04OS41LTIwMC0yMDBTMTQ1LjUgNTYgMjU2IDU2czIwMCA4OS41IDIwMCAyMDAtODkuNSAyMDAtMjAwIDIwMHptMTIwLTI0MGMtMTUuNS0xMi0zNS0xOS01Ni0xOXMtNDAuNSA3LTU2IDE5bC02NC00OGMtLTguMS02LjEtMTktNC41LTI0LjUgNC4xLTUuNSA4LjYtMy44IDIwIDQuMyAyNmw4NCA2NGMxNi41IDEyIDM1IDE5IDU2IDE5czM5LjUtNyA1Ni0xOWw4NC02NGM4LjEtNiAxMC0xNy40IDQuMy0yNi01LjQtOC43LTE2LjUtMTAuMi0yNC41LTQuMWwtNjQgNDh6Ii8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwZjBmZiIvPjxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjMDA4NGZmIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjN2IwMGZmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+" alt="ZMX TRADER Logo">
+                ZMX TRADER <span class="version-badge">V1</span>
+            </div>
+        </div>
+        <div class="injector-content">
+            <div class="prediction-card glow" id="predictionCard">
+                <h2 class="card-title"></h2>
+                <div class="period-display" id="predictionPeriod">
+                    <span class="text-gradient">LOADING...</span>
+                </div>
+                <div class="current-value" id="predictionResult">
+                    <span class="text-gradient">-</span>
+                </div>
+                
+                <div class="prediction-info">
+                    <div class="info-item">
+                        <div class="info-label"></div>
+                        <div class="info-value" id="lastPrediction">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label"></div>
+                        <div class="info-value" id="accuracyRate">-</div>
+                    </div>
+                </div>
+                
+                <div class="confidence-container">
+                    <div class="confidence-header">
+                        <div class="confidence-label"></div>
+                        <div class="confidence-value" id="confidenceValue">0%</div>
+                    </div>
+                    <div class="confidence-meter">
+                        <div class="confidence-level" id="confidenceLevel"></div>
+                    </div>
+                </div>
+                
+                <div class="streak-container">
+                    <div class="streak-counter" id="streakCounter"></div>
+                    <div class="streak-indicator" id="streakIndicator">
+                        <div class="streak-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notificationTitle">Notification</div>
+        <div class="notification-message" id="notificationMessage"></div>
+    </div>
+
+    <script>
+        // Game Selection Logic
+        const gameSelection = document.getElementById('gameSelection');
+        const gameSelectionTitle = document.getElementById('gameSelectionTitle');
+        const gameFrame = document.getElementById('gameFrame');
+        const gameItems = document.querySelectorAll('.game-item');
+        
+        // Animate title underline after a short delay
+        setTimeout(() => {
+            gameSelectionTitle.classList.add('animate');
+        }, 500);
+        
+        gameItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const gameUrl = item.getAttribute('data-url');
+                gameFrame.src = gameUrl;
+                
+                // Animate game item click
+                item.style.transform = 'scale(0.95)';
+                item.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.5)';
+                
+                setTimeout(() => {
+                    gameSelection.style.animation = 'fadeOut 0.6s ease forwards';
+                    setTimeout(() => {
+                        gameSelection.style.display = 'none';
+                        gameFrame.classList.remove('hidden');
+                    }, 600);
+                }, 300);
+                
+                // Show notification
+                showNotification('Game Loaded', `Successfully loaded ${item.querySelector('.game-name').textContent}`, 'success');
+            });
+        });
+
+        // Notification System
+        function showNotification(title, message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            notification.className = 'notification';
+            notification.classList.add(type);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Prime checker
+        function is_prime(n) {
+            if (n <= 1) return false;
+            for (let i = 2; i <= Math.sqrt(n); i++) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+
+        // Strategy 1: Euler sum + product logic
+        function logic_euler(period_number) {
+            const digits = period_number.slice(-4).split('').map(Number);
+            const total_sum = digits.reduce((a, b) => a + b, 0);
+            const total_product = digits.reduce((a, b) => a * b, 1);
+            const val = (total_sum + total_product) % 10;
+            return val >= 5 ? "BIG" : "SMALL";
+        }
+
+        // Strategy 2: Prime sum logic
+        function logic_prime_sum(period_number) {
+            const digits = period_number.slice(-4).split('').map(Number);
+            return is_prime(digits.reduce((a, b) => a + b, 0)) ? "BIG" : "SMALL";
+        }
+
+        // Strategy 3: Odd/Even digit sum
+        function logic_odd_even(period_number) {
+            const digits = period_number.slice(-4).split('').map(Number);
+            return digits.reduce((a, b) => a + b, 0) % 2 !== 0 ? "BIG" : "SMALL";
+        }
+
+        // Strategy 4: Pattern repeat logic
+        function logic_repeat_pattern(period_number) {
+            const digits = period_number.slice(-4).split('');
+            return new Set(digits).size <= 2 ? "BIG" : "SMALL";
+        }
+
+        // Strategy 5: Digit sequence trend logic
+        function logic_digit_trend(period_number) {
+            const digits = period_number.slice(-4).split('').map(Number);
+            const sorted = [...digits].sort((a, b) => a - b);
+            const reverseSorted = [...digits].sort((a, b) => b - a);
+            return JSON.stringify(digits) === JSON.stringify(sorted) || 
+                   JSON.stringify(digits) === JSON.stringify(reverseSorted) ? "BIG" : "SMALL";
+        }
+
+        // Strategy 6: Middle digit average logic
+        function logic_middle_avg(period_number) {
+            const digits = period_number.slice(-4).split('').map(Number);
+            const avg = (digits[1] + digits[2]) / 2;
+            return avg >= 5 ? "BIG" : "SMALL";
+        }
+
+        // Strategy 7: Trap pattern detection (avoid flip)
+        function logic_trap_avoidance(period_number) {
+            const digits = period_number.slice(-4).split('').map(Number);
+            if (digits[0] === digits[3] || digits[1] === digits[2]) {
+                return "SMALL";  // Trap likely, avoid false BIG
+            }
+            return "BIG";
+        }
+
+        // Strategy 8: Fibonacci-weighted sum
+        function logic_fib_weight(period_number) {
+            const fib_weights = [1, 1, 2, 3];
+            const digits = period_number.slice(-4).split('').map(Number);
+            const total = digits.reduce((sum, digit, index) => sum + (digit * fib_weights[index]), 0);
+            return total % 10 >= 5 ? "BIG" : "SMALL";
+        }
+
+        // Master Prediction Function (AI-enhanced deterministic logic)
+        function advanced_prediction(period_number) {
+            const strategies = [
+                logic_euler,
+                logic_prime_sum,
+                logic_odd_even,
+                logic_repeat_pattern,
+                logic_digit_trend,
+                logic_middle_avg,
+                logic_trap_avoidance,
+                logic_fib_weight,
+            ];
+            
+            const results = strategies.map(strategy => strategy(period_number));
+            
+            const big_count = results.filter(result => result === "BIG").length;
+            const small_count = results.filter(result => result === "SMALL").length;
+
+            // Internal confidence score
+            const confidence = Math.abs(big_count - small_count) / strategies.length;
+
+            // High-confidence only override (optional)
+            if (confidence >= 0.5) {
+                return {
+                    prediction: big_count > small_count ? "BIG" : "SMALL",
+                    confidence: Math.round(confidence * 100),
+                    strategies: results
+                };
+            } else {
+                // Fallback to trusted core logic (Euler + Fib + Prime)
+                const trusted = [logic_euler, logic_fib_weight, logic_prime_sum];
+                const trust_results = trusted.map(strategy => strategy(period_number));
+                const trust_big = trust_results.filter(result => result === "BIG").length;
+                const trust_small = trust_results.filter(result => result === "SMALL").length;
+                
+                return {
+                    prediction: trust_big >= 2 ? "BIG" : "SMALL",
+                    confidence: Math.round((Math.max(trust_big, trust_small) / trusted.length) * 100),
+                    strategies: results
+                };
+            }
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const colors = ['rgba(0, 240, 255, 0.3)', 'rgba(0, 144, 255, 0.3)', 'rgba(123, 0, 255, 0.3)'];
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 8 + 2;
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.top = `${posY}px`;
+                particle.style.background = color;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Toggle injector UI with animation
+        const injectorTape = document.getElementById('injectorTape');
+        const injectorUI = document.getElementById('injectorUI');
+        let isUIVisible = false;
+
+        injectorTape.addEventListener('click', () => {
+            isUIVisible = !isUIVisible;
+            
+            if (isUIVisible) {
+                injectorUI.classList.remove('hidden');
+                injectorUI.classList.add('visible');
+            } else {
+                injectorUI.classList.remove('visible');
+                injectorUI.classList.add('hidden');
+            }
+            
+            // Add click effect to tape
+            injectorTape.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                injectorTape.style.transform = '';
+            }, 200);
+        });
+
+        // Enhanced prediction logic
+        class PredictionEngine {
+            constructor() {
+                this.history = [];
+                this.streak = 0;
+                this.lastPrediction = null;
+                this.accuracy = 0;
+                this.totalPredictions = 0;
+                this.correctPredictions = 0;
+            }
+
+            getNextPeriod(current) {
+                try {
+                    return (BigInt(current) + 1n).toString();
+                } catch {
+                    return current;
+                }
+            }
+
+            analyzePatterns(history) {
+                if (history.length < 5) return { pattern: "normal", confidence: 50 };
+
+                const lastTypes = history.map(item => item.number >= 5 ? 'B' : 'S');
+                const lastNumbers = history.map(item => item.number);
+                
+                // Advanced pattern recognition
+                let pattern = "normal";
+                let confidence = 50;
+                
+                // Check for streaks
+                let streakType = lastTypes[0];
+                let streakCount = 1;
+                for (let i = 1; i < lastTypes.length; i++) {
+                    if (lastTypes[i] === streakType) streakCount++;
+                    else break;
+                }
+
+                // Number frequency analysis
+                const numberCounts = Array(10).fill(0);
+                lastNumbers.forEach(num => numberCounts[num]++);
+                const hotNumbers = numberCounts
+                    .map((count, num) => ({ num, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 3);
+
+                // Advanced pattern detection
+                if (streakCount >= 4) {
+                    pattern = "quantum_streak";
+                    confidence = 80 + (streakCount * 3);
+                } 
+                else if (/^(BSBSB|SBSBS)/.test(lastTypes.slice(0, 5).join(''))) {
+                    pattern = "harmonic_oscillation";
+                    confidence = 75;
+                } 
+                else if (streakCount === 3 && lastTypes[3] !== streakType) {
+                    pattern = "breakpoint";
+                    confidence = 70;
+                }
+                else if (hotNumbers[0].count >= 3) {
+                    pattern = "quantum_resonance";
+                    confidence = 65;
+                }
+                else if (lastNumbers[0] === lastNumbers[2] && lastNumbers[1] === lastNumbers[3]) {
+                    pattern = "alternating_sequence";
+                    confidence = 68;
+                }
+
+                return { pattern, streakType, streakCount, confidence: Math.min(confidence, 95) };
+            }
+
+            generatePrediction(period, history) {
+                // First get the advanced deterministic prediction
+                const deterministic = advanced_prediction(period);
+                
+                // Then analyze patterns for additional confidence
+                const patternAnalysis = this.analyzePatterns(history);
+                
+                // Combine the results
+                let finalPrediction;
+                let finalConfidence;
+                
+                if (deterministic.prediction === "BIG" && patternAnalysis.pattern !== "normal") {
+                    finalPrediction = "BIG";
+                    finalConfidence = Math.min(100, deterministic.confidence + patternAnalysis.confidence - 50);
+                } else if (deterministic.prediction === "SMALL" && patternAnalysis.pattern !== "normal") {
+                    finalPrediction = "SMALL";
+                    finalConfidence = Math.min(100, deterministic.confidence + patternAnalysis.confidence - 50);
+                } else {
+                    finalPrediction = deterministic.prediction;
+                    finalConfidence = deterministic.confidence;
+                }
+                
+                // Generate a random number in the predicted range
+                const predictedNumber = finalPrediction === "BIG" ? 
+                    (5 + Math.floor(Math.random() * 5)) : 
+                    Math.floor(Math.random() * 5);
+
+                const prediction = {
+                    period,
+                    number: predictedNumber,
+                    label: finalPrediction,
+                    confidence: finalConfidence,
+                    timestamp: Date.now(),
+                    pattern: patternAnalysis.pattern,
+                    strategies: deterministic.strategies
+                };
+
+                this.lastPrediction = prediction;
+                localStorage.setItem("zmxPrediction", JSON.stringify(prediction));
+                return prediction;
+            }
+
+            verifyPrediction(actualResult) {
+                if (!this.lastPrediction) return null;
+                
+                const isCorrect = (actualResult >= 5 && this.lastPrediction.label === "BIG") || 
+                                 (actualResult < 5 && this.lastPrediction.label === "SMALL");
+                
+                this.totalPredictions++;
+                if (isCorrect) this.correctPredictions++;
+                this.accuracy = Math.round((this.correctPredictions / this.totalPredictions) * 100);
+                
+                const result = {
+                    isCorrect,
+                    actual: actualResult,
+                    prediction: this.lastPrediction,
+                    timestamp: Date.now()
+                };
+                
+                this.updateStreak(result);
+                return result;
+            }
+
+            updateStreak(result) {
+                if (result.isCorrect) {
+                    this.streak = this.streak >= 0 ? this.streak + 1 : 1;
+                } else {
+                    this.streak = this.streak <= 0 ? this.streak - 1 : -1;
+                }
+                
+                localStorage.setItem("zmxStats", JSON.stringify({
+                    streak: this.streak,
+                    accuracy: this.accuracy,
+                    total: this.totalPredictions
+                }));
+            }
+
+            loadStats() {
+                const stats = localStorage.getItem("zmxStats");
+                
+                if (stats) {
+                    const { streak, accuracy, total } = JSON.parse(stats);
+                    this.streak = streak;
+                    this.accuracy = accuracy;
+                    this.totalPredictions = total;
+                    this.correctPredictions = Math.round((accuracy * total) / 100);
+                }
+            }
+        }
+
+        // UI Manager
+        class UIManager {
+            constructor() {
+                this.engine = new PredictionEngine();
+                this.periodElement = document.getElementById("predictionPeriod");
+                this.resultElement = document.getElementById("predictionResult");
+                this.lastPredictionElement = document.getElementById("lastPrediction");
+                this.accuracyElement = document.getElementById("accuracyRate");
+                this.confidenceElement = document.getElementById("confidenceLevel");
+                this.confidenceValue = document.getElementById("confidenceValue");
+                this.streakElement = document.getElementById("streakIndicator");
+                this.streakCounter = document.getElementById("streakCounter");
+                this.predictionCard = document.getElementById("predictionCard");
+                this.engine.loadStats();
+            }
+
+            displayPrediction(prediction) {
+                if (!prediction || !prediction.label || prediction.number === undefined) {
+                    this.periodElement.innerHTML = '<span class="text-gradient">LOADING...</span>';
+                    this.resultElement.innerHTML = '<span class="text-gradient">-</span>';
+                    this.confidenceElement.style.width = '0%';
+                    this.confidenceValue.textContent = '0%';
+                    return;
+                }
+
+                // Update period display
+                this.periodElement.innerHTML = `PERIOD: <span class="text-gradient">${prediction.period}</span>`;
+                
+                // Update confidence meter
+                this.confidenceElement.style.width = `${prediction.confidence}%`;
+                this.confidenceValue.textContent = `${prediction.confidence}%`;
+                
+                // Clear loading animation and create prediction display
+                this.resultElement.innerHTML = '';
+                
+                const statusIndicator = document.createElement('span');
+                statusIndicator.className = `status-indicator ${prediction.label.toLowerCase()}`;
+                
+                const predictionText = document.createElement('span');
+                predictionText.textContent = ` ${prediction.label} (${prediction.number})`;
+                predictionText.className = `text-gradient`;
+                
+                this.resultElement.appendChild(statusIndicator);
+                this.resultElement.appendChild(predictionText);
+                
+                // Update last prediction and accuracy
+                this.lastPredictionElement.textContent = prediction.label;
+                this.lastPredictionElement.className = `info-value ${prediction.label.toLowerCase()}`;
+                this.accuracyElement.textContent = `${this.engine.accuracy}%`;
+                
+                // Update prediction card style based on confidence
+                this.predictionCard.classList.remove('success', 'failure');
+                if (prediction.confidence >= 75) {
+                    this.predictionCard.classList.add(prediction.label.toLowerCase());
+                }
+                
+                // Update streak indicator
+                this.updateStreakIndicator();
+                
+                // Add visual feedback for new prediction
+                this.predictionCard.classList.add('shake');
+                setTimeout(() => {
+                    this.predictionCard.classList.remove('shake');
+                }, 500);
+            }
+
+            updateStreakIndicator() {
+                this.streakElement.innerHTML = '';
+                const streakLength = Math.min(Math.abs(this.engine.streak), 10);
+                
+                for (let i = 0; i < streakLength; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'streak-dot';
+                    if (this.engine.streak > 0) dot.classList.add('active');
+                    if (this.engine.streak < 0) dot.classList.add('loss');
+                    this.streakElement.appendChild(dot);
+                }
+                
+                if (streakLength === 0) {
+                    const dot = document.createElement('div');
+                    dot.className = 'streak-dot';
+                    this.streakElement.appendChild(dot);
+                }
+                
+                // Update streak counter
+                this.streakCounter.textContent = `STREAK: ${this.engine.streak > 0 ? '+' : ''}${this.engine.streak}`;
+                this.streakCounter.className = 'streak-counter';
+                if (this.engine.streak > 0) {
+                    this.streakCounter.classList.add('positive');
+                } else if (this.engine.streak < 0) {
+                    this.streakCounter.classList.add('negative');
+                }
+            }
+
+            displayError() {
+                this.resultElement.innerHTML = '<span style="color:var(--loss)">SYSTEM ERROR</span>';
+                this.periodElement.textContent = "ERROR";
+                this.confidenceElement.style.width = '0%';
+                this.confidenceValue.textContent = '0%';
+                this.predictionCard.classList.add('shake');
+            }
+        }
+
+        // Main Application
+        class ZmxPredictorApp {
+            constructor() {
+                this.ui = new UIManager();
+                this.engine = this.ui.engine;
+                createParticles();
+            }
+
+            async fetchGameData() {
+                try {
+                    // Show loading state
+                    this.ui.displayPrediction(null);
+                    
+                    const response = await fetch("https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json;charset=UTF-8" },
+                        body: JSON.stringify({
+                            pageSize: 10,
+                            pageNo: 1,
+                            typeId: 1,
+                            language: 0,
+                            random: "ded40537a2ce416e96c00e5218f6859a",
+                            signature: "69306982EEEB19FA940D72EC93C62552",
+                            timestamp: Math.floor(Date.now() / 1000)
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    const list = data?.data?.list || [];
+                    if (!list.length) {
+                        showNotification('Error', 'No game data available', 'error');
+                        return;
+                    }
+
+                    const currentPeriod = list[0].issueNumber;
+                    const nextPeriod = this.engine.getNextPeriod(currentPeriod);
+                    const stored = localStorage.getItem("zmxPrediction");
+
+                    let prediction = null;
+
+                    if (stored) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            if (parsed && parsed.period === nextPeriod) {
+                                prediction = parsed;
+                            } else {
+                                prediction = this.engine.generatePrediction(nextPeriod, list);
+                            }
+                        } catch {
+                            prediction = this.engine.generatePrediction(nextPeriod, list);
+                        }
+                    } else {
+                        prediction = this.engine.generatePrediction(nextPeriod, list);
+                    }
+
+                    // Verify previous prediction if available
+                    if (this.engine.lastPrediction && this.engine.lastPrediction.period === currentPeriod) {
+                        const verification = this.engine.verifyPrediction(list[0].number);
+                        
+                        if (verification.isCorrect) {
+                            showNotification('Result', 'Last prediction was correct!', 'success');
+                        } else {
+                            showNotification('Result', 'Last prediction was incorrect', 'error');
+                        }
+                    }
+
+                    this.ui.displayPrediction(prediction);
+                } catch (err) {
+                    console.error("Quantum fetch error:", err);
+                    this.ui.displayError();
+                    showNotification('Error', 'Failed to fetch game data', 'error');
+                }
+            }
+
+            initialize() {
+                this.fetchGameData();
+                setInterval(() => this.fetchGameData(), 5000);
+                
+                // Show welcome notification
+                setTimeout(() => {
+                    showNotification('ZMX Trader V1', 'ZMX TRADER SYSTEM ACTIVATED', 'success');
+                }, 1500);
+            }
+        }
+
+        // Initialize the application
+        const app = new ZmxPredictorApp();
+        app.initialize();
+    </script>
 </body>
 </html>
