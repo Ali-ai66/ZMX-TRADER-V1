@@ -53,6 +53,48 @@
             line-height: 1.6;
         }
 
+        /* Night Mode Styles */
+        #night-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000033;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 99999999;
+            text-align: center;
+            display: none;
+        }
+        
+        #night-mode h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #4d79ff;
+        }
+        
+        #night-mode p {
+            font-size: 1.2rem;
+            max-width: 80%;
+            line-height: 1.6;
+        }
+        
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         /* Main Injector Container */
         .injector-container {
             position: fixed;
@@ -813,11 +855,6 @@
             box-shadow: 0 8px 32px rgba(255, 0, 85, 0.2);
         }
 
-        .prediction-card.recovery {
-            border-color: rgba(255, 204, 0, 0.3);
-            box-shadow: 0 8px 32px rgba(255, 204, 0, 0.2);
-        }
-
         /* Tooltip */
         .tooltip {
             position: relative;
@@ -879,10 +916,6 @@
 
         .notification.error {
             border-color: rgba(255, 0, 85, 0.3);
-        }
-
-        .notification.warning {
-            border-color: rgba(255, 204, 0, 0.3);
         }
 
         .notification-title {
@@ -993,6 +1026,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+    <!-- Night Mode Screen -->
+    <div id="night-mode">
+        <div class="emoji">💤</div>
+        <h1>See You in the Morning!</h1>
+        <p>We take a break from 8 PM to 6 AM.<br></p>
+    </div>
+
     <div class="game-selection" id="gameSelection">
         <div class="game-selection-title" id="gameSelectionTitle">SELECT GAME</div>
         <div class="game-list-container">
@@ -1112,6 +1152,26 @@
     </div>
 
     <script>
+        // Night Mode Check
+        function checkTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const nightMode = document.getElementById('night-mode');
+            
+            // Show night mode between 8 PM (20) and 6 AM (6)
+            if (hours >= 20 || hours < 6) {
+                nightMode.style.display = 'flex';
+            } else {
+                nightMode.style.display = 'none';
+            }
+        }
+        
+        // Check time immediately
+        checkTime();
+        
+        // Continue checking every minute
+        setInterval(checkTime, 60000);
+
         // Game Selection Logic
         const gameSelection = document.getElementById('gameSelection');
         const gameFrame = document.getElementById('gameFrame');
@@ -1142,9 +1202,7 @@
                 this.memory = {
                     last_prediction: "",
                     loss_count: 0,
-                    last_actual: "",
-                    last_result: null,  // "WIN" or "LOSS"
-                    recovery_mode: false
+                    last_actual: ""
                 };
                 this.loadStats();
             }
@@ -1327,65 +1385,26 @@
                 return "SMALL";
             }
 
-            // New Sure Shot Recovery Logic
             sureShotRecovery(periodNumber) {
                 const digits = periodNumber.slice(-4).split('').map(Number);
-                let score = 0;
-
-                // 1. Mirror Trap: Checks if the first and last digits are the same.
-                if (digits[0] === digits[digits.length - 1]) {
-                    score += 1;
-                }
-                
-                // 2. Sum of Digits: Awards a point if the sum of digits is 20 or more.
-                if (digits.reduce((a, b) => a + b, 0) >= 20) {
-                    score += 1;
-                }
-                
-                // 3. Digit Range: Checks if the difference between the maximum and minimum digit is 2 or less.
-                if (Math.max(...digits) - Math.min(...digits) <= 2) {
-                    score += 1;
-                }
-                
-                // 4. Prime Sum: Awards a point if the sum of digits is a prime number.
-                if (this.isPrime(digits.reduce((a, b) => a + b, 0))) {
-                    score += 1;
-                }
-                
-                // 5. Sorted/Reverse Sorted Digits: Checks if the digits are in ascending or descending order.
-                const sorted = [...digits].sort((a, b) => a - b);
-                const reverseSorted = [...digits].sort((a, b) => b - a);
-                if (JSON.stringify(digits) === JSON.stringify(sorted) || 
-                    JSON.stringify(digits) === JSON.stringify(reverseSorted)) {
-                    score += 1;
-                }
-
-                return score >= 3 ? "BIG" : "SMALL";
+                const weights = [1, 3, 2, 4];
+                const score = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
+                return score % 2 === 0 ? "BIG" : "SMALL";
             }
 
             // Master Prediction Function from Python Code
             predictFinal(periodNumber, actualResult = null) {
-                // Update memory based on actual result if provided
                 if (actualResult !== null) {
                     if (this.memory.last_prediction && actualResult !== this.memory.last_prediction) {
                         this.memory.loss_count += 1;
-                        this.memory.last_result = "LOSS";
-                        
-                        // Check for two consecutive losses
-                        if (this.memory.loss_count >= 2) {
-                            this.showNotification("System Alert", "2 consecutive losses detected - Recovery mode activated", "warning");
-                        }
                     } else {
                         this.memory.loss_count = 0;
-                        this.memory.last_result = "WIN";
                     }
                     this.memory.last_actual = actualResult;
-                    this.memory.recovery_mode = this.memory.loss_count > 0;
-                    localStorage.setItem("zmxMemory", JSON.stringify(this.memory));
                 }
 
-                // Recovery mode - use sure shot logic
-                if (this.memory.recovery_mode) {
+                // Recovery mode
+                if (this.memory.loss_count >= 1) {
                     const prediction = this.sureShotRecovery(periodNumber);
                     this.memory.last_prediction = prediction;
                     return {
@@ -1395,7 +1414,7 @@
                     };
                 }
 
-                // Normal mode - use all strategies
+                // Apply strategies
                 const strategies = [
                     this.strategyEulerEnhanced,
                     this.strategyPrimeAnalysis,
@@ -1624,33 +1643,6 @@
                     this.memory = JSON.parse(memory);
                 }
             }
-
-            showNotification(title, message, type = "info") {
-                const notification = document.getElementById("notification");
-                const notificationTitle = document.getElementById("notificationTitle");
-                const notificationMessage = document.getElementById("notificationMessage");
-                
-                notification.className = "notification";
-                notificationTitle.textContent = title;
-                notificationMessage.textContent = message;
-                
-                // Add appropriate class based on type
-                if (type === "success") {
-                    notification.classList.add("success");
-                } else if (type === "error") {
-                    notification.classList.add("error");
-                } else if (type === "warning") {
-                    notification.classList.add("warning");
-                }
-                
-                // Show notification
-                notification.classList.add("show");
-                
-                // Hide after 5 seconds
-                setTimeout(() => {
-                    notification.classList.remove("show");
-                }, 5000);
-            }
         }
 
         // UI Manager
@@ -1708,7 +1700,6 @@
                 this.predictionCard.classList.remove('success', 'failure', 'recovery');
                 if (prediction.recoveryMode) {
                     this.predictionCard.classList.add('recovery');
-                    this.engine.showNotification("Recovery Mode", "Using high-confidence recovery algorithm", "warning");
                 } else if (prediction.confidence >= 75) {
                     this.predictionCard.classList.add(prediction.label.toLowerCase() === 'big' ? 'success' : 'failure');
                 }
@@ -1868,12 +1859,7 @@
 
                     // Verify previous prediction if available
                     if (this.engine.lastPrediction && this.engine.lastPrediction.period === currentPeriod) {
-                        const verification = this.engine.verifyPrediction(list[0].number);
-                        
-                        // Show notification for loss in recovery mode
-                        if (!verification.isCorrect && this.engine.memory.recovery_mode) {
-                            this.engine.showNotification("Recovery Failed", "Loss in recovery mode - adjusting strategy", "error");
-                        }
+                        this.engine.verifyPrediction(list[0].number);
                     }
 
                     this.ui.displayPrediction(prediction);
