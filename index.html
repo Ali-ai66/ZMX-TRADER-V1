@@ -855,7 +855,7 @@
             100% { transform: translateX(100%); }
         }
 
-        @keyframes quantumPulse {
+        @keyframes zmxPulse {
             0% { transform: scale(1); box-shadow: 0 0 10px var(--primary); }
             100% { transform: scale(1.05); box-shadow: 0 0 30px var(--accent); }
         }
@@ -934,6 +934,106 @@
         @keyframes loading-enhanced2 {
             0% { transform: translate(0, 0); }
             100% { transform: translate(24px, 0); }
+        }
+
+        /* Analysis Panel */
+        .analysis-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(5, 10, 20, 0.5);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 240, 255, 0.1);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.5s ease;
+        }
+
+        .analysis-panel.expanded {
+            max-height: 500px;
+            padding: 15px;
+        }
+
+        .analysis-title {
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .analysis-title i {
+            transition: transform 0.3s ease;
+        }
+
+        .analysis-title.active i {
+            transform: rotate(180deg);
+        }
+
+        .analysis-content {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .analysis-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px 0;
+            border-bottom: 1px dashed rgba(0, 240, 255, 0.1);
+        }
+
+        .analysis-label {
+            font-weight: 600;
+            color: var(--text-bright);
+        }
+
+        .analysis-value {
+            text-align: right;
+        }
+
+        .analysis-chart {
+            height: 100px;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            width: 8%;
+            background: var(--gradient);
+            transition: height 0.5s ease;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .chart-label {
+            position: absolute;
+            bottom: -20px;
+            font-size: 10px;
+            width: 100%;
+            text-align: center;
+            color: var(--text-dim);
+        }
+
+        .toggle-analysis {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 12px;
+            transition: var(--transition);
+        }
+
+        .toggle-analysis:hover {
+            background: rgba(0, 240, 255, 0.1);
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -1037,6 +1137,35 @@
                         <div class="streak-dot"></div>
                     </div>
                 </div>
+
+                <!-- Analysis Panel -->
+                <div class="analysis-panel" id="analysisPanel">
+                    <div class="analysis-title" id="analysisToggle">
+                        <span>STRATEGY ANALYSIS</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="analysis-content" id="analysisContent">
+                        <div class="analysis-row">
+                            <span class="analysis-label">Current Pattern:</span>
+                            <span class="analysis-value" id="currentPattern">Analyzing...</span>
+                        </div>
+                        <div class="analysis-row">
+                            <span class="analysis-label">Strategy Used:</span>
+                            <span class="analysis-value" id="strategyUsed">Calculating...</span>
+                        </div>
+                        <div class="analysis-row">
+                            <span class="analysis-label">Accuracy:</span>
+                            <span class="analysis-value" id="accuracyRate">0%</span>
+                        </div>
+                        <div class="analysis-chart" id="analysisChart">
+                            <!-- Chart bars will be added dynamically -->
+                        </div>
+                        <div class="analysis-row">
+                            <span class="analysis-label"></span>
+                            <span class="analysis-value" id="lastResults">-</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1078,6 +1207,21 @@
                     last_prediction: "",
                     loss_count: 0,
                     last_actual: ""
+                };
+                this.strategyPerformance = {
+                    euler: { used: 0, correct: 0 },
+                    prime: { used: 0, correct: 0 },
+                    parity: { used: 0, correct: 0 },
+                    pattern: { used: 0, correct: 0 },
+                    trend: { used: 0, correct: 0 },
+                    statistical: { used: 0, correct: 0 },
+                    positional: { used: 0, correct: 0 },
+                    fibonacci: { used: 0, correct: 0 },
+                    entropy: { used: 0, correct: 0 },
+                    highValue: { used: 0, correct: 0 },
+                    palindrome: { used: 0, correct: 0 },
+                    digitProximity: { used: 0, correct: 0 },
+                    recovery: { used: 0, correct: 0 }
                 };
                 this.loadStats();
             }
@@ -1282,69 +1426,90 @@
                 if (this.memory.loss_count >= 1) {
                     const prediction = this.sureShotRecovery(periodNumber);
                     this.memory.last_prediction = prediction;
+                    this.strategyPerformance.recovery.used++;
                     return {
                         prediction: prediction,
                         confidence: 80 + (this.memory.loss_count * 5),
-                        recoveryMode: true
+                        recoveryMode: true,
+                        strategy: "recovery"
                     };
                 }
 
                 // Apply strategies
                 const strategies = [
-                    this.strategyEulerEnhanced,
-                    this.strategyPrimeAnalysis,
-                    this.strategyParityAdvanced,
-                    this.strategyPatternRecognition,
-                    this.strategyTrendAnalysis,
-                    this.strategyStatistical,
-                    this.strategyPositional,
-                    this.strategyFibonacciAdvanced,
-                    this.strategyEntropyAnalysis,
-                    this.strategyHighValueCount,
-                    this.strategyPalindrome,
-                    this.strategyDigitProximity
+                    { name: "euler", func: this.strategyEulerEnhanced },
+                    { name: "prime", func: this.strategyPrimeAnalysis },
+                    { name: "parity", func: this.strategyParityAdvanced },
+                    { name: "pattern", func: this.strategyPatternRecognition },
+                    { name: "trend", func: this.strategyTrendAnalysis },
+                    { name: "statistical", func: this.strategyStatistical },
+                    { name: "positional", func: this.strategyPositional },
+                    { name: "fibonacci", func: this.strategyFibonacciAdvanced },
+                    { name: "entropy", func: this.strategyEntropyAnalysis },
+                    { name: "highValue", func: this.strategyHighValueCount },
+                    { name: "palindrome", func: this.strategyPalindrome },
+                    { name: "digitProximity", func: this.strategyDigitProximity }
                 ];
                 
-                const results = strategies.map(s => s.call(this, periodNumber));
-                const bigCount = results.filter(result => result === "BIG").length;
+                const results = strategies.map(s => {
+                    return { 
+                        name: s.name, 
+                        result: s.func.call(this, periodNumber) 
+                    };
+                });
+                
+                const bigCount = results.filter(result => result.result === "BIG").length;
                 const smallCount = results.length - bigCount;
                 let confidence = (bigCount - smallCount) / strategies.length;
 
                 if (Math.abs(confidence) >= 0.4) {
+                    const strategyName = confidence > 0 ? "consensus_big" : "consensus_small";
                     return {
                         prediction: confidence > 0 ? "BIG" : "SMALL",
                         confidence: Math.min(100, Math.round((Math.abs(confidence) + 0.4) * 100)),
-                        strategies: results
+                        strategies: results.map(r => r.result),
+                        strategy: strategyName
                     };
                 } else if (Math.abs(confidence) >= 0.2) {
                     const weightedStrategies = [
-                        { strategy: this.strategyPrimeAnalysis, weight: 1.6 },
-                        { strategy: this.strategyFibonacciAdvanced, weight: 1.4 },
-                        { strategy: this.strategyEulerEnhanced, weight: 1.2 },
-                        { strategy: this.strategyHighValueCount, weight: 1.1 },
-                        { strategy: this.strategyPalindrome, weight: 1.3 }
+                        { name: "prime", strategy: this.strategyPrimeAnalysis, weight: 1.6 },
+                        { name: "fibonacci", strategy: this.strategyFibonacciAdvanced, weight: 1.4 },
+                        { name: "euler", strategy: this.strategyEulerEnhanced, weight: 1.2 },
+                        { name: "highValue", strategy: this.strategyHighValueCount, weight: 1.1 },
+                        { name: "palindrome", strategy: this.strategyPalindrome, weight: 1.3 }
                     ];
 
                     let score = 0;
-                    weightedStrategies.forEach(({ strategy, weight }) => {
-                        score += (strategy.call(this, periodNumber) === "BIG" ? weight : -weight);
+                    weightedStrategies.forEach(({ name, strategy, weight }) => {
+                        const result = strategy.call(this, periodNumber);
+                        score += (result === "BIG" ? weight : -weight);
+                        this.strategyPerformance[name].used++;
                     });
 
                     return {
                         prediction: score > 0 ? "BIG" : "SMALL",
                         confidence: Math.min(100, Math.round((Math.abs(score / 6.6) + 0.3) * 100)),
-                        strategies: results
+                        strategies: results.map(r => r.result),
+                        strategy: "weighted_consensus"
                     };
                 } else {
                     const coreStrategies = [
-                        this.strategyPrimeAnalysis,
-                        this.strategyFibonacciAdvanced,
-                        this.strategyEulerEnhanced,
-                        this.strategyHighValueCount,
-                        this.strategyPalindrome
+                        { name: "prime", func: this.strategyPrimeAnalysis },
+                        { name: "fibonacci", func: this.strategyFibonacciAdvanced },
+                        { name: "euler", func: this.strategyEulerEnhanced },
+                        { name: "highValue", func: this.strategyHighValueCount },
+                        { name: "palindrome", func: this.strategyPalindrome }
                     ];
-                    const coreResults = coreStrategies.map(s => s.call(this, periodNumber));
-                    const coreBig = coreResults.filter(r => r === "BIG").length;
+                    
+                    const coreResults = coreStrategies.map(s => {
+                        this.strategyPerformance[s.name].used++;
+                        return { 
+                            name: s.name, 
+                            result: s.func.call(this, periodNumber) 
+                        };
+                    });
+                    
+                    const coreBig = coreResults.filter(r => r.result === "BIG").length;
                     const coreSmall = coreResults.length - coreBig;
 
                     if (coreBig === coreSmall) {
@@ -1353,14 +1518,16 @@
                         return {
                             prediction: sum % 3 === 0 || digits[3] % 5 === 0 ? "BIG" : "SMALL",
                             confidence: 55,
-                            strategies: results
+                            strategies: results.map(r => r.result),
+                            strategy: "tiebreaker"
                         };
                     }
                     
                     return {
                         prediction: coreBig > coreSmall ? "BIG" : "SMALL",
                         confidence: Math.round((Math.max(coreBig, coreSmall) / coreStrategies.length) * 100),
-                        strategies: results
+                        strategies: results.map(r => r.result),
+                        strategy: "core_consensus"
                     };
                 }
             }
@@ -1401,7 +1568,7 @@
 
                 // Advanced pattern detection
                 if (streakCount >= 4) {
-                    pattern = "quantum_streak";
+                    pattern = "zmx_streak";
                     confidence = 80 + (streakCount * 3);
                 } 
                 else if (/^(BSBSB|SBSBS)/.test(lastTypes.slice(0, 5).join(''))) {
@@ -1413,7 +1580,7 @@
                     confidence = 70;
                 }
                 else if (hotNumbers[0].count >= 3) {
-                    pattern = "quantum_resonance";
+                    pattern = "zmx_resonance";
                     confidence = 65;
                 }
                 else if (lastNumbers[0] === lastNumbers[2] && lastNumbers[1] === lastNumbers[3]) {
@@ -1434,13 +1601,16 @@
                 // Combine the results
                 let finalPrediction;
                 let finalConfidence;
+                let strategyUsed = deterministic.strategy;
                 
                 if (deterministic.prediction === "BIG" && patternAnalysis.pattern !== "normal") {
                     finalPrediction = "BIG";
                     finalConfidence = Math.min(100, deterministic.confidence + patternAnalysis.confidence - 50);
+                    strategyUsed = `${deterministic.strategy}+pattern`;
                 } else if (deterministic.prediction === "SMALL" && patternAnalysis.pattern !== "normal") {
                     finalPrediction = "SMALL";
                     finalConfidence = Math.min(100, deterministic.confidence + patternAnalysis.confidence - 50);
+                    strategyUsed = `${deterministic.strategy}+pattern`;
                 } else {
                     finalPrediction = deterministic.prediction;
                     finalConfidence = deterministic.confidence;
@@ -1459,7 +1629,8 @@
                     timestamp: Date.now(),
                     pattern: patternAnalysis.pattern,
                     strategies: deterministic.strategies,
-                    recoveryMode: deterministic.recoveryMode || false
+                    recoveryMode: deterministic.recoveryMode || false,
+                    strategyUsed: strategyUsed
                 };
 
                 this.lastPrediction = prediction;
@@ -1476,6 +1647,14 @@
                 this.totalPredictions++;
                 if (isCorrect) this.correctPredictions++;
                 this.accuracy = Math.round((this.correctPredictions / this.totalPredictions) * 100);
+                
+                // Update strategy performance
+                if (this.lastPrediction.strategyUsed) {
+                    const strategyName = this.lastPrediction.strategyUsed.split('+')[0];
+                    if (this.strategyPerformance[strategyName]) {
+                        if (isCorrect) this.strategyPerformance[strategyName].correct++;
+                    }
+                }
                 
                 const result = {
                     isCorrect,
@@ -1498,7 +1677,8 @@
                 localStorage.setItem("zmxStats", JSON.stringify({
                     streak: this.streak,
                     accuracy: this.accuracy,
-                    total: this.totalPredictions
+                    total: this.totalPredictions,
+                    strategyPerformance: this.strategyPerformance
                 }));
             }
 
@@ -1507,16 +1687,42 @@
                 const memory = localStorage.getItem("zmxMemory");
                 
                 if (stats) {
-                    const { streak, accuracy, total } = JSON.parse(stats);
-                    this.streak = streak;
-                    this.accuracy = accuracy;
-                    this.totalPredictions = total;
-                    this.correctPredictions = Math.round((accuracy * total) / 100);
+                    const parsed = JSON.parse(stats);
+                    this.streak = parsed.streak;
+                    this.accuracy = parsed.accuracy;
+                    this.totalPredictions = parsed.total;
+                    this.correctPredictions = Math.round((parsed.accuracy * parsed.total) / 100);
+                    
+                    if (parsed.strategyPerformance) {
+                        this.strategyPerformance = parsed.strategyPerformance;
+                    }
                 }
                 
                 if (memory) {
                     this.memory = JSON.parse(memory);
                 }
+            }
+
+            getStrategyPerformance() {
+                const performance = [];
+                for (const [strategy, data] of Object.entries(this.strategyPerformance)) {
+                    if (data.used > 0) {
+                        const accuracy = Math.round((data.correct / data.used) * 100) || 0;
+                        performance.push({
+                            strategy,
+                            used: data.used,
+                            correct: data.correct,
+                            accuracy
+                        });
+                    }
+                }
+                return performance.sort((a, b) => b.accuracy - a.accuracy);
+            }
+
+            getLastResults(count = 5) {
+                return this.history.slice(0, count).map(item => 
+                    item.isCorrect ? '✓' : '✗'
+                ).join(' ');
             }
         }
 
@@ -1532,6 +1738,20 @@
                 this.streakCounter = document.getElementById("streakCounter");
                 this.predictionCard = document.getElementById("predictionCard");
                 this.lastHoverTime = 0;
+                this.analysisPanel = document.getElementById("analysisPanel");
+                this.analysisToggle = document.getElementById("analysisToggle");
+                this.analysisContent = document.getElementById("analysisContent");
+                this.currentPatternElement = document.getElementById("currentPattern");
+                this.strategyUsedElement = document.getElementById("strategyUsed");
+                this.accuracyRateElement = document.getElementById("accuracyRate");
+                this.analysisChartElement = document.getElementById("analysisChart");
+                this.lastResultsElement = document.getElementById("lastResults");
+                
+                // Setup analysis panel toggle
+                this.analysisToggle.addEventListener('click', () => {
+                    this.analysisPanel.classList.toggle('expanded');
+                    this.analysisToggle.classList.toggle('active');
+                });
             }
 
             displayPrediction(prediction) {
@@ -1571,6 +1791,55 @@
                 } else if (prediction.confidence >= 75) {
                     this.predictionCard.classList.add(prediction.label.toLowerCase() === 'big' ? 'success' : 'failure');
                 }
+                
+                // Update analysis panel
+                this.updateAnalysisPanel(prediction);
+            }
+
+            updateAnalysisPanel(prediction) {
+                // Update pattern info
+                this.currentPatternElement.textContent = prediction.pattern.replace(/_/g, ' ') || 'normal';
+                
+                // Update strategy used
+                const strategyName = prediction.strategyUsed || 'consensus';
+                this.strategyUsedElement.textContent = strategyName.replace(/_/g, ' ');
+                
+                // Update accuracy
+                this.accuracyRateElement.textContent = `${this.engine.accuracy}%`;
+                
+                // Update last results
+                this.lastResultsElement.textContent = this.engine.getLastResults();
+                
+                // Update strategy performance chart
+                this.updateStrategyChart();
+            }
+
+            updateStrategyChart() {
+                const performance = this.engine.getStrategyPerformance().slice(0, 5);
+                this.analysisChartElement.innerHTML = '';
+                
+                performance.forEach((item, index) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'chart-bar';
+                    bar.style.left = `${index * 10 + 1}%`;
+                    bar.style.height = `${item.accuracy}%`;
+                    bar.style.background = item.accuracy > 70 ? 'var(--win)' : 
+                                         item.accuracy < 50 ? 'var(--loss)' : 'var(--warning)';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'chart-label';
+                    label.textContent = item.strategy.substring(0, 3);
+                    
+                    const container = document.createElement('div');
+                    container.style.position = 'relative';
+                    container.style.height = '100%';
+                    container.style.width = '8%';
+                    container.style.display = 'inline-block';
+                    container.appendChild(bar);
+                    container.appendChild(label);
+                    
+                    this.analysisChartElement.appendChild(container);
+                });
             }
 
             updateStreakIndicator() {
@@ -1732,7 +2001,7 @@
 
                     this.ui.displayPrediction(prediction);
                 } catch (err) {
-                    console.error("Quantum fetch error:", err);
+                    console.error("Zmx fetch error:", err);
                     this.ui.displayError();
                 }
             }
