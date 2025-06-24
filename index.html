@@ -936,48 +936,25 @@
             100% { transform: translate(24px, 0); }
         }
 
-        /* Analysis Panel */
-        .analysis-panel {
+        /* Random Predictions Container */
+        .random-predictions {
             margin-top: 20px;
             padding: 15px;
             background: rgba(5, 10, 20, 0.5);
             border-radius: 8px;
             border: 1px solid rgba(0, 240, 255, 0.1);
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease, padding 0.5s ease;
+            display: none;
         }
 
-        .analysis-panel.expanded {
-            max-height: 500px;
-            padding: 15px;
-        }
-
-        .analysis-title {
+        .random-predictions-title {
             font-size: 14px;
             color: var(--primary);
             margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .analysis-title i {
-            transition: transform 0.3s ease;
-        }
-
-        .analysis-title.active i {
-            transform: rotate(180deg);
-        }
-
-        .analysis-content {
-            font-size: 12px;
-            color: var(--text-dim);
-            line-height: 1.5;
-        }
-
-        .analysis-row {
+        .random-prediction {
             display: flex;
             justify-content: space-between;
             margin-bottom: 5px;
@@ -985,55 +962,14 @@
             border-bottom: 1px dashed rgba(0, 240, 255, 0.1);
         }
 
-        .analysis-label {
+        .random-prediction-label {
             font-weight: 600;
             color: var(--text-bright);
         }
 
-        .analysis-value {
+        .random-prediction-value {
             text-align: right;
-        }
-
-        .analysis-chart {
-            height: 100px;
-            margin: 10px 0;
-            position: relative;
-        }
-
-        .chart-bar {
-            position: absolute;
-            bottom: 0;
-            width: 8%;
-            background: var(--gradient);
-            transition: height 0.5s ease;
-            border-radius: 3px 3px 0 0;
-        }
-
-        .chart-label {
-            position: absolute;
-            bottom: -20px;
-            font-size: 10px;
-            width: 100%;
-            text-align: center;
-            color: var(--text-dim);
-        }
-
-        .toggle-analysis {
-            background: transparent;
-            border: none;
-            color: var(--primary);
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 4px;
-            margin-top: 10px;
-            font-size: 12px;
-            transition: var(--transition);
-        }
-
-        .toggle-analysis:hover {
-            background: rgba(0, 240, 255, 0.1);
+            font-family: 'Orbitron', sans-serif;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -1138,32 +1074,16 @@
                     </div>
                 </div>
 
-                <!-- Analysis Panel -->
-                <div class="analysis-panel" id="analysisPanel">
-                    <div class="analysis-title" id="analysisToggle">
-                        <span>STRATEGY ANALYSIS</span>
-                        <i class="fas fa-chevron-down"></i>
+                <!-- Random Predictions Container -->
+                <div class="random-predictions" id="randomPredictions">
+                    <div class="random-predictions-title"></div>
+                    <div class="random-prediction">
+                        <span class="random-prediction-label"></span>
+                        <span class="random-prediction-value" id="randomPrediction1">-</span>
                     </div>
-                    <div class="analysis-content" id="analysisContent">
-                        <div class="analysis-row">
-                            <span class="analysis-label">Current Pattern:</span>
-                            <span class="analysis-value" id="currentPattern">Analyzing...</span>
-                        </div>
-                        <div class="analysis-row">
-                            <span class="analysis-label">Strategy Used:</span>
-                            <span class="analysis-value" id="strategyUsed">Calculating...</span>
-                        </div>
-                        <div class="analysis-row">
-                            <span class="analysis-label">Accuracy:</span>
-                            <span class="analysis-value" id="accuracyRate">0%</span>
-                        </div>
-                        <div class="analysis-chart" id="analysisChart">
-                            <!-- Chart bars will be added dynamically -->
-                        </div>
-                        <div class="analysis-row">
-                            <span class="analysis-label"></span>
-                            <span class="analysis-value" id="lastResults">-</span>
-                        </div>
+                    <div class="random-prediction">
+                        <span class="random-prediction-label"></span>
+                        <span class="random-prediction-value" id="randomPrediction2">-</span>
                     </div>
                 </div>
             </div>
@@ -1221,9 +1141,18 @@
                     highValue: { used: 0, correct: 0 },
                     palindrome: { used: 0, correct: 0 },
                     digitProximity: { used: 0, correct: 0 },
-                    recovery: { used: 0, correct: 0 }
+                    recovery: { used: 0, correct: 0 },
+                    patternMatching: { used: 0, correct: 0 }
                 };
                 this.loadStats();
+                
+                // 4 best-tested patterns
+                this.patterns = [
+                    { SMALL: [0, 2, 3, 6, 9], BIG: [1, 4, 5, 7, 8] },
+                    { SMALL: [0, 1, 4, 6, 8, 9], BIG: [2, 3, 5, 7] },
+                    { SMALL: [0, 1, 2, 7, 8, 9], BIG: [3, 4, 5, 6] },
+                    { SMALL: [1, 2, 4, 6, 9], BIG: [0, 3, 5, 7, 8] }
+                ];
             }
 
             // Math Utilities
@@ -1279,6 +1208,31 @@
                     base = (base * base) % modulus;
                 }
                 return result;
+            }
+
+            // Pattern Matching Strategy
+            strategyPatternMatching(periodNumber, recentResults) {
+                // Step 1: Find best matching pattern
+                let best = null;
+                let maxMatch = -1;
+
+                for (const pattern of this.patterns) {
+                    const matches = recentResults.filter(r =>
+                        pattern.SMALL.includes(r) || pattern.BIG.includes(r)
+                    ).length;
+
+                    if (matches > maxMatch) {
+                        maxMatch = matches;
+                        best = pattern;
+                    }
+                }
+
+                if (!best) return "BIG"; // Default if no pattern matches
+                
+                // Step 2: Predict one number from pattern
+                const group = Math.random() < 0.5 ? "SMALL" : "BIG";
+                const number = best[group][Math.floor(Math.random() * best[group].length)];
+                return number <= 4 ? "SMALL" : "BIG";
             }
 
             // Strategy Implementations from Python Code
@@ -1411,8 +1365,49 @@
                 return score % 2 === 0 ? "SMALL" : "BIG"; // Reversed
             }
 
+            generateRandomPrediction(periodNumber) {
+                const strategies = [
+                    this.strategyEulerEnhanced,
+                    this.strategyPrimeAnalysis,
+                    this.strategyParityAdvanced,
+                    this.strategyPatternRecognition,
+                    this.strategyTrendAnalysis,
+                    this.strategyStatistical,
+                    this.strategyPositional,
+                    this.strategyFibonacciAdvanced,
+                    this.strategyEntropyAnalysis,
+                    this.strategyHighValueCount,
+                    this.strategyPalindrome,
+                    this.strategyDigitProximity
+                ];
+                
+                // Pick two random strategies
+                const randomStrategies = [];
+                while (randomStrategies.length < 2) {
+                    const randomIndex = Math.floor(Math.random() * strategies.length);
+                    if (!randomStrategies.includes(randomIndex)) {
+                        randomStrategies.push(randomIndex);
+                    }
+                }
+                
+                const predictions = randomStrategies.map(index => {
+                    const strategy = strategies[index];
+                    const prediction = strategy.call(this, periodNumber);
+                    const number = prediction === "BIG" ? 
+                        (5 + Math.floor(Math.random() * 5)) : 
+                        Math.floor(Math.random() * 5);
+                    return {
+                        label: prediction,
+                        number: number,
+                        strategy: strategy.name || "random"
+                    };
+                });
+                
+                return predictions;
+            }
+
             // Master Prediction Function from Python Code
-            predictFinal(periodNumber, actualResult = null) {
+            predictFinal(periodNumber, actualResult = null, recentResults = []) {
                 if (actualResult !== null) {
                     if (this.memory.last_prediction && actualResult !== this.memory.last_prediction) {
                         this.memory.loss_count += 1;
@@ -1435,7 +1430,7 @@
                     };
                 }
 
-                // Apply strategies
+                // Apply strategies including pattern matching if we have recent results
                 const strategies = [
                     { name: "euler", func: this.strategyEulerEnhanced },
                     { name: "prime", func: this.strategyPrimeAnalysis },
@@ -1451,6 +1446,14 @@
                     { name: "digitProximity", func: this.strategyDigitProximity }
                 ];
                 
+                // Add pattern matching if we have recent results
+                if (recentResults.length >= 3) {
+                    strategies.push({
+                        name: "patternMatching",
+                        func: (period) => this.strategyPatternMatching(period, recentResults)
+                    });
+                }
+                
                 const results = strategies.map(s => {
                     return { 
                         name: s.name, 
@@ -1459,7 +1462,7 @@
                 });
                 
                 const bigCount = results.filter(result => result.result === "BIG").length;
-                const smallCount = results.length - bigCount;
+                const smallCount = strategies.length - bigCount;
                 let confidence = (bigCount - smallCount) / strategies.length;
 
                 if (Math.abs(confidence) >= 0.4) {
@@ -1476,19 +1479,22 @@
                         { name: "fibonacci", strategy: this.strategyFibonacciAdvanced, weight: 1.4 },
                         { name: "euler", strategy: this.strategyEulerEnhanced, weight: 1.2 },
                         { name: "highValue", strategy: this.strategyHighValueCount, weight: 1.1 },
-                        { name: "palindrome", strategy: this.strategyPalindrome, weight: 1.3 }
+                        { name: "palindrome", strategy: this.strategyPalindrome, weight: 1.3 },
+                        { name: "patternMatching", strategy: (period) => this.strategyPatternMatching(period, recentResults), weight: 1.5 }
                     ];
 
                     let score = 0;
                     weightedStrategies.forEach(({ name, strategy, weight }) => {
                         const result = strategy.call(this, periodNumber);
                         score += (result === "BIG" ? weight : -weight);
-                        this.strategyPerformance[name].used++;
+                        if (this.strategyPerformance[name]) {
+                            this.strategyPerformance[name].used++;
+                        }
                     });
 
                     return {
                         prediction: score > 0 ? "BIG" : "SMALL",
-                        confidence: Math.min(100, Math.round((Math.abs(score / 6.6) + 0.3) * 100)),
+                        confidence: Math.min(100, Math.round((Math.abs(score / 8.1) + 0.3) * 100)),
                         strategies: results.map(r => r.result),
                         strategy: "weighted_consensus"
                     };
@@ -1498,7 +1504,8 @@
                         { name: "fibonacci", func: this.strategyFibonacciAdvanced },
                         { name: "euler", func: this.strategyEulerEnhanced },
                         { name: "highValue", func: this.strategyHighValueCount },
-                        { name: "palindrome", func: this.strategyPalindrome }
+                        { name: "palindrome", func: this.strategyPalindrome },
+                        { name: "patternMatching", func: (period) => this.strategyPatternMatching(period, recentResults) }
                     ];
                     
                     const coreResults = coreStrategies.map(s => {
@@ -1592,8 +1599,11 @@
             }
 
             generatePrediction(period, history) {
+                // Extract recent results for pattern matching
+                const recentResults = history.slice(0, 5).map(item => item.number);
+                
                 // First get the advanced deterministic prediction
-                const deterministic = this.predictFinal(period);
+                const deterministic = this.predictFinal(period, null, recentResults);
                 
                 // Then analyze patterns for additional confidence
                 const patternAnalysis = this.analyzePatterns(history);
@@ -1738,20 +1748,9 @@
                 this.streakCounter = document.getElementById("streakCounter");
                 this.predictionCard = document.getElementById("predictionCard");
                 this.lastHoverTime = 0;
-                this.analysisPanel = document.getElementById("analysisPanel");
-                this.analysisToggle = document.getElementById("analysisToggle");
-                this.analysisContent = document.getElementById("analysisContent");
-                this.currentPatternElement = document.getElementById("currentPattern");
-                this.strategyUsedElement = document.getElementById("strategyUsed");
-                this.accuracyRateElement = document.getElementById("accuracyRate");
-                this.analysisChartElement = document.getElementById("analysisChart");
-                this.lastResultsElement = document.getElementById("lastResults");
-                
-                // Setup analysis panel toggle
-                this.analysisToggle.addEventListener('click', () => {
-                    this.analysisPanel.classList.toggle('expanded');
-                    this.analysisToggle.classList.toggle('active');
-                });
+                this.randomPredictionsContainer = document.getElementById("randomPredictions");
+                this.randomPrediction1 = document.getElementById("randomPrediction1");
+                this.randomPrediction2 = document.getElementById("randomPrediction2");
             }
 
             displayPrediction(prediction) {
@@ -1760,6 +1759,7 @@
                     this.periodElement.textContent = "Initializing...";
                     this.confidenceElement.style.width = '0%';
                     this.confidenceValueElement.textContent = '0%';
+                    this.randomPredictionsContainer.style.display = 'none';
                     return;
                 }
 
@@ -1792,54 +1792,15 @@
                     this.predictionCard.classList.add(prediction.label.toLowerCase() === 'big' ? 'success' : 'failure');
                 }
                 
-                // Update analysis panel
-                this.updateAnalysisPanel(prediction);
-            }
-
-            updateAnalysisPanel(prediction) {
-                // Update pattern info
-                this.currentPatternElement.textContent = prediction.pattern.replace(/_/g, ' ') || 'normal';
-                
-                // Update strategy used
-                const strategyName = prediction.strategyUsed || 'consensus';
-                this.strategyUsedElement.textContent = strategyName.replace(/_/g, ' ');
-                
-                // Update accuracy
-                this.accuracyRateElement.textContent = `${this.engine.accuracy}%`;
-                
-                // Update last results
-                this.lastResultsElement.textContent = this.engine.getLastResults();
-                
-                // Update strategy performance chart
-                this.updateStrategyChart();
-            }
-
-            updateStrategyChart() {
-                const performance = this.engine.getStrategyPerformance().slice(0, 5);
-                this.analysisChartElement.innerHTML = '';
-                
-                performance.forEach((item, index) => {
-                    const bar = document.createElement('div');
-                    bar.className = 'chart-bar';
-                    bar.style.left = `${index * 10 + 1}%`;
-                    bar.style.height = `${item.accuracy}%`;
-                    bar.style.background = item.accuracy > 70 ? 'var(--win)' : 
-                                         item.accuracy < 50 ? 'var(--loss)' : 'var(--warning)';
-                    
-                    const label = document.createElement('div');
-                    label.className = 'chart-label';
-                    label.textContent = item.strategy.substring(0, 3);
-                    
-                    const container = document.createElement('div');
-                    container.style.position = 'relative';
-                    container.style.height = '100%';
-                    container.style.width = '8%';
-                    container.style.display = 'inline-block';
-                    container.appendChild(bar);
-                    container.appendChild(label);
-                    
-                    this.analysisChartElement.appendChild(container);
-                });
+                // Generate and display random predictions after a loss
+                if (this.engine.streak < 0) {
+                    const randomPredictions = this.engine.generateRandomPrediction(prediction.period);
+                    this.randomPrediction1.textContent = `${randomPredictions[0].label} (${randomPredictions[0].number})`;
+                    this.randomPrediction2.textContent = `${randomPredictions[1].label} (${randomPredictions[1].number})`;
+                    this.randomPredictionsContainer.style.display = 'block';
+                } else {
+                    this.randomPredictionsContainer.style.display = 'none';
+                }
             }
 
             updateStreakIndicator() {
@@ -1882,6 +1843,7 @@
                 this.periodElement.textContent = "ERROR";
                 this.confidenceElement.style.width = '0%';
                 this.confidenceValueElement.textContent = '0%';
+                this.randomPredictionsContainer.style.display = 'none';
             }
         }
 
