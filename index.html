@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZMX TRADER V1 - INJECTOR</title>
+    <title>ZMX TRADER V1 - INVERTER</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
 
@@ -1003,7 +1003,7 @@
         <div class="injector-header">
             <div class="injector-logo">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSJ1cmwoI2dyYWRpZW50KSIgZD0iTTI1NiA4QzExOSA4IDggMTE5IDggMjU2czExMSAyNDggMjQ4IDI0OCAyNDgtMTExIDI0OC0yNDhTMzkzIDggMjU2IDh6bTAgNDQ4Yy0xMTAuNSAwLTIwMC04OS41LTIwMC0yMDBTMTQ1LjUgNTYgMjU2IDU2czIwMCA4OS41IDIwMCAyMDAtODkuNSAyMDAtMjAwIDIwMHptMTIwLTI0MGMtMTUuNS0xMi0zNS0xOS01Ni0xOXMtNDAuNSA3LTU2IDE5bC02NC00OGMtLTguMS02LjEtMTktNC41LTI0LjUgNC4xLTUuNSA4LjYtMy44IDIwIDQuMyAyNmw4NCA2NGMxNi41IDEyIDM1IDE5IDU2IDE5czM5LjUtNyA1Ni0xOWw4NC02NGM4LjEtNiAxMC0xNy40IDQuMy0yNi01LjQtOC43LTE2LjUtMTAuMi0yNC41LTQuMWwtNjQgNDh6Ii8+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAlIiB5MT0iMCUiIHgyPSIxMDAlIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzAwZjBmZiIvPjxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjMDA4NGZmIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjN2IwMGZmIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PC9zdmc+" alt="ZMX TRADER Logo">
-                ZMX TRADER <span class="version-badge">V1</span>
+                ZMX TRADER<span class="version-badge">V1</span>
             </div>
         </div>
         <div class="injector-content">
@@ -1517,8 +1517,9 @@
             verifyPrediction(actualResult) {
                 if (!this.lastPrediction) return null;
                 
-                const isCorrect = (actualResult >= 5 && this.lastPrediction.label === "BIG") || 
-                                 (actualResult < 5 && this.lastPrediction.label === "SMALL");
+                // INVERTED LOGIC: If prediction was BIG, we check if actual was SMALL and vice versa
+                const isCorrect = (actualResult < 5 && this.lastPrediction.label === "BIG") || 
+                                 (actualResult >= 5 && this.lastPrediction.label === "SMALL");
                 
                 this.totalPredictions++;
                 if (isCorrect) this.correctPredictions++;
@@ -1767,8 +1768,15 @@
                 statusIndicator.className = 'status-indicator waiting pulse';
                 
                 const predictionText = document.createElement('span');
-                predictionText.textContent = ` ${prediction.label} (${prediction.number})`;
-                predictionText.className = `prediction-value ${prediction.label.toLowerCase()}`;
+                
+                // INVERTED DISPLAY: Show the opposite of what was predicted
+                const invertedLabel = prediction.label === "BIG" ? "SMALL" : "BIG";
+                const invertedNumber = prediction.label === "BIG" ? 
+                    Math.floor(Math.random() * 5) : 
+                    (5 + Math.floor(Math.random() * 5));
+                
+                predictionText.textContent = ` ${invertedLabel} (${invertedNumber})`;
+                predictionText.className = `prediction-value ${invertedLabel.toLowerCase()}`;
                 
                 this.resultElement.appendChild(statusIndicator);
                 this.resultElement.appendChild(predictionText);
@@ -1781,7 +1789,7 @@
                 if (prediction.recoveryMode) {
                     this.predictionCard.classList.add('recovery');
                 } else if (prediction.confidence >= 75) {
-                    this.predictionCard.classList.add(prediction.label.toLowerCase() === 'big' ? 'success' : 'failure');
+                    this.predictionCard.classList.add(invertedLabel.toLowerCase() === 'big' ? 'success' : 'failure');
                 }
             }
 
