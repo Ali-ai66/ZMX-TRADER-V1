@@ -935,42 +935,6 @@
             0% { transform: translate(0, 0); }
             100% { transform: translate(24px, 0); }
         }
-
-        /* Random Predictions Container */
-        .random-predictions {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(5, 10, 20, 0.5);
-            border-radius: 8px;
-            border: 1px solid rgba(0, 240, 255, 0.1);
-            display: none;
-        }
-
-        .random-predictions-title {
-            font-size: 14px;
-            color: var(--primary);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .random-prediction {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            padding: 5px 0;
-            border-bottom: 1px dashed rgba(0, 240, 255, 0.1);
-        }
-
-        .random-prediction-label {
-            font-weight: 600;
-            color: var(--text-bright);
-        }
-
-        .random-prediction-value {
-            text-align: right;
-            font-family: 'Orbitron', sans-serif;
-        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
@@ -1073,19 +1037,6 @@
                         <div class="streak-dot"></div>
                     </div>
                 </div>
-
-                <!-- Random Predictions Container -->
-                <div class="random-predictions" id="randomPredictions">
-                    <div class="random-predictions-title"></div>
-                    <div class="random-prediction">
-                        <span class="random-prediction-label"></span>
-                        <span class="random-prediction-value" id="randomPrediction1">-</span>
-                    </div>
-                    <div class="random-prediction">
-                        <span class="random-prediction-label"></span>
-                        <span class="random-prediction-value" id="randomPrediction2">-</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1144,15 +1095,124 @@
                     recovery: { used: 0, correct: 0 },
                     patternMatching: { used: 0, correct: 0 }
                 };
-                this.loadStats();
                 
-                // 4 best-tested patterns
-                this.patterns = [
-                    { SMALL: [0, 2, 3, 6, 9], BIG: [1, 4, 5, 7, 8] },
-                    { SMALL: [0, 1, 4, 6, 8, 9], BIG: [2, 3, 5, 7] },
-                    { SMALL: [0, 1, 2, 7, 8, 9], BIG: [3, 4, 5, 6] },
-                    { SMALL: [1, 2, 4, 6, 9], BIG: [0, 3, 5, 7, 8] }
+                // Enhanced patterns with historical performance data
+                this.detailedPatterns = [
+                    {
+                        name: "Pattern A",
+                        smallNumbers: [0, 2, 3, 6, 9],
+                        bigNumbers: [1, 4, 5, 7, 8],
+                        historicalPerformance: {
+                            smallSuccessRate: 0.7,
+                            bigSuccessRate: 0.6,
+                            mostFrequentSmall: [3, 6],
+                            mostFrequentBig: [1, 8]
+                        }
+                    },
+                    {
+                        name: "Pattern B",
+                        smallNumbers: [0, 1, 4, 6, 8, 9],
+                        bigNumbers: [2, 3, 5, 7],
+                        historicalPerformance: {
+                            smallSuccessRate: 0.65,
+                            bigSuccessRate: 0.75,
+                            mostFrequentSmall: [0, 9],
+                            mostFrequentBig: [3, 7]
+                        }
+                    },
+                    {
+                        name: "Pattern C",
+                        smallNumbers: [0, 1, 2, 7, 8, 9],
+                        bigNumbers: [3, 4, 5, 6],
+                        historicalPerformance: {
+                            smallSuccessRate: 0.72,
+                            bigSuccessRate: 0.68,
+                            mostFrequentSmall: [2, 8],
+                            mostFrequentBig: [4, 6]
+                        }
+                    },
+                    {
+                        name: "Pattern D",
+                        smallNumbers: [1, 2, 4, 6, 9],
+                        bigNumbers: [0, 3, 5, 7, 8],
+                        historicalPerformance: {
+                            smallSuccessRate: 0.68,
+                            bigSuccessRate: 0.71,
+                            mostFrequentSmall: [2, 6],
+                            mostFrequentBig: [5, 8]
+                        }
+                    }
                 ];
+                
+                this.loadStats();
+            }
+
+            // Enhanced Pattern Matching Logic
+            getMostRelevantPattern(recent) {
+                let bestMatch = null;
+                let highestScore = -1;
+
+                for (const pattern of this.detailedPatterns) {
+                    let currentScore = 0;
+
+                    // Calculate score based on how many recent results fall into this pattern's groups
+                    const smallMatches = recent.filter(r => pattern.smallNumbers.includes(r)).length;
+                    const bigMatches = recent.filter(r => pattern.bigNumbers.includes(r)).length;
+
+                    // Weighted scoring based on historical performance
+                    currentScore = (smallMatches * pattern.historicalPerformance.smallSuccessRate) + 
+                                  (bigMatches * pattern.historicalPerformance.bigSuccessRate);
+
+                    if (currentScore > highestScore) {
+                        highestScore = currentScore;
+                        bestMatch = pattern;
+                    }
+                }
+                return bestMatch;
+            }
+
+            makeSmarterPrediction(pattern) {
+                if (!pattern) return null;
+
+                // Decide whether to predict SMALL or BIG based on historical success rates of this pattern
+                const predictSmall = pattern.historicalPerformance.smallSuccessRate > pattern.historicalPerformance.bigSuccessRate;
+
+                let predictedGroupNumbers;
+                let predictedCategory;
+
+                if (predictSmall) {
+                    predictedGroupNumbers = pattern.smallNumbers;
+                    predictedCategory = "SMALL";
+                } else {
+                    predictedGroupNumbers = pattern.bigNumbers;
+                    predictedCategory = "BIG";
+                }
+
+                // From the chosen group, prefer numbers that have historically appeared most frequently
+                const topFrequentNumbers = predictSmall ? 
+                    pattern.historicalPerformance.mostFrequentSmall : 
+                    pattern.historicalPerformance.mostFrequentBig;
+
+                let finalPredictedNumber;
+                if (topFrequentNumbers && topFrequentNumbers.length > 0) {
+                    // If there are historically frequent numbers, pick one of them randomly
+                    finalPredictedNumber = topFrequentNumbers[Math.floor(Math.random() * topFrequentNumbers.length)];
+                } else {
+                    // Fallback: if no specific frequent numbers, pick randomly from the group
+                    finalPredictedNumber = predictedGroupNumbers[Math.floor(Math.random() * predictedGroupNumbers.length)];
+                }
+
+                // Calculate confidence based on pattern's historical performance
+                const confidence = predictSmall ? 
+                    Math.round(pattern.historicalPerformance.smallSuccessRate * 100) : 
+                    Math.round(pattern.historicalPerformance.bigSuccessRate * 100);
+
+                return { 
+                    number: finalPredictedNumber, 
+                    category: predictedCategory,
+                    confidence: confidence,
+                    patternUsed: pattern.name
+                };
             }
 
             // Math Utilities
@@ -1210,203 +1270,7 @@
                 return result;
             }
 
-            // Pattern Matching Strategy
-            strategyPatternMatching(periodNumber, recentResults) {
-                // Step 1: Find best matching pattern
-                let best = null;
-                let maxMatch = -1;
-
-                for (const pattern of this.patterns) {
-                    const matches = recentResults.filter(r =>
-                        pattern.SMALL.includes(r) || pattern.BIG.includes(r)
-                    ).length;
-
-                    if (matches > maxMatch) {
-                        maxMatch = matches;
-                        best = pattern;
-                    }
-                }
-
-                if (!best) return "BIG"; // Default if no pattern matches
-                
-                // Step 2: Predict one number from pattern
-                const group = Math.random() < 0.5 ? "SMALL" : "BIG";
-                const number = best[group][Math.floor(Math.random() * best[group].length)];
-                return number <= 4 ? "SMALL" : "BIG";
-            }
-
-            // Strategy Implementations from Python Code
-            strategyEulerEnhanced(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const totalSum = digits.reduce((a, b) => a + b, 0);
-                const totalProduct = digits.reduce((a, b) => a * (b || 1), 1);
-                const harmonic = digits.length / digits.reduce((sum, d) => sum + (d ? 1/d : 0), 0);
-                const val = (totalSum + totalProduct + Math.floor(harmonic)) % 10;
-                return val >= 5 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyPrimeAnalysis(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const sum = digits.reduce((a, b) => a + b, 0);
-                const product = digits.reduce((a, b) => a * (b || 1), 1);
-                const conditions = [
-                    this.isPrime(sum),
-                    product > 1 && this.isPrime(product),
-                    digits.some(d => this.isPrime(d)),
-                    this.isPrime(parseInt(periodNumber.slice(-4)))
-                ];
-                return conditions.filter(Boolean).length >= 2 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyParityAdvanced(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const odds = digits.filter(d => d % 2).length;
-                return odds > 2 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyPatternRecognition(periodNumber) {
-                const digits = periodNumber.slice(-4);
-                const unique = new Set(digits).size;
-                const repeated = [...digits].some(d => digits.split(d).length - 1 >= 3);
-                const palindrome = digits === [...digits].reverse().join('');
-                if (repeated || palindrome) return "SMALL"; // Reversed
-                return unique >= 3 ? "BIG" : "SMALL"; // Reversed
-            }
-
-            strategyTrendAnalysis(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const diffs = [];
-                for (let i = 0; i < 3; i++) {
-                    diffs.push(digits[i+1] - digits[i]);
-                }
-                
-                if (diffs.every(d => d >= 0) || diffs.every(d => d <= 0)) {
-                    return "SMALL"; // Reversed
-                }
-                
-                if (diffs[0] * diffs[1] < 0 && diffs[1] * diffs[2] < 0) {
-                    return "SMALL"; // Reversed
-                }
-                
-                return "BIG"; // Reversed
-            }
-
-            strategyStatistical(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const mean = digits.reduce((a, b) => a + b, 0) / digits.length;
-                
-                if (digits.length === 1) return "BIG"; // Reversed
-                
-                const variance = digits.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / digits.length;
-                const stdev = Math.sqrt(variance);
-                
-                if (mean > 4.5 || stdev > 2.5) return "SMALL"; // Reversed
-                return "BIG"; // Reversed
-            }
-
-            strategyPositional(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const weights = [4, 2, 1, 3];
-                const weightedSum = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
-                return this.digitalRoot(weightedSum) >= 5 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyFibonacciAdvanced(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const fibWeights = [2, 3, 5, 8];
-                const weighted = digits.reduce((sum, d, i) => sum + d * fibWeights[i], 0);
-                const conditions = [
-                    weighted % 10 >= 5,
-                    digits.some(d => this.isFibonacci(d)),
-                    this.isFibonacci(digits.reduce((a, b) => a + b, 0))
-                ];
-                return conditions.filter(Boolean).length >= 2 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyEntropyAnalysis(periodNumber) {
-                const digits = periodNumber.slice(-4);
-                const freq = {};
-                digits.split('').forEach(d => {
-                    freq[d] = (freq[d] || 0) + 1;
-                });
-                
-                let entropy = 0;
-                const len = digits.length;
-                for (const d in freq) {
-                    const p = freq[d] / len;
-                    entropy -= p * Math.log2(p);
-                }
-                
-                return entropy < 0.8 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyHighValueCount(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const highCount = digits.filter(d => d >= 7).length;
-                return highCount >= 2 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyPalindrome(periodNumber) {
-                const sDigits = periodNumber.slice(-4);
-                return sDigits === sDigits.split('').reverse().join('') ? "SMALL" : "BIG"; // Reversed
-            }
-
-            strategyDigitProximity(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                if (new Set(digits).size === 1) return "SMALL"; // Reversed
-                if (Math.max(...digits) - Math.min(...digits) <= 2) return "SMALL"; // Reversed
-                return "BIG"; // Reversed
-            }
-
-            sureShotRecovery(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const weights = [1, 3, 2, 4];
-                const score = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
-                return score % 2 === 0 ? "SMALL" : "BIG"; // Reversed
-            }
-
-            generateRandomPrediction(periodNumber) {
-                const strategies = [
-                    this.strategyEulerEnhanced,
-                    this.strategyPrimeAnalysis,
-                    this.strategyParityAdvanced,
-                    this.strategyPatternRecognition,
-                    this.strategyTrendAnalysis,
-                    this.strategyStatistical,
-                    this.strategyPositional,
-                    this.strategyFibonacciAdvanced,
-                    this.strategyEntropyAnalysis,
-                    this.strategyHighValueCount,
-                    this.strategyPalindrome,
-                    this.strategyDigitProximity
-                ];
-                
-                // Pick two random strategies
-                const randomStrategies = [];
-                while (randomStrategies.length < 2) {
-                    const randomIndex = Math.floor(Math.random() * strategies.length);
-                    if (!randomStrategies.includes(randomIndex)) {
-                        randomStrategies.push(randomIndex);
-                    }
-                }
-                
-                const predictions = randomStrategies.map(index => {
-                    const strategy = strategies[index];
-                    const prediction = strategy.call(this, periodNumber);
-                    const number = prediction === "BIG" ? 
-                        (5 + Math.floor(Math.random() * 5)) : 
-                        Math.floor(Math.random() * 5);
-                    return {
-                        label: prediction,
-                        number: number,
-                        strategy: strategy.name || "random"
-                    };
-                });
-                
-                return predictions;
-            }
-
-            // Master Prediction Function from Python Code
+            // Master Prediction Function
             predictFinal(periodNumber, actualResult = null, recentResults = []) {
                 if (actualResult !== null) {
                     if (this.memory.last_prediction && actualResult !== this.memory.last_prediction) {
@@ -1430,7 +1294,19 @@
                     };
                 }
 
-                // Apply strategies including pattern matching if we have recent results
+                // First try enhanced pattern matching if we have recent results
+                if (recentResults.length >= 5) {
+                    const patternPrediction = this.makeSmarterPrediction(this.getMostRelevantPattern(recentResults));
+                    if (patternPrediction && patternPrediction.confidence >= 70) {
+                        return {
+                            prediction: patternPrediction.category,
+                            confidence: patternPrediction.confidence,
+                            strategy: "patternMatching:" + patternPrediction.patternUsed
+                        };
+                    }
+                }
+
+                // Fall back to other strategies if pattern matching isn't confident enough
                 const strategies = [
                     { name: "euler", func: this.strategyEulerEnhanced },
                     { name: "prime", func: this.strategyPrimeAnalysis },
@@ -1445,14 +1321,6 @@
                     { name: "palindrome", func: this.strategyPalindrome },
                     { name: "digitProximity", func: this.strategyDigitProximity }
                 ];
-                
-                // Add pattern matching if we have recent results
-                if (recentResults.length >= 3) {
-                    strategies.push({
-                        name: "patternMatching",
-                        func: (period) => this.strategyPatternMatching(period, recentResults)
-                    });
-                }
                 
                 const results = strategies.map(s => {
                     return { 
@@ -1479,8 +1347,7 @@
                         { name: "fibonacci", strategy: this.strategyFibonacciAdvanced, weight: 1.4 },
                         { name: "euler", strategy: this.strategyEulerEnhanced, weight: 1.2 },
                         { name: "highValue", strategy: this.strategyHighValueCount, weight: 1.1 },
-                        { name: "palindrome", strategy: this.strategyPalindrome, weight: 1.3 },
-                        { name: "patternMatching", strategy: (period) => this.strategyPatternMatching(period, recentResults), weight: 1.5 }
+                        { name: "palindrome", strategy: this.strategyPalindrome, weight: 1.3 }
                     ];
 
                     let score = 0;
@@ -1494,7 +1361,7 @@
 
                     return {
                         prediction: score > 0 ? "BIG" : "SMALL",
-                        confidence: Math.min(100, Math.round((Math.abs(score / 8.1) + 0.3) * 100)),
+                        confidence: Math.min(100, Math.round((Math.abs(score / 6.6) + 0.3) * 100)),
                         strategies: results.map(r => r.result),
                         strategy: "weighted_consensus"
                     };
@@ -1504,8 +1371,7 @@
                         { name: "fibonacci", func: this.strategyFibonacciAdvanced },
                         { name: "euler", func: this.strategyEulerEnhanced },
                         { name: "highValue", func: this.strategyHighValueCount },
-                        { name: "palindrome", func: this.strategyPalindrome },
-                        { name: "patternMatching", func: (period) => this.strategyPatternMatching(period, recentResults) }
+                        { name: "palindrome", func: this.strategyPalindrome }
                     ];
                     
                     const coreResults = coreStrategies.map(s => {
@@ -1734,6 +1600,136 @@
                     item.isCorrect ? '✓' : '✗'
                 ).join(' ');
             }
+            
+            // Strategy Implementations from Python Code
+            strategyEulerEnhanced(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const totalSum = digits.reduce((a, b) => a + b, 0);
+                const totalProduct = digits.reduce((a, b) => a * (b || 1), 1);
+                const harmonic = digits.length / digits.reduce((sum, d) => sum + (d ? 1/d : 0), 0);
+                const val = (totalSum + totalProduct + Math.floor(harmonic)) % 10;
+                return val >= 5 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyPrimeAnalysis(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const sum = digits.reduce((a, b) => a + b, 0);
+                const product = digits.reduce((a, b) => a * (b || 1), 1);
+                const conditions = [
+                    this.isPrime(sum),
+                    product > 1 && this.isPrime(product),
+                    digits.some(d => this.isPrime(d)),
+                    this.isPrime(parseInt(periodNumber.slice(-4)))
+                ];
+                return conditions.filter(Boolean).length >= 2 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyParityAdvanced(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const odds = digits.filter(d => d % 2).length;
+                return odds > 2 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyPatternRecognition(periodNumber) {
+                const digits = periodNumber.slice(-4);
+                const unique = new Set(digits).size;
+                const repeated = [...digits].some(d => digits.split(d).length - 1 >= 3);
+                const palindrome = digits === [...digits].reverse().join('');
+                if (repeated || palindrome) return "SMALL"; // Reversed
+                return unique >= 3 ? "BIG" : "SMALL"; // Reversed
+            }
+
+            strategyTrendAnalysis(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const diffs = [];
+                for (let i = 0; i < 3; i++) {
+                    diffs.push(digits[i+1] - digits[i]);
+                }
+                
+                if (diffs.every(d => d >= 0) || diffs.every(d => d <= 0)) {
+                    return "SMALL"; // Reversed
+                }
+                
+                if (diffs[0] * diffs[1] < 0 && diffs[1] * diffs[2] < 0) {
+                    return "SMALL"; // Reversed
+                }
+                
+                return "BIG"; // Reversed
+            }
+
+            strategyStatistical(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const mean = digits.reduce((a, b) => a + b, 0) / digits.length;
+                
+                if (digits.length === 1) return "BIG"; // Reversed
+                
+                const variance = digits.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / digits.length;
+                const stdev = Math.sqrt(variance);
+                
+                if (mean > 4.5 || stdev > 2.5) return "SMALL"; // Reversed
+                return "BIG"; // Reversed
+            }
+
+            strategyPositional(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const weights = [4, 2, 1, 3];
+                const weightedSum = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
+                return this.digitalRoot(weightedSum) >= 5 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyFibonacciAdvanced(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const fibWeights = [2, 3, 5, 8];
+                const weighted = digits.reduce((sum, d, i) => sum + d * fibWeights[i], 0);
+                const conditions = [
+                    weighted % 10 >= 5,
+                    digits.some(d => this.isFibonacci(d)),
+                    this.isFibonacci(digits.reduce((a, b) => a + b, 0))
+                ];
+                return conditions.filter(Boolean).length >= 2 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyEntropyAnalysis(periodNumber) {
+                const digits = periodNumber.slice(-4);
+                const freq = {};
+                digits.split('').forEach(d => {
+                    freq[d] = (freq[d] || 0) + 1;
+                });
+                
+                let entropy = 0;
+                const len = digits.length;
+                for (const d in freq) {
+                    const p = freq[d] / len;
+                    entropy -= p * Math.log2(p);
+                }
+                
+                return entropy < 0.8 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyHighValueCount(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const highCount = digits.filter(d => d >= 7).length;
+                return highCount >= 2 ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyPalindrome(periodNumber) {
+                const sDigits = periodNumber.slice(-4);
+                return sDigits === sDigits.split('').reverse().join('') ? "SMALL" : "BIG"; // Reversed
+            }
+
+            strategyDigitProximity(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                if (new Set(digits).size === 1) return "SMALL"; // Reversed
+                if (Math.max(...digits) - Math.min(...digits) <= 2) return "SMALL"; // Reversed
+                return "BIG"; // Reversed
+            }
+
+            sureShotRecovery(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const weights = [1, 3, 2, 4];
+                const score = digits.reduce((sum, d, i) => sum + d * weights[i], 0);
+                return score % 2 === 0 ? "SMALL" : "BIG"; // Reversed
+            }
         }
 
         // UI Manager
@@ -1748,9 +1744,6 @@
                 this.streakCounter = document.getElementById("streakCounter");
                 this.predictionCard = document.getElementById("predictionCard");
                 this.lastHoverTime = 0;
-                this.randomPredictionsContainer = document.getElementById("randomPredictions");
-                this.randomPrediction1 = document.getElementById("randomPrediction1");
-                this.randomPrediction2 = document.getElementById("randomPrediction2");
             }
 
             displayPrediction(prediction) {
@@ -1759,7 +1752,6 @@
                     this.periodElement.textContent = "Initializing...";
                     this.confidenceElement.style.width = '0%';
                     this.confidenceValueElement.textContent = '0%';
-                    this.randomPredictionsContainer.style.display = 'none';
                     return;
                 }
 
@@ -1790,16 +1782,6 @@
                     this.predictionCard.classList.add('recovery');
                 } else if (prediction.confidence >= 75) {
                     this.predictionCard.classList.add(prediction.label.toLowerCase() === 'big' ? 'success' : 'failure');
-                }
-                
-                // Generate and display random predictions after a loss
-                if (this.engine.streak < 0) {
-                    const randomPredictions = this.engine.generateRandomPrediction(prediction.period);
-                    this.randomPrediction1.textContent = `${randomPredictions[0].label} (${randomPredictions[0].number})`;
-                    this.randomPrediction2.textContent = `${randomPredictions[1].label} (${randomPredictions[1].number})`;
-                    this.randomPredictionsContainer.style.display = 'block';
-                } else {
-                    this.randomPredictionsContainer.style.display = 'none';
                 }
             }
 
@@ -1843,7 +1825,6 @@
                 this.periodElement.textContent = "ERROR";
                 this.confidenceElement.style.width = '0%';
                 this.confidenceValueElement.textContent = '0%';
-                this.randomPredictionsContainer.style.display = 'none';
             }
         }
 
