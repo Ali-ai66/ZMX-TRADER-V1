@@ -869,7 +869,7 @@
             
             <div class="predictor-content">
                 <div class="upload-section" id="uploadSection">
-                    <input type="file" id="fileInput" accept="image/*">
+                    <input type="file" id="fileInput" accept="image/*" capture="camera">
                     <button class="upload-btn" id="uploadBtn">
                         <i class="fas fa-upload upload-icon"></i>
                         Upload Screenshot
@@ -1043,10 +1043,12 @@
             const errorText = document.getElementById('errorText');
             
             // Handle file selection
-            uploadBtn.addEventListener('click', () => fileInput.click());
+            uploadBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
             
             fileInput.addEventListener('change', function(e) {
-                if (e.target.files.length) {
+                if (e.target.files && e.target.files.length) {
                     processImage(e.target.files[0]);
                 }
             });
@@ -1065,7 +1067,7 @@
                 e.preventDefault();
                 uploadSection.classList.remove('active');
                 
-                if (e.dataTransfer.files.length) {
+                if (e.dataTransfer.files && e.dataTransfer.files.length) {
                     processImage(e.dataTransfer.files[0]);
                 }
             });
@@ -1141,7 +1143,7 @@
             // Reset upload section
             function resetUploadSection() {
                 uploadSection.innerHTML = `
-                    <input type="file" id="fileInput" accept="image/*">
+                    <input type="file" id="fileInput" accept="image/*" capture="camera">
                     <button class="upload-btn" id="uploadBtn">
                         <i class="fas fa-upload upload-icon"></i>
                         Upload Screenshot
@@ -1150,7 +1152,9 @@
                 `;
                 
                 // Reattach event listeners
-                document.getElementById('uploadBtn').addEventListener('click', () => fileInput.click());
+                document.getElementById('uploadBtn').addEventListener('click', () => {
+                    document.getElementById('fileInput').click();
+                });
             }
             
             // Show error message
