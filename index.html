@@ -869,7 +869,7 @@
             
             <div class="predictor-content">
                 <div class="upload-section" id="uploadSection">
-                    <input type="file" id="fileInput" accept="image/*" capture="camera">
+                    <input type="file" id="fileInput" accept="image/*" capture="environment">
                     <button class="upload-btn" id="uploadBtn">
                         <i class="fas fa-upload upload-icon"></i>
                         Upload Screenshot
@@ -1049,7 +1049,12 @@
             
             fileInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files.length) {
-                    processImage(e.target.files[0]);
+                    const file = e.target.files[0];
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        showError("Image size too large. Please upload an image smaller than 5MB.");
+                        return;
+                    }
+                    processImage(file);
                 }
             });
             
@@ -1068,7 +1073,12 @@
                 uploadSection.classList.remove('active');
                 
                 if (e.dataTransfer.files && e.dataTransfer.files.length) {
-                    processImage(e.dataTransfer.files[0]);
+                    const file = e.dataTransfer.files[0];
+                    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                        showError("Image size too large. Please upload an image smaller than 5MB.");
+                        return;
+                    }
+                    processImage(file);
                 }
             });
             
@@ -1137,13 +1147,17 @@
                         resetUploadSection();
                     });
                 };
+                reader.onerror = function() {
+                    showError("Error reading the image file. Please try again.");
+                    resetUploadSection();
+                };
                 reader.readAsDataURL(file);
             }
             
             // Reset upload section
             function resetUploadSection() {
                 uploadSection.innerHTML = `
-                    <input type="file" id="fileInput" accept="image/*" capture="camera">
+                    <input type="file" id="fileInput" accept="image/*" capture="environment">
                     <button class="upload-btn" id="uploadBtn">
                         <i class="fas fa-upload upload-icon"></i>
                         Upload Screenshot
@@ -1155,12 +1169,16 @@
                 document.getElementById('uploadBtn').addEventListener('click', () => {
                     document.getElementById('fileInput').click();
                 });
+                
+                // Clear the file input
+                document.getElementById('fileInput').value = '';
             }
             
             // Show error message
             function showError(message) {
                 errorText.textContent = message;
                 errorMessage.style.display = 'flex';
+                resetUploadSection();
             }
             
             // Analyze the extracted numbers
