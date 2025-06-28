@@ -28,19 +28,6 @@
             --glass-bg: rgba(10, 15, 30, 0.7);
             --glass-border: rgba(100, 150, 255, 0.1);
             --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-            
-            /* Chat predictor variables */
-            --chat-main-bg: #0a0a0a;
-            --chat-secondary-bg: #121212;
-            --chat-accent-1: #6d28d9;
-            --chat-accent-2: #8b5cf6;
-            --chat-accent-gradient: linear-gradient(135deg, var(--chat-accent-1), var(--chat-accent-2));
-            --chat-text-primary: #f0f0f0;
-            --chat-text-secondary: #888;
-            --chat-success: #10b981;
-            --chat-danger: #ef4444;
-            --chat-warning: #f59e0b;
-            --chat-info: #3b82f6;
         }
 
         * {
@@ -182,7 +169,7 @@
         }
         
         @keyframes pulse {
-            0% { transform: scale(1); }
+            0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
@@ -425,305 +412,6 @@
             100% { transform: translateY(0) translateX(0) rotate(0deg); }
         }
 
-        /* Predictor Section */
-        #predictor-section {
-            background-color: var(--bg-dark);
-            overflow-y: auto;
-        }
-
-        .predictor-container {
-            width: 100%;
-            max-width: 500px;
-            margin: 20px auto;
-            background: rgba(10, 15, 30, 0.7);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            backdrop-filter: blur(12px);
-        }
-
-        .predictor-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            position: relative;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .predictor-header::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--secondary), transparent);
-        }
-
-        .predictor-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            letter-spacing: 0.5px;
-        }
-
-        .predictor-header p {
-            opacity: 0.9;
-            font-size: 0.85rem;
-            font-weight: 400;
-        }
-
-        .predictor-content {
-            padding: 2rem;
-        }
-
-        .upload-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding: 2rem;
-            border: 2px dashed rgba(0, 240, 255, 0.3);
-            border-radius: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .upload-section:hover {
-            border-color: var(--primary);
-            background: rgba(0, 240, 255, 0.1);
-        }
-
-        .upload-section.active {
-            border-color: var(--win);
-            background: rgba(0, 255, 136, 0.1);
-        }
-
-        .upload-btn {
-            background: var(--gradient);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: var(--transition);
-            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
-            font-size: 0.9rem;
-            font-family: 'Rajdhani', sans-serif;
-        }
-
-        .upload-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
-        }
-
-        .upload-btn:active {
-            transform: translateY(0);
-        }
-
-        .upload-icon {
-            font-size: 1rem;
-        }
-
-        #fileInput {
-            display: none;
-        }
-
-        .preview-container {
-            width: 100%;
-            margin-bottom: 1.5rem;
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .preview-title {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-        }
-
-        .preview-image {
-            width: 100%;
-            max-height: 250px;
-            object-fit: contain;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-        }
-
-        .results-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 1rem;
-            display: none;
-            animation: fadeIn 0.5s ease;
-            border: 1px solid rgba(0, 240, 255, 0.2);
-        }
-
-        .results-title {
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-        }
-
-        .extracted-numbers {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .number-chip {
-            background: rgba(0, 240, 255, 0.2);
-            padding: 0.5rem 1rem;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border: 1px solid rgba(0, 240, 255, 0.3);
-        }
-
-        .prediction-card {
-            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(123, 0, 255, 0.15));
-            border-left: 4px solid var(--primary);
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-top: 1.5rem;
-            animation: fadeIn 0.5s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .prediction-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--gradient);
-            opacity: 0.5;
-        }
-
-        .prediction-title {
-            font-size: 0.9rem;
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-        }
-
-        .prediction-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 0.5px;
-        }
-
-        .confidence-meter {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-
-        .confidence-level {
-            height: 100%;
-            background: var(--success-gradient);
-            border-radius: 3px;
-            width: 0%;
-            transition: width 1s ease;
-        }
-
-        .confidence-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-        }
-
-        .analysis-section {
-            margin-top: 1.5rem;
-        }
-
-        .analysis-title {
-            font-size: 0.9rem;
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 600;
-        }
-
-        .analysis-details {
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: var(--text-dim);
-        }
-
-        .loading {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 1rem;
-            color: var(--secondary);
-            font-size: 0.9rem;
-        }
-
-        .spinner {
-            width: 18px;
-            height: 18px;
-            border: 3px solid rgba(0, 132, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--secondary);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .error-message {
-            color: var(--loss);
-            background: rgba(255, 0, 85, 0.1);
-            padding: 1rem;
-            border-radius: 12px;
-            margin-top: 1rem;
-            display: none;
-            font-size: 0.85rem;
-            border: 1px solid rgba(255, 0, 85, 0.2);
-            animation: fadeIn 0.5s ease;
-        }
-
-        .error-message i {
-            margin-right: 0.5rem;
-        }
-
         /* Chat Predictor Styles */
         .chat-container {
             width: 100%;
@@ -842,12 +530,13 @@
         }
 
         .prediction-value {
-            font-size: 1.4rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin: 12px 0;
             text-align: center;
             letter-spacing: 1px;
             color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
         }
 
         .status-indicator {
@@ -901,17 +590,6 @@
         @keyframes typingAnimation {
             0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
             30% { transform: translateY(-5px); opacity: 1; }
-        }
-
-        .tag-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-left: 6px;
-            background-color: rgba(0, 132, 255, 0.1);
-            color: var(--secondary);
         }
 
         .scroll-down-btn {
@@ -992,6 +670,19 @@
             letter-spacing: 1px;
         }
 
+        .confidence-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .confidence-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .game-list {
@@ -1016,6 +707,10 @@
                 width: 24px;
                 height: 24px;
                 margin-right: 8px;
+            }
+            
+            .prediction-value {
+                font-size: 1.5rem;
             }
         }
 
@@ -1044,17 +739,8 @@
                 height: 28px;
             }
             
-            .predictor-container {
-                margin: 10px auto;
-                border-radius: 0;
-            }
-            
-            .predictor-content {
-                padding: 1.5rem;
-            }
-            
-            .upload-section {
-                padding: 1.5rem;
+            .prediction-value {
+                font-size: 1.3rem;
             }
         }
     </style>
@@ -1290,16 +976,11 @@
             
             // Prediction tracking
             let predictionHistory = [];
-            let lastPredictionValue = null;
             let lastActualNumber = null;
             let consecutiveLosses = 0;
             let lastPredictionWasCorrect = null;
             let lastThreePredictions = [];
 
-            // Machine Learning Model
-            let mlModel = null;
-            let modelReady = false;
-            
             // DOM elements
             const messagesContainer = document.getElementById('messages-container');
             const typingIndicator = document.getElementById('typing-indicator');
@@ -1319,7 +1000,6 @@
                         <p>Initializing real-time analysis. Scanning game results to detect patterns and trends.</p>
                     </div>`, 
                     'Zmx Trader');
-                initializeMLModel();
                 simulateInitialAnalysis();
             }, 1500);
 
@@ -1372,21 +1052,6 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }
 
-            function initializeMLModel() {
-                showTyping();
-                
-                // This would be replaced with actual model loading in a production environment
-                setTimeout(() => {
-                    addMessage('received', 
-                        `<div class="prediction-card">
-                            <div class="prediction-title"><i class="fas fa-brain"></i> MACHINE LEARNING MODEL LOADED</div>
-                            <p>Pattern recognition neural network initialized and ready for predictions.</p>
-                        </div>`, 
-                        'Zmx Trader');
-                    modelReady = true;
-                }, 2000);
-            }
-
             function simulateInitialAnalysis() {
                 showTyping();
                 setTimeout(() => {
@@ -1403,120 +1068,52 @@
                 }, 2000);
             }
 
+            // Enhanced Prediction Algorithm
             function enhancedPredictionAlgorithm(last10Results, currentSecond) {
                 // Convert results to numerical values
                 const results = last10Results.map(n => parseInt(n, 10));
                 
-                // Use ML model if available and we have enough data
-                if (modelReady && results.length >= 5) {
-                    return mlPredictionAlgorithm(results.slice(0, 5));
-                }
-                
-                // Fallback to basic algorithm if ML isn't ready
-                return basicPredictionAlgorithm(results, currentSecond);
-            }
-
-            function mlPredictionAlgorithm(last5Numbers) {
-                // This is a simplified version of the ML prediction
-                // In a real implementation, you would use a trained model
-                
                 // Convert numbers to categories (0 for SMALL, 1 for BIG)
-                const categories = last5Numbers.map(n => n >= 5 ? 1 : 0);
+                const categories = results.map(n => n >= 5 ? 1 : 0);
                 
-                // Simple pattern recognition (this would be replaced with actual model prediction)
+                // Calculate basic statistics
                 const bigCount = categories.filter(c => c === 1).length;
                 const smallCount = categories.length - bigCount;
                 
-                // Basic prediction logic (would be replaced with model output)
-                let prediction;
-                let confidence;
-                let tags = [];
-                
-                if (bigCount >= 4) {
-                    prediction = "SMALL";
-                    confidence = 75;
-                    tags.push({type: 'ml', text: 'ML: Over-BIG Pattern'});
-                } else if (smallCount >= 4) {
-                    prediction = "BIG";
-                    confidence = 75;
-                    tags.push({type: 'ml', text: 'ML: Over-SMALL Pattern'});
-                } else if (last5Numbers[0] === last5Numbers[1] && last5Numbers[1] === last5Numbers[2]) {
-                    // If last 3 were same type, predict opposite
-                    prediction = last5Numbers[0] >= 5 ? "SMALL" : "BIG";
-                    confidence = 70;
-                    tags.push({type: 'ml', text: 'ML: Streak Detection'});
-                } else {
-                    // Default to time-based if no clear pattern
-                    const now = new Date();
-                    prediction = now.getSeconds() < 30 ? "SMALL" : "BIG";
-                    confidence = 60;
-                    tags.push({type: 'ml', text: 'ML: Time-Based'});
-                }
-                
-                // Adjust confidence based on recent results
-                if (lastPredictionWasCorrect !== null) {
-                    if (lastPredictionWasCorrect) {
-                        confidence = Math.min(95, confidence + 5);
-                    } else {
-                        confidence = Math.max(60, confidence - 10);
-                    }
-                }
-                
-                return {
-                    prediction: prediction,
-                    tags: tags,
-                    confidence: confidence
-                };
-            }
-
-            function basicPredictionAlgorithm(results, currentSecond) {
-                // Convert results to BIG/SMALL format (5+ is BIG, below is SMALL)
-                const resultCategories = results.map(n => n >= 5 ? 'BIG' : 'SMALL');
-                
-                // Calculate basic statistics
-                const bigCount = resultCategories.filter(r => r === 'BIG').length;
-                const smallCount = resultCategories.length - bigCount;
-                
                 // Get last 3 and last 5 results
-                const lastThree = resultCategories.slice(0, 3);
-                const lastFive = resultCategories.slice(0, 5);
+                const lastThree = categories.slice(0, 3);
+                const lastFive = categories.slice(0, 5);
                 
                 // Time-based bias (changes every 30 seconds)
                 const timeBias = currentSecond < 30 ? "SMALL" : "BIG";
                 
                 // Initialize prediction variables
                 let finalPrediction = null;
-                let predictionTags = [];
                 let confidence = 67; // Base confidence
                 
                 // 1. Strong Trend Detection (7+ of one type in last 10)
                 if (bigCount >= 7) {
                     finalPrediction = "SMALL";
-                    predictionTags.push({type: 'trend', text: 'Strong BIG Trend'});
-                    confidence += 65;
+                    confidence = 75;
                 } else if (smallCount >= 7) {
                     finalPrediction = "BIG";
-                    predictionTags.push({type: 'trend', text: 'Strong SMALL Trend'});
-                    confidence += 76;
+                    confidence = 75;
                 }
                 
                 // 2. Recent Pattern Detection (if no strong trend)
                 if (!finalPrediction) {
                     // Check for 3-in-a-row patterns
                     if (lastThree[0] === lastThree[1] && lastThree[1] === lastThree[2]) {
-                        finalPrediction = lastThree[0] === 'BIG' ? 'SMALL' : 'BIG';
-                        predictionTags.push({type: 'pattern', text: '3-in-a-row'});
-                        confidence += 69;
+                        finalPrediction = lastThree[0] === 1 ? "SMALL" : "BIG";
+                        confidence = 70;
                     }
                     // Check for 4-of-5 patterns
-                    else if (lastFive.filter(r => r === 'BIG').length >= 4) {
+                    else if (lastFive.filter(r => r === 1).length >= 4) {
                         finalPrediction = "SMALL";
-                        predictionTags.push({type: 'pattern', text: '4-of-5 BIG'});
-                        confidence += 15;
-                    } else if (lastFive.filter(r => r === 'SMALL').length >= 4) {
+                        confidence = 65;
+                    } else if (lastFive.filter(r => r === 0).length >= 4) {
                         finalPrediction = "BIG";
-                        predictionTags.push({type: 'pattern', text: '4-of-5 SMALL'});
-                        confidence += 50;
+                        confidence = 65;
                     }
                 }
                 
@@ -1527,24 +1124,11 @@
                         if (finalPrediction) {
                             // Reverse the prediction if we're on a losing streak
                             finalPrediction = finalPrediction === 'BIG' ? 'SMALL' : 'BIG';
-                            predictionTags.push({type: 'streak', text: 'Loss Streak Adjustment'});
                             confidence = Math.max(70, confidence - 5);
                         } else {
                             // If no clear pattern, go with time bias but with higher confidence
                             finalPrediction = timeBias;
-                            predictionTags.push({type: 'time', text: 'Time Bias (Streak Adjusted)'});
-                            confidence = 95;
-                        }
-                        
-                        // Additional safety: if last 3 predictions were wrong, skip this round
-                        if (lastThreePredictions.filter(p => !p.correct).length >= 2) {
-                            finalPrediction = null;
-                            predictionTags.push({type: 'safety', text: 'Safety Skip'});
-                            return {
-                                prediction: "SKIP",
-                                tags: predictionTags,
-                                confidence: 0
-                            };
+                            confidence = 75;
                         }
                     } else if (lastPredictionWasCorrect) {
                         // If last prediction was correct, increase confidence slightly
@@ -1555,8 +1139,7 @@
                 // 4. Fallback to time-based prediction if no clear pattern
                 if (!finalPrediction) {
                     finalPrediction = timeBias;
-                    predictionTags.push({type: 'time', text: 'Time Analysis'});
-                    confidence = 95;
+                    confidence = 75;
                 }
                 
                 // 5. Recent Result Consideration
@@ -1565,55 +1148,36 @@
                     if (finalPrediction === lastType) {
                         // If predicting same as last result, reduce confidence slightly
                         confidence = Math.max(60, confidence - 5);
-                        predictionTags.push({type: 'caution', text: 'Same as Last'});
                     } else {
                         // If predicting opposite of last result, increase confidence slightly
                         confidence += 5;
                     }
                 }
                 
-                // 6. Avoid repeating the same prediction too many times
-                if (lastThreePredictions.length >= 2) {
-                    const lastTwoSame = lastThreePredictions[0].prediction === lastThreePredictions[1].prediction;
-                    if (lastTwoSame && finalPrediction === lastThreePredictions[0].prediction) {
-                        // If last two predictions were the same and we're about to make the same again
-                        finalPrediction = finalPrediction === 'BIG' ? 'SMALL' : 'BIG';
-                        predictionTags.push({type: 'variation', text: 'Pattern Variation'});
-                        confidence = Math.max(65, confidence - 5);
-                    }
-                }
-                
-                // Cap confidence between 50-95%
+                // Cap confidence between 60-95%
                 confidence = Math.min(95, Math.max(60, confidence));
                 
                 return {
                     prediction: finalPrediction,
-                    tags: predictionTags,
                     confidence: confidence
                 };
             }
 
             function createPredictionMessage(predictionData) {
-                const tagsHtml = predictionData.tags.map(tag => 
-                    `<span class="tag-badge">${tag.text}</span>`
-                ).join(' ');
-                
                 const confidencePercentage = Math.round(predictionData.confidence);
                 const confidenceWidth = `${confidencePercentage}%`;
                 
                 return `
                     <div class="prediction-card">
-                        <div class="period-display"> ${latestPeriod}</div>
+                        <div class="period-display">${latestPeriod}</div>
                         <div class="prediction-value">${predictionData.prediction}</div>
                         
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${confidenceWidth}"></div>
                         </div>
-                        <div class="flex justify-between text-xs mt-1">
-                            <span></span>
-                        </div>
-                        <div class="mt-2 text-xs">
-                            ${tagsHtml}
+                        <div class="confidence-display">
+                            <span>Confidence</span>
+                            <span class="confidence-value">${confidencePercentage}%</span>
                         </div>
                     </div>
                 `;
