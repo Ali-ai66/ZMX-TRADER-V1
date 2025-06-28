@@ -627,21 +627,6 @@
             box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
         }
 
-        .progress-bar {
-            height: 6px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 3px;
-            background: var(--gradient);
-            transition: width 0.5s ease;
-        }
-
         .floating-bg {
             position: absolute;
             width: 300px;
@@ -668,19 +653,6 @@
             text-align: center;
             margin: 10px 0;
             letter-spacing: 1px;
-        }
-
-        .confidence-display {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 5px;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        .confidence-value {
-            color: var(--primary);
-            font-weight: 600;
         }
 
         /* Responsive Adjustments */
@@ -848,9 +820,6 @@
                 <div class="message received">
                     <div class="prediction-title"><i class="fas fa-robot"></i> SYSTEM INITIALIZED</div>
                     <p>Welcome to <strong>Zmx Trader</strong>, your advanced prediction assistant. I'm analyzing game patterns in real-time to provide you with the most accurate predictions.</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 100%"></div>
-                    </div>
                     <div class="timestamp" id="last-update-time">Just now</div>
                 </div>
 
@@ -1075,67 +1044,31 @@
                 
                 // Prepare the dataset for ML prediction
                 const windowSize = 5;
-                const features = [];
                 
                 if (results.length < windowSize) {
-                    return {
-                        prediction: null,
-                        confidence: 0
-                    };
+                    return null;
                 }
                 
                 // Take the last 'windowSize' numbers
                 const currentFeatures = results.slice(0, windowSize);
                 
-                // This is where we would normally use our trained ML model
-                // For this demo, we'll simulate the ML prediction logic
-                
-                // 1. Count occurrences of SMALL (0-4) and BIG (5-9)
+                // Count occurrences of SMALL (0-4) and BIG (5-9)
                 const smallCount = currentFeatures.filter(n => n <= 4).length;
                 const bigCount = currentFeatures.filter(n => n >= 5).length;
                 
-                // 2. Calculate probabilities (simulating ML output)
-                const smallProb = smallCount / windowSize;
-                const bigProb = bigCount / windowSize;
-                
-                // 3. Our "opposite prediction" strategy - predict the less likely outcome
-                let prediction, confidence;
-                
-                if (smallProb > bigProb) {
-                    // If more SMALL numbers in recent history, predict BIG (opposite)
-                    prediction = "BIG";
-                    confidence = Math.round((1 - smallProb) * 100);
+                // Our "opposite prediction" strategy - predict the less likely outcome
+                if (smallCount > bigCount) {
+                    return "BIG"; // If more SMALL numbers, predict BIG
                 } else {
-                    // If more BIG numbers in recent history, predict SMALL (opposite)
-                    prediction = "SMALL";
-                    confidence = Math.round((1 - bigProb) * 100);
+                    return "SMALL"; // If more BIG numbers, predict SMALL
                 }
-                
-                // Ensure confidence is within reasonable bounds
-                confidence = Math.max(60, Math.min(95, confidence));
-                
-                return {
-                    prediction: prediction,
-                    confidence: confidence
-                };
             }
 
-            function createPredictionMessage(predictionData) {
-                const confidencePercentage = Math.round(predictionData.confidence);
-                const confidenceWidth = `${confidencePercentage}%`;
-                
+            function createPredictionMessage(prediction) {
                 return `
                     <div class="prediction-card">
                         <div class="period-display">${latestPeriod}</div>
-                        <div class="prediction-value">${predictionData.prediction}</div>
-                        
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${confidenceWidth}"></div>
-                        </div>
-                        <div class="confidence-display">
-                            <span>Confidence</span>
-                            <span class="confidence-value">${confidencePercentage}%</span>
-                        </div>
+                        <div class="prediction-value">${prediction}</div>
                     </div>
                 `;
             }
@@ -1230,16 +1163,18 @@
             function updatePredictions(currentTime, currentPeriod) {
                 if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
                     const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
-                    const predictionData = mlPredictionAlgorithm(last10Numbers);
-                    lastPredictionValue = predictionData.prediction;
-                    currentPrediction = predictionData.prediction;
-                    lastPredictionPeriod = currentPeriod;
+                    const prediction = mlPredictionAlgorithm(last10Numbers);
                     
-                    // Show prediction message
-                    showTyping();
-                    setTimeout(() => {
-                        addMessage('received', createPredictionMessage(predictionData), 'Zmx Trader');
-                    }, 1000);
+                    if (prediction) {
+                        currentPrediction = prediction;
+                        lastPredictionPeriod = currentPeriod;
+                        
+                        // Show prediction message
+                        showTyping();
+                        setTimeout(() => {
+                            addMessage('received', createPredictionMessage(prediction), 'Zmx Trader');
+                        }, 1000);
+                    }
                 }
             }
 
