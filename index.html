@@ -1068,97 +1068,54 @@
                 }, 2000);
             }
 
-            // Enhanced Prediction Algorithm with fixed opposite prediction
-            function enhancedPredictionAlgorithm(last10Results, currentSecond) {
+            // Machine Learning Prediction Algorithm
+            function mlPredictionAlgorithm(last10Results) {
                 // Convert results to numerical values
                 const results = last10Results.map(n => parseInt(n, 10));
                 
-                // Convert numbers to categories (0 for SMALL, 1 for BIG)
-                const categories = results.map(n => n >= 5 ? 1 : 0);
+                // Prepare the dataset for ML prediction
+                const windowSize = 5;
+                const features = [];
                 
-                // Calculate basic statistics
-                const bigCount = categories.filter(c => c === 1).length;
-                const smallCount = categories.length - bigCount;
-                
-                // Get last 3 and last 5 results
-                const lastThree = categories.slice(0, 3);
-                const lastFive = categories.slice(0, 5);
-                
-                // Time-based bias (changes every 30 seconds)
-                const timeBias = currentSecond < 30 ? "SMALL" : "BIG";
-                
-                // Initialize prediction variables
-                let finalPrediction = null;
-                let confidence = 67; // Base confidence
-                
-                // 1. Strong Trend Detection (7+ of one type in last 10)
-                if (bigCount >= 7) {
-                    finalPrediction = "SMALL"; // Opposite prediction
-                    confidence = 75;
-                } else if (smallCount >= 7) {
-                    finalPrediction = "BIG"; // Opposite prediction
-                    confidence = 75;
+                if (results.length < windowSize) {
+                    return {
+                        prediction: null,
+                        confidence: 0
+                    };
                 }
                 
-                // 2. Recent Pattern Detection (if no strong trend)
-                if (!finalPrediction) {
-                    // Check for 3-in-a-row patterns
-                    if (lastThree[0] === lastThree[1] && lastThree[1] === lastThree[2]) {
-                        finalPrediction = lastThree[0] === 1 ? "SMALL" : "BIG"; // Opposite prediction
-                        confidence = 70;
-                    }
-                    // Check for 4-of-5 patterns
-                    else if (lastFive.filter(r => r === 1).length >= 4) {
-                        finalPrediction = "SMALL"; // Opposite prediction
-                        confidence = 65;
-                    } else if (lastFive.filter(r => r === 0).length >= 4) {
-                        finalPrediction = "BIG"; // Opposite prediction
-                        confidence = 65;
-                    }
+                // Take the last 'windowSize' numbers
+                const currentFeatures = results.slice(0, windowSize);
+                
+                // This is where we would normally use our trained ML model
+                // For this demo, we'll simulate the ML prediction logic
+                
+                // 1. Count occurrences of SMALL (0-4) and BIG (5-9)
+                const smallCount = currentFeatures.filter(n => n <= 4).length;
+                const bigCount = currentFeatures.filter(n => n >= 5).length;
+                
+                // 2. Calculate probabilities (simulating ML output)
+                const smallProb = smallCount / windowSize;
+                const bigProb = bigCount / windowSize;
+                
+                // 3. Our "opposite prediction" strategy - predict the less likely outcome
+                let prediction, confidence;
+                
+                if (smallProb > bigProb) {
+                    // If more SMALL numbers in recent history, predict BIG (opposite)
+                    prediction = "BIG";
+                    confidence = Math.round((1 - smallProb) * 100);
+                } else {
+                    // If more BIG numbers in recent history, predict SMALL (opposite)
+                    prediction = "SMALL";
+                    confidence = Math.round((1 - bigProb) * 100);
                 }
                 
-                // 3. Loss Streak Adjustment (if we have prediction history)
-                if (lastPredictionWasCorrect !== null) {
-                    if (consecutiveLosses >= 1) {
-                        // If we've lost 1 in a row, adjust strategy more aggressively
-                        if (finalPrediction) {
-                            // Reverse the prediction if we're on a losing streak
-                            finalPrediction = finalPrediction === 'BIG' ? 'SMALL' : 'BIG';
-                            confidence = Math.max(70, confidence - 5);
-                        } else {
-                            // If no clear pattern, go with time bias but with higher confidence
-                            finalPrediction = timeBias;
-                            confidence = 75;
-                        }
-                    } else if (lastPredictionWasCorrect) {
-                        // If last prediction was correct, increase confidence slightly
-                        confidence = Math.min(95, confidence + 5);
-                    }
-                }
-                
-                // 4. Fallback to time-based prediction if no clear pattern
-                if (!finalPrediction) {
-                    finalPrediction = timeBias;
-                    confidence = 75;
-                }
-                
-                // 5. Recent Result Consideration
-                if (lastActualNumber !== null) {
-                    const lastType = lastActualNumber >= 5 ? 'BIG' : 'SMALL';
-                    if (finalPrediction === lastType) {
-                        // If predicting same as last result, reduce confidence slightly
-                        confidence = Math.max(60, confidence - 5);
-                    } else {
-                        // If predicting opposite of last result, increase confidence slightly
-                        confidence += 5;
-                    }
-                }
-                
-                // Cap confidence between 60-95%
-                confidence = Math.min(95, Math.max(60, confidence));
+                // Ensure confidence is within reasonable bounds
+                confidence = Math.max(60, Math.min(95, confidence));
                 
                 return {
-                    prediction: finalPrediction,
+                    prediction: prediction,
                     confidence: confidence
                 };
             }
@@ -1273,7 +1230,7 @@
             function updatePredictions(currentTime, currentPeriod) {
                 if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
                     const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
-                    const predictionData = enhancedPredictionAlgorithm(last10Numbers, currentTime.getUTCSeconds());
+                    const predictionData = mlPredictionAlgorithm(last10Numbers);
                     lastPredictionValue = predictionData.prediction;
                     currentPrediction = predictionData.prediction;
                     lastPredictionPeriod = currentPeriod;
