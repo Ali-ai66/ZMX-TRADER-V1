@@ -1068,7 +1068,7 @@
                 }, 2000);
             }
 
-            // Enhanced Prediction Algorithm
+            // Enhanced Prediction Algorithm with fixed opposite prediction
             function enhancedPredictionAlgorithm(last10Results, currentSecond) {
                 // Convert results to numerical values
                 const results = last10Results.map(n => parseInt(n, 10));
@@ -1093,10 +1093,10 @@
                 
                 // 1. Strong Trend Detection (7+ of one type in last 10)
                 if (bigCount >= 7) {
-                    finalPrediction = "SMALL";
+                    finalPrediction = "SMALL"; // Opposite prediction
                     confidence = 75;
                 } else if (smallCount >= 7) {
-                    finalPrediction = "BIG";
+                    finalPrediction = "BIG"; // Opposite prediction
                     confidence = 75;
                 }
                 
@@ -1104,15 +1104,15 @@
                 if (!finalPrediction) {
                     // Check for 3-in-a-row patterns
                     if (lastThree[0] === lastThree[1] && lastThree[1] === lastThree[2]) {
-                        finalPrediction = lastThree[0] === 1 ? "SMALL" : "BIG";
+                        finalPrediction = lastThree[0] === 1 ? "SMALL" : "BIG"; // Opposite prediction
                         confidence = 70;
                     }
                     // Check for 4-of-5 patterns
                     else if (lastFive.filter(r => r === 1).length >= 4) {
-                        finalPrediction = "SMALL";
+                        finalPrediction = "SMALL"; // Opposite prediction
                         confidence = 65;
                     } else if (lastFive.filter(r => r === 0).length >= 4) {
-                        finalPrediction = "BIG";
+                        finalPrediction = "BIG"; // Opposite prediction
                         confidence = 65;
                     }
                 }
