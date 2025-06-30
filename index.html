@@ -132,48 +132,6 @@
             background-color: var(--bg-dark);
         }
 
-        /* Night Mode Styles */
-        #night-mode {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000033;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 99999999;
-            text-align: center;
-            display: none;
-        }
-        
-        #night-mode h1 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #4d79ff;
-        }
-        
-        #night-mode p {
-            font-size: 1.2rem;
-            max-width: 80%;
-            line-height: 1.6;
-        }
-        
-        .emoji {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
         /* Game Selection Screen */
         .game-selection {
             position: absolute;
@@ -627,6 +585,21 @@
             box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
         }
 
+        .progress-bar {
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--gradient);
+            transition: width 0.5s ease;
+        }
+
         .floating-bg {
             position: absolute;
             width: 300px;
@@ -653,6 +626,47 @@
             text-align: center;
             margin: 10px 0;
             letter-spacing: 1px;
+        }
+
+        .confidence-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .confidence-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .predicted-numbers {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .predicted-number {
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .predicted-number.small {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.2);
+        }
+
+        .predicted-number.big {
+            background: rgba(0, 144, 255, 0.1);
+            border-color: rgba(0, 144, 255, 0.2);
         }
 
         /* Responsive Adjustments */
@@ -719,13 +733,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- Night Mode Screen -->
-    <div id="night-mode">
-        <div class="emoji">💤</div>
-        <h1>See You in the Morning!</h1>
-        <p>We take a break from 8 PM to 6 AM.<br></p>
-    </div>
-
     <!-- Tab System -->
     <div class="tab-system">
         <div class="tab active" data-tab="web">
@@ -796,9 +803,9 @@
             </div>
         </div>
 
-        <iframe id="gameFrame" class="fullscreen-iframe hidden"></iframe>
+        <iframe id="gameFrame" class="fullscreen-iframe hidden" allowfullscreen></iframe>
 
-        <div class="injector-tape" id="injectorTape"></div>
+        <div class="injector-tape hidden" id="injectorTape"></div>
     </div>
 
     <div class="content-section" id="predictor-section">
@@ -820,6 +827,9 @@
                 <div class="message received">
                     <div class="prediction-title"><i class="fas fa-robot"></i> SYSTEM INITIALIZED</div>
                     <p>Welcome to <strong>Zmx Trader</strong>, your advanced prediction assistant. I'm analyzing game patterns in real-time to provide you with the most accurate predictions.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
                     <div class="timestamp" id="last-update-time">Just now</div>
                 </div>
 
@@ -837,113 +847,91 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
     <script>
-        // Night Mode Check
-        function checkTime() {
-            const now = new Date();
-            const hours = now.getHours();
-            const nightMode = document.getElementById('night-mode');
-            
-            // Show night mode between 8 PM (20) and 6 AM (6)
-            if (hours >= 20 || hours < 6) {
-                nightMode.style.display = 'flex';
-            } else {
-                nightMode.style.display = 'none';
-            }
-        }
-        
-        // Check time immediately
-        checkTime();
-        
-        // Continue checking every minute
-        setInterval(checkTime, 60000);
-
         // Tab System Logic
-        const tabs = document.querySelectorAll('.tab');
-        const contentSections = document.querySelectorAll('.content-section');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                
-                // Update active tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                // Show corresponding content section
-                contentSections.forEach(section => {
-                    section.classList.remove('active');
-                    if (section.id === `${tabId}-section`) {
-                        section.classList.add('active');
-                    }
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding content section
+                    contentSections.forEach(section => {
+                        section.classList.remove('active');
+                        if (section.id === `${tabId}-section`) {
+                            section.classList.add('active');
+                        }
+                    });
                 });
             });
-        });
 
-        // Game Selection Logic
-        const gameSelection = document.getElementById('gameSelection');
-        const gameFrame = document.getElementById('gameFrame');
-        const gameItems = document.querySelectorAll('.game-item');
-        const injectorTape = document.getElementById('injectorTape');
-        
-        gameItems.forEach(item => {
-            item.addEventListener('click', () => {
-                const gameUrl = item.getAttribute('data-url');
-                gameFrame.src = gameUrl;
-                gameSelection.style.display = 'none';
-                gameFrame.classList.remove('hidden');
-                
-                // Add visual feedback
-                item.classList.add('active');
-                setTimeout(() => item.classList.remove('active'), 500);
+            // Game Selection Logic
+            const gameSelection = document.getElementById('gameSelection');
+            const gameFrame = document.getElementById('gameFrame');
+            const gameItems = document.querySelectorAll('.game-item');
+            const injectorTape = document.getElementById('injectorTape');
+            
+            gameItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const gameUrl = this.getAttribute('data-url');
+                    gameFrame.src = gameUrl;
+                    gameSelection.style.display = 'none';
+                    gameFrame.classList.remove('hidden');
+                    injectorTape.classList.remove('hidden');
+                    
+                    // Add visual feedback
+                    this.classList.add('active');
+                    setTimeout(() => this.classList.remove('active'), 500);
+                });
             });
-        });
 
-        // Injector tape button to show game selection
-        injectorTape.addEventListener('click', () => {
-            gameFrame.classList.add('hidden');
-            gameSelection.style.display = 'flex';
-        });
+            // Injector tape button to show game selection
+            injectorTape.addEventListener('click', function() {
+                gameFrame.classList.add('hidden');
+                gameSelection.style.display = 'flex';
+                injectorTape.classList.add('hidden');
+                gameFrame.src = '';
+            });
 
-        // Create floating particles
-        function createParticles() {
-            const colors = ['rgba(0, 240, 255, 0.3)', 'rgba(0, 144, 255, 0.3)', 'rgba(123, 0, 255, 0.3)'];
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                const size = Math.random() * 8 + 2;
-                const posX = Math.random() * window.innerWidth;
-                const posY = Math.random() * window.innerHeight;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const duration = Math.random() * 20 + 10;
-                const delay = Math.random() * 5;
-                
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${posX}px`;
-                particle.style.top = `${posY}px`;
-                particle.style.background = color;
-                particle.style.opacity = Math.random() * 0.5 + 0.1;
-                particle.style.animationDuration = `${duration}s`;
-                particle.style.animationDelay = `${delay}s`;
-                
-                document.body.appendChild(particle);
+            // Create floating particles
+            function createParticles() {
+                const colors = ['rgba(0, 240, 255, 0.3)', 'rgba(0, 144, 255, 0.3)', 'rgba(123, 0, 255, 0.3)'];
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 8 + 2;
+                    const posX = Math.random() * window.innerWidth;
+                    const posY = Math.random() * window.innerHeight;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const duration = Math.random() * 20 + 10;
+                    const delay = Math.random() * 5;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${posX}px`;
+                    particle.style.top = `${posY}px`;
+                    particle.style.background = color;
+                    particle.style.opacity = Math.random() * 0.5 + 0.1;
+                    particle.style.animationDuration = `${duration}s`;
+                    particle.style.animationDelay = `${delay}s`;
+                    
+                    document.body.appendChild(particle);
+                }
             }
-        }
 
-        // Chat Predictor Logic
-        document.addEventListener('DOMContentLoaded', function() {
-            // Game state
+            // Chat Predictor Logic
             let previousResults = [];
             let latestPeriod = null;
             let currentPrediction = null;
             let serverOnline = true;
             let lastPredictionPeriod = null;
-            
-            // Prediction tracking
             let predictionHistory = [];
             let lastActualNumber = null;
             let consecutiveLosses = 0;
@@ -1037,38 +1025,133 @@
                 }, 2000);
             }
 
-            // Machine Learning Prediction Algorithm
-            function mlPredictionAlgorithm(last10Results) {
+            function getRandomNumbers(category, count) {
+                const numbers = category === 'SMALL' ? [0, 1, 2, 3, 4] : [5, 6, 7, 8, 9];
+                const shuffled = [...numbers].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            }
+
+            function enhancedPredictionAlgorithm(last10Results, currentSecond) {
                 // Convert results to numerical values
                 const results = last10Results.map(n => parseInt(n, 10));
                 
-                // Prepare the dataset for ML prediction
-                const windowSize = 5;
+                // Calculate basic statistics
+                const bigCount = results.filter(n => n >= 5).length;
+                const smallCount = results.length - bigCount;
                 
-                if (results.length < windowSize) {
-                    return null;
+                // Get last 3 and last 5 results
+                const lastThree = results.slice(0, 3);
+                const lastFive = results.slice(0, 5);
+                
+                // Time-based bias (changes every 30 seconds)
+                const timeBias = currentSecond < 30 ? "SMALL" : "BIG";
+                
+                // Initialize prediction variables
+                let finalPrediction = null;
+                let confidence = 77; // Base confidence
+                
+                // 1. Strong Trend Detection (7+ of one type in last 10)
+                if (bigCount >= 7) {
+                    finalPrediction = "SMALL";
+                    confidence = 85;
+                } else if (smallCount >= 7) {
+                    finalPrediction = "BIG";
+                    confidence = 85;
                 }
                 
-                // Take the last 'windowSize' numbers
-                const currentFeatures = results.slice(0, windowSize);
-                
-                // Count occurrences of SMALL (0-4) and BIG (5-9)
-                const smallCount = currentFeatures.filter(n => n <= 4).length;
-                const bigCount = currentFeatures.filter(n => n >= 5).length;
-                
-                // Our "opposite prediction" strategy - predict the less likely outcome
-                if (smallCount > bigCount) {
-                    return "BIG"; // If more SMALL numbers, predict BIG
-                } else {
-                    return "SMALL"; // If more BIG numbers, predict SMALL
+                // 2. Recent Pattern Detection (if no strong trend)
+                if (!finalPrediction) {
+                    // Check for 3-in-a-row patterns
+                    if (lastThree[0] === lastThree[1] && lastThree[1] === lastThree[2]) {
+                        finalPrediction = lastThree[0] >= 5 ? "SMALL" : "BIG";
+                        confidence = 80;
+                    }
+                    // Check for 4-of-5 patterns
+                    else if (lastFive.filter(n => n >= 5).length >= 4) {
+                        finalPrediction = "SMALL";
+                        confidence = 75;
+                    } else if (lastFive.filter(n => n < 5).length >= 4) {
+                        finalPrediction = "BIG";
+                        confidence = 75;
+                    }
                 }
+                
+                // 3. Loss Streak Adjustment (if we have prediction history)
+                if (lastPredictionWasCorrect !== null) {
+                    if (consecutiveLosses >= 1) {
+                        // If we've lost 1 in a row, adjust strategy more aggressively
+                        if (finalPrediction) {
+                            // Reverse the prediction if we're on a losing streak
+                            finalPrediction = finalPrediction === 'BIG' ? 'SMALL' : 'BIG';
+                            confidence = Math.max(70, confidence - 5);
+                        } else {
+                            // If no clear pattern, go with time bias but with higher confidence
+                            finalPrediction = timeBias;
+                            confidence = 85;
+                        }
+                    } else if (lastPredictionWasCorrect) {
+                        // If last prediction was correct, increase confidence slightly
+                        confidence = Math.min(95, confidence + 5);
+                    }
+                }
+                
+                // 4. Fallback to time-based prediction if no clear pattern
+                if (!finalPrediction) {
+                    finalPrediction = timeBias;
+                    confidence = 85;
+                }
+                
+                // 5. Recent Result Consideration
+                if (lastActualNumber !== null) {
+                    const lastType = lastActualNumber >= 5 ? 'BIG' : 'SMALL';
+                    if (finalPrediction === lastType) {
+                        // If predicting same as last result, reduce confidence slightly
+                        confidence = Math.max(60, confidence - 5);
+                    } else {
+                        // If predicting opposite of last result, increase confidence slightly
+                        confidence += 5;
+                    }
+                }
+                
+                // Cap confidence between 60-95%
+                confidence = Math.min(95, Math.max(60, confidence));
+                
+                // Get 2 random numbers for the predicted category
+                const predictedNumbers = getRandomNumbers(finalPrediction, 2);
+                
+                return {
+                    prediction: finalPrediction,
+                    confidence: confidence,
+                    numbers: predictedNumbers
+                };
             }
 
-            function createPredictionMessage(prediction) {
+            function createPredictionMessage(predictionData) {
+                const confidencePercentage = Math.round(predictionData.confidence);
+                const confidenceWidth = `${confidencePercentage}%`;
+                
+                const numbersHTML = `
+                    <div class="predicted-numbers">
+                        ${predictionData.numbers.map(num => `
+                            <div class="predicted-number ${num <= 4 ? 'small' : 'big'}">${num}</div>
+                        `).join('')}
+                    </div>
+                `;
+                
                 return `
                     <div class="prediction-card">
                         <div class="period-display">${latestPeriod}</div>
-                        <div class="prediction-value">${prediction}</div>
+                        <div class="prediction-value">${predictionData.prediction}</div>
+                        
+                        ${numbersHTML}
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${confidenceWidth}"></div>
+                        </div>
+                        <div class="confidence-display">
+                            <span>Confidence</span>
+                            <span class="confidence-value">${confidencePercentage}%</span>
+                        </div>
                     </div>
                 `;
             }
@@ -1163,18 +1246,16 @@
             function updatePredictions(currentTime, currentPeriod) {
                 if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
                     const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
-                    const prediction = mlPredictionAlgorithm(last10Numbers);
+                    const predictionData = enhancedPredictionAlgorithm(last10Numbers, currentTime.getUTCSeconds());
+                    lastPredictionValue = predictionData.prediction;
+                    currentPrediction = predictionData.prediction;
+                    lastPredictionPeriod = currentPeriod;
                     
-                    if (prediction) {
-                        currentPrediction = prediction;
-                        lastPredictionPeriod = currentPeriod;
-                        
-                        // Show prediction message
-                        showTyping();
-                        setTimeout(() => {
-                            addMessage('received', createPredictionMessage(prediction), 'Zmx Trader');
-                        }, 1000);
-                    }
+                    // Show prediction message
+                    showTyping();
+                    setTimeout(() => {
+                        addMessage('received', createPredictionMessage(predictionData), 'Zmx Trader');
+                    }, 1000);
                 }
             }
 
@@ -1198,10 +1279,8 @@
                     }
                 }
             }
-        });
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize the application
             createParticles();
             
             // Animate the game selection title after page load
