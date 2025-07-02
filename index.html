@@ -1108,6 +1108,7 @@
                 }
 
                 getRandomNumbers(category, count) {
+                    // Only return numbers that match the predicted category
                     const numbers = category === 'SMALL' ? [0, 1, 2, 3, 4] : [5, 6, 7, 8, 9];
                     const shuffled = [...numbers].sort(() => 0.5 - Math.random());
                     return shuffled.slice(0, count);
@@ -1243,9 +1244,6 @@
                 const confidencePercentage = Math.round(predictionData.confidence);
                 const confidenceWidth = `${confidencePercentage}%`;
                 
-                // Always show the opposite prediction
-                const displayPrediction = predictionData.prediction === 'BIG' ? 'SMALL' : 'BIG';
-                
                 const numbersHTML = `
                     <div class="predicted-numbers">
                         ${predictionData.numbers.map(num => `
@@ -1257,7 +1255,7 @@
                 return `
                     <div class="prediction-card">
                         <div class="period-display">${latestPeriod}</div>
-                        <div class="prediction-value">${displayPrediction}</div>
+                        <div class="prediction-value">${predictionData.prediction}</div>
                         
                         ${numbersHTML}
                         
