@@ -1144,11 +1144,7 @@
             let currentPrediction = null;
             let serverOnline = true;
             let lastPredictionPeriod = null;
-            let predictionHistory = [];
             let lastActualNumber = null;
-            let consecutiveLosses = 0;
-            let lastPredictionWasCorrect = null;
-            let lastThreePredictions = [];
 
             // Initialize prediction system
             const predictionSystem = new AdvancedPredictionSystem();
@@ -1342,6 +1338,33 @@
                 } catch (error) { 
                     console.error("Fetch error:", error);
                     updateServerStatus(false);
+                }
+            }
+
+            // Added the requested API function
+            async function fetchGameResult() {
+                try {
+                    let response = await fetch(
+                        "https://api.fantasygamesapi.com/api/webapi/GetNoaverageEmerdList",
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                pageSize: 10,
+                                pageNo: 1,
+                                typeId: 1,
+                                language: 0,
+                                random: "4a0522c6ecd8410496260e686be2a57c",
+                                signature: "334B5E70A0C9B8918B0B15E517E2069C",
+                                timestamp: Math.floor(Date.now() / 1000),
+                            }),
+                        }
+                    );
+                    let data = await response.json();
+                    return data?.data?.list?.[0] || null;
+                } catch (e) {
+                    console.error("Failed to fetch game result:", e);
+                    return null;
                 }
             }
 
