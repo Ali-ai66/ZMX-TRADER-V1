@@ -669,6 +669,50 @@
             border-color: rgba(0, 144, 255, 0.2);
         }
 
+        /* Recovery Level Indicators */
+        .recovery-level {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .recovery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--text-dim);
+            transition: all 0.3s ease;
+        }
+
+        .recovery-dot.active {
+            background: var(--warning);
+            border-color: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        .recovery-dot.critical {
+            background: var(--loss);
+            border-color: var(--loss);
+            box-shadow: 0 0 8px var(--loss);
+        }
+
+        .recovery-status {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 5px;
+        }
+
+        .recovery-status.warning {
+            color: var(--warning);
+        }
+
+        .recovery-status.critical {
+            color: var(--loss);
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .game-list {
@@ -926,218 +970,6 @@
                 }
             }
 
-            // Enhanced Prediction System
-            class AdvancedPredictionSystem {
-                constructor() {
-                    this.history = [];
-                    this.patterns = {};
-                    this.consecutiveLosses = 0;
-                    this.consecutiveWins = 0;
-                    this.lastPrediction = null;
-                    this.lastActual = null;
-                    this.windowSize = 7;
-                    this.smallThreshold = 4;
-                }
-
-                addNumber(number) {
-                    this.history.unshift(number);
-                    if (this.history.length > 100) {
-                        this.history.pop();
-                    }
-                    this.updatePatternAnalysis();
-                }
-
-                updatePatternAnalysis() {
-                    if (this.history.length < 6) return;
-
-                    // Look for repeating patterns of length 3-5
-                    for (let len = 3; len <= 5; len++) {
-                        if (this.history.length < len * 2) continue;
-                        
-                        const recentPattern = this.history.slice(0, len);
-                        let occurrences = [];
-                        
-                        for (let i = len; i < this.history.length - len; i++) {
-                            const currentWindow = this.history.slice(i, i + len);
-                            if (JSON.stringify(currentWindow) === JSON.stringify(recentPattern)) {
-                                occurrences.push(this.history[i + len]);
-                            }
-                        }
-                        
-                        if (occurrences.length > 0) {
-                            const freqDist = {};
-                            occurrences.forEach(num => {
-                                freqDist[num] = (freqDist[num] || 0) + 1;
-                            });
-                            
-                            for (const num in freqDist) {
-                                const confidence = freqDist[num] / occurrences.length;
-                                if (confidence >= 0.75) {
-                                    this.patterns[JSON.stringify(recentPattern)] = {
-                                        number: parseInt(num),
-                                        confidence: confidence
-                                    };
-                                }
-                            }
-                        }
-                    }
-                }
-
-                checkForPatterns(recentWindow) {
-                    for (let len = 3; len <= 5; len++) {
-                        if (recentWindow.length < len) continue;
-                        
-                        const currentPattern = recentWindow.slice(0, len);
-                        const patternKey = JSON.stringify(currentPattern);
-                        
-                        if (this.patterns[patternKey]) {
-                            return {
-                                number: this.patterns[patternKey].number,
-                                confidence: this.patterns[patternKey].confidence,
-                                pattern: currentPattern
-                            };
-                        }
-                    }
-                    return null;
-                }
-
-                enhancedPredictionAlgorithm(lastResults, currentSecond) {
-                    // Convert results to numerical values
-                    const results = lastResults.map(n => parseInt(n, 10));
-                    
-                    // Calculate basic statistics
-                    const bigCount = results.filter(n => n >= 5).length;
-                    const smallCount = results.length - bigCount;
-                    
-                    // Get last 3 and last 5 results
-                    const lastThree = results.slice(0, 3);
-                    const lastFive = results.slice(0, 5);
-                    
-                    // Time-based bias (changes every 30 seconds)
-                    const timeBias = currentSecond < 30 ? "SMALL" : "BIG";
-                    
-                    // Initialize prediction variables
-                    let finalPrediction = null;
-                    let confidence = 77; // Base confidence
-                    
-                    // 1. Strong Trend Detection (7+ of one type in last 10)
-                    if (bigCount >= 7) {
-                        finalPrediction = "SMALL";
-                        confidence = 85;
-                    } else if (smallCount >= 7) {
-                        finalPrediction = "BIG";
-                        confidence = 85;
-                    }
-                    
-                    // 2. Recent Pattern Detection (if no strong trend)
-                    if (!finalPrediction) {
-                        // Check for 3-in-a-row patterns
-                        if (lastThree[0] === lastThree[1] && lastThree[1] === lastThree[2]) {
-                            finalPrediction = lastThree[0] >= 5 ? "SMALL" : "BIG";
-                            confidence = 80;
-                        }
-                        // Check for 4-of-5 patterns
-                        else if (lastFive.filter(n => n >= 5).length >= 4) {
-                            finalPrediction = "SMALL";
-                            confidence = 75;
-                        } else if (lastFive.filter(n => n < 5).length >= 4) {
-                            finalPrediction = "BIG";
-                            confidence = 75;
-                        }
-                    }
-                    
-                    // 3. Loss Streak Adjustment (if we have prediction history)
-                    if (this.lastPrediction !== null && this.lastActual !== null) {
-                        const lastPredCorrect = 
-                            (this.lastPrediction === 'BIG' && this.lastActual >= 5) || 
-                            (this.lastPrediction === 'SMALL' && this.lastActual < 5);
-                        
-                        if (!lastPredCorrect) {
-                            this.consecutiveLosses++;
-                            this.consecutiveWins = 0;
-                            
-                            // If we've lost 1 in a row, adjust strategy more aggressively
-                            if (this.consecutiveLosses >= 1) {
-                                if (finalPrediction) {
-                                    // Reverse the prediction if we're on a losing streak
-                                    finalPrediction = finalPrediction === 'BIG' ? 'SMALL' : 'BIG';
-                                    confidence = Math.max(70, confidence - 5);
-                                } else {
-                                    // If no clear pattern, go with time bias but with higher confidence
-                                    finalPrediction = timeBias;
-                                    confidence = 85;
-                                }
-                            }
-                        } else {
-                            this.consecutiveWins++;
-                            this.consecutiveLosses = 0;
-                            // If last prediction was correct, increase confidence slightly
-                            confidence = Math.min(95, confidence + 5);
-                        }
-                    }
-                    
-                    // 4. Fallback to time-based prediction if no clear pattern
-                    if (!finalPrediction) {
-                        finalPrediction = timeBias;
-                        confidence = 85;
-                    }
-                    
-                    // 5. Recent Result Consideration
-                    if (this.lastActual !== null) {
-                        const lastType = this.lastActual >= 5 ? 'BIG' : 'SMALL';
-                        if (finalPrediction === lastType) {
-                            // If predicting same as last result, reduce confidence slightly
-                            confidence = Math.max(60, confidence - 5);
-                        } else {
-                            // If predicting opposite of last result, increase confidence slightly
-                            confidence += 5;
-                        }
-                    }
-                    
-                    // Cap confidence between 60-95%
-                    confidence = Math.min(95, Math.max(60, confidence));
-                    
-                    // Get 1-2 random numbers for the predicted category
-                    const predictedNumbers = this.getRandomNumbers(finalPrediction, Math.random() > 0.5 ? 1 : 2);
-                    
-                    return {
-                        prediction: finalPrediction,
-                        confidence: confidence,
-                        numbers: predictedNumbers
-                    };
-                }
-
-                getRandomNumbers(category, count) {
-                    // Only return numbers that match the predicted category
-                    const numbers = category === 'SMALL' ? [0, 1, 2, 3, 4] : [5, 6, 7, 8, 9];
-                    const shuffled = [...numbers].sort(() => 0.5 - Math.random());
-                    return shuffled.slice(0, count);
-                }
-
-                predict(recentNumbers, currentSecond) {
-                    // First check for patterns
-                    const patternPrediction = this.checkForPatterns(recentNumbers);
-                    if (patternPrediction && patternPrediction.confidence >= 0.8) {
-                        const predictedCategory = patternPrediction.number <= 4 ? 'SMALL' : 'BIG';
-                        return {
-                            prediction: predictedCategory,
-                            confidence: Math.round(patternPrediction.confidence * 100),
-                            numbers: [patternPrediction.number],
-                            source: 'PATTERN',
-                            message: `Pattern detected: ${patternPrediction.pattern.join(',')} → ${patternPrediction.number}`
-                        };
-                    }
-                    
-                    // Fall back to enhanced algorithm
-                    const prediction = this.enhancedPredictionAlgorithm(recentNumbers, currentSecond);
-                    return {
-                        ...prediction,
-                        source: 'ALGORITHM',
-                        message: ''
-                    };
-                }
-            }
-
             // Chat Predictor Logic
             let previousResults = [];
             let latestPeriod = null;
@@ -1145,9 +977,6 @@
             let serverOnline = true;
             let lastPredictionPeriod = null;
             let lastActualNumber = null;
-
-            // Initialize prediction system
-            const predictionSystem = new AdvancedPredictionSystem();
 
             // DOM elements
             const messagesContainer = document.getElementById('messages-container');
@@ -1262,7 +1091,6 @@
                             <span>Confidence</span>
                             <span class="confidence-value">${confidencePercentage}%</span>
                         </div>
-                        ${predictionData.message ? `<div style="font-size:0.7rem;color:var(--text-dim);margin-top:8px;">${predictionData.message}</div>` : ''}
                     </div>
                 `;
             }
@@ -1285,15 +1113,6 @@
                             const newPeriod = data.data.issueNumber;
                             
                             if (newPeriod !== latestPeriod) {
-                                if (latestPeriod && currentPrediction && previousResults.length > 0) {
-                                    const lastResult = previousResults[0].number;
-                                    lastActualNumber = parseInt(lastResult, 10);
-                                    
-                                    // Update prediction system with actual result
-                                    predictionSystem.addNumber(lastActualNumber);
-                                    predictionSystem.lastActual = lastActualNumber;
-                                }
-                                
                                 latestPeriod = newPeriod;
                                 await fetchPreviousResults();
                                 updatePredictions(now, newPeriod);
@@ -1323,13 +1142,6 @@
                         const data = await response.json();
                         if (data.code === 0 && data.data.list.length > 0) {
                             previousResults = data.data.list;
-                            
-                            // Update prediction system history
-                            const numbers = data.data.list.map(item => parseInt(item.number, 10));
-                            numbers.reverse().forEach(num => {
-                                predictionSystem.addNumber(num);
-                            });
-                            
                             updateServerStatus(true);
                         }
                     } else {
@@ -1341,45 +1153,48 @@
                 }
             }
 
-            // Added the requested API function
-            async function fetchGameResult() {
-                try {
-                    let response = await fetch(
-                        "https://api.fantasygamesapi.com/api/webapi/GetNoaverageEmerdList",
-                        {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                                pageSize: 10,
-                                pageNo: 1,
-                                typeId: 1,
-                                language: 0,
-                                random: "4a0522c6ecd8410496260e686be2a57c",
-                                signature: "334B5E70A0C9B8918B0B15E517E2069C",
-                                timestamp: Math.floor(Date.now() / 1000),
-                            }),
-                        }
-                    );
-                    let data = await response.json();
-                    return data?.data?.list?.[0] || null;
-                } catch (e) {
-                    console.error("Failed to fetch game result:", e);
-                    return null;
-                }
-            }
-
             function updatePredictions(currentTime, currentPeriod) {
                 if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
                     const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
-                    const predictionData = predictionSystem.predict(last10Numbers, currentTime.getUTCSeconds());
-                    currentPrediction = predictionData.prediction;
+                    
+                    // Simple prediction algorithm
+                    const bigCount = last10Numbers.filter(n => n >= 5).length;
+                    const smallCount = 10 - bigCount;
+                    
+                    let prediction;
+                    let confidence;
+                    
+                    if (bigCount >= 7) {
+                        prediction = "SMALL";
+                        confidence = 85;
+                    } else if (smallCount >= 7) {
+                        prediction = "BIG";
+                        confidence = 85;
+                    } else {
+                        // Time-based prediction (changes every 30 seconds)
+                        prediction = currentTime.getUTCSeconds() < 30 ? "SMALL" : "BIG";
+                        confidence = 75;
+                    }
+                    
+                    // Get 1-2 random numbers for the predicted category
+                    const numbers = prediction === "SMALL" 
+                        ? [Math.floor(Math.random() * 5), Math.floor(Math.random() * 5)]
+                        : [5 + Math.floor(Math.random() * 5), 5 + Math.floor(Math.random() * 5)];
+                    
+                    // Remove duplicates and limit to 2 numbers
+                    const uniqueNumbers = [...new Set(numbers)].slice(0, 2);
+                    
+                    currentPrediction = prediction;
                     lastPredictionPeriod = currentPeriod;
-                    predictionSystem.lastPrediction = currentPrediction;
                     
                     // Show prediction message
                     showTyping();
                     setTimeout(() => {
-                        addMessage('received', createPredictionMessage(predictionData), 'Zmx Trader');
+                        addMessage('received', createPredictionMessage({
+                            prediction: prediction,
+                            confidence: confidence,
+                            numbers: uniqueNumbers
+                        }), 'Zmx Trader');
                     }, 1000);
                 }
             }
@@ -1389,19 +1204,9 @@
                 if (online) {
                     connectionStatus.textContent = "Connected to Server";
                     document.querySelector('.status-indicator').className = "status-indicator online";
-                    
-                    // Add connection restored message if previously offline
-                    if (!serverOnline) {
-                        addMessage('received', '<div class="prediction-title"><i class="fas fa-plug"></i> CONNECTION RESTORED</div><p>Server connection reestablished. Resuming normal operations.</p>', 'System');
-                    }
                 } else {
                     connectionStatus.textContent = "Connecting...";
                     document.querySelector('.status-indicator').className = "status-indicator offline";
-                    
-                    // Only show connection lost message if it was previously online
-                    if (serverOnline) {
-                        addMessage('received', '<div class="prediction-title"><i class="fas fa-exclamation-triangle"></i> CONNECTION LOST</div><p>Temporarily lost connection to prediction server. Attempting to reconnect...</p>', 'System');
-                    }
                 }
             }
 
