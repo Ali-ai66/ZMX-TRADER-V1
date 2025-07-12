@@ -970,6 +970,240 @@
                 }
             }
 
+            // Enhanced Prediction System
+            const predictionState = {
+                lastResult: null,
+                recoveryLevel: 0,
+                winStreak: 0,
+                lossStreak: 0,
+                currentPrediction: null,
+                currentPeriod: null,
+                lastActualResult: null
+            };
+
+            const primeCache = {};
+
+            function isPrime(n) {
+                if (n in primeCache) return primeCache[n];
+                
+                if (n < 2) {
+                    primeCache[n] = false;
+                    return false;
+                }
+                if (n === 2) {
+                    primeCache[n] = true;
+                    return true;
+                }
+                if (n % 2 === 0) {
+                    primeCache[n] = false;
+                    return false;
+                }
+                
+                const sqrtN = Math.floor(Math.sqrt(n)) + 1;
+                for (let i = 3; i < sqrtN; i += 2) {
+                    if (n % i === 0) {
+                        primeCache[n] = false;
+                        return false;
+                    }
+                }
+                
+                primeCache[n] = true;
+                return true;
+            }
+
+            function parityPattern(digits) {
+                return digits[0] % 2 !== digits[1] % 2 && digits[1] % 2 !== digits[2] % 2;
+            }
+
+            function centerMirror(digits) {
+                return digits[0] === digits[3] && digits[1] === digits[2];
+            }
+
+            function digitDominance(digits) {
+                const counts = {};
+                digits.forEach(d => {
+                    counts[d] = (counts[d] || 0) + 1;
+                });
+                return Math.max(...Object.values(counts)) >= 3;
+            }
+
+            function isArithmeticSequence(digits) {
+                const diff = digits[1] - digits[0];
+                for (let i = 2; i < digits.length; i++) {
+                    if (digits[i] - digits[i-1] !== diff) return false;
+                }
+                return true;
+            }
+
+            function isGeometricSequence(digits) {
+                if (digits.includes(0)) return false;
+                const ratio = digits[1] / digits[0];
+                for (let i = 2; i < digits.length; i++) {
+                    if (digits[i] / digits[i-1] !== ratio) return false;
+                }
+                return true;
+            }
+
+            function digitSymmetry(digits) {
+                return digits[0] === digits[3] && digits[1] === digits[2];
+            }
+
+            function sumProductRelation(digits) {
+                return digits.reduce((a, b) => a + b, 0) > 2 * (digits[0] * digits[3]);
+            }
+
+            function sureShotLogic(digits, level) {
+                let score = 0;
+
+                // Core rules (level 1)
+                score += digits[0] === digits[3] ? 2 : 0;
+                score += digits.reduce((a, b) => a + b, 0) >= 20 ? 1 : 0;
+                score += Math.max(...digits) - Math.min(...digits) <= 2 ? 1 : 0;
+                score += isPrime(digits.reduce((a, b) => a + b, 0)) ? 2 : 0;
+                
+                const sorted = [...digits].sort((a, b) => a - b);
+                const reverseSorted = [...digits].sort((a, b) => b - a);
+                score += (digits.join('') === sorted.join('') || digits.join('') === reverseSorted.join('')) ? 1 : 0;
+                
+                // Additional metrics
+                const mean = digits.reduce((a, b) => a + b, 0) / digits.length;
+                score += mean > 4.5 ? 1 : 0;
+                
+                const median = [...digits].sort((a, b) => a - b)[Math.floor(digits.length / 2)];
+                score += median > 4 ? 1 : 0;
+
+                if (level >= 2) {
+                    score += parityPattern(digits) ? 2 : 0;
+                    score += centerMirror(digits) ? 1 : 0;
+                    score += digitSymmetry(digits) ? 1 : 0;
+                }
+
+                if (level >= 3) {
+                    score += digitDominance(digits) ? 2 : 0;
+                    score += isArithmeticSequence(digits) ? 1 : 0;
+                    score += isGeometricSequence(digits) ? 1 : 0;
+                }
+
+                if (level >= 4) {
+                    score += sumProductRelation(digits) ? 1 : 0;
+                    score += digits.filter(x => x >= 5).length >= 3 ? 2 : 0;
+                }
+
+                // Dynamic threshold
+                let threshold = 5 + level;
+                if (Math.max(...digits) - Math.min(...digits) <= 1) threshold -= 1;
+                if (digits.reduce((a, b) => a + b, 0) > 25) threshold += 1;
+                
+                return score >= threshold ? "BIG" : "SMALL";
+            }
+
+            function intelligentPrediction(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const sum = digits.reduce((a, b) => a + b, 0);
+                
+                // Strategy 1: Sum parity
+                const strat1 = sum % 2 === 0 ? "BIG" : "SMALL";
+                
+                // Strategy 2: Middle digit dominance
+                const middleSum = digits[1] + digits[2];
+                const outerSum = digits[0] + digits[3];
+                const strat2 = middleSum > outerSum ? "BIG" : "SMALL";
+                
+                // Strategy 3: First/last digit comparison
+                const strat3 = outerSum >= middleSum ? "BIG" : "SMALL";
+                
+                // Strategy 4: Prime product
+                const product = digits[0] * digits[3];
+                const strat4 = isPrime(product) ? "BIG" : "SMALL";
+                
+                // Weighted decision
+                const strategies = [strat1, strat2, strat3, strat4];
+                const bigCount = strategies.filter(s => s === "BIG").length;
+                
+                if (bigCount >= 3) return "BIG";
+                if (bigCount <= 1) return "SMALL";
+                return strat1;
+            }
+
+            function predictStrict(periodNumber, actualResult = null, forceRecoveryLevel = null) {
+                // Input validation
+                if (!periodNumber || periodNumber.length < 4) {
+                    throw new Error("Period number must have at least 4 digits");
+                }
+                
+                if (forceRecoveryLevel !== null) {
+                    if (forceRecoveryLevel >= 0 && forceRecoveryLevel <= 4) {
+                        predictionState.recoveryLevel = forceRecoveryLevel;
+                    } else {
+                        throw new Error("Recovery level must be between 0 and 4");
+                    }
+                }
+                
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                
+                // Generate prediction based on mode
+                let prediction;
+                if (predictionState.recoveryLevel === 0) {
+                    prediction = intelligentPrediction(periodNumber);
+                } else {
+                    prediction = sureShotLogic(digits, predictionState.recoveryLevel);
+                }
+                
+                // Process actual result if provided
+                let resultStatus = null;
+                if (actualResult) {
+                    if (actualResult !== "BIG" && actualResult !== "SMALL") {
+                        throw new Error("Actual result must be either 'BIG' or 'SMALL'");
+                    }
+                    
+                    resultStatus = prediction === actualResult ? "WIN" : "LOSS";
+                    
+                    // Update streaks and recovery level
+                    if (resultStatus === "WIN") {
+                        predictionState.winStreak++;
+                        predictionState.lossStreak = 0;
+                        predictionState.lastResult = "WIN";
+                        
+                        // Only reduce recovery level after multiple wins
+                        if (predictionState.winStreak >= 2 && predictionState.recoveryLevel > 0) {
+                            predictionState.recoveryLevel = Math.max(0, predictionState.recoveryLevel - 1);
+                            predictionState.winStreak = 0;
+                        }
+                    } else {
+                        predictionState.lossStreak++;
+                        predictionState.winStreak = 0;
+                        predictionState.lastResult = "LOSS";
+                        
+                        // Increase recovery level more carefully
+                        if (predictionState.lossStreak >= 2) {
+                            predictionState.recoveryLevel = Math.min(4, predictionState.recoveryLevel + 1);
+                            predictionState.lossStreak = 0;
+                        }
+                        
+                        if (predictionState.recoveryLevel >= 4) {
+                            console.log("🚨 CRITICAL: Max recovery level reached! Proceed with extreme caution! 🚨");
+                        }
+                    }
+                }
+                
+                return {
+                    prediction: prediction,
+                    result: resultStatus,
+                    recoveryLevel: predictionState.recoveryLevel,
+                    digits: digits,
+                    sum: digits.reduce((a, b) => a + b, 0),
+                    analysis: {
+                        isPrimeSum: isPrime(digits.reduce((a, b) => a + b, 0)),
+                        isMonotonic: digits.join('') === [...digits].sort((a, b) => a - b).join('') || 
+                                      digits.join('') === [...digits].sort((a, b) => b - a).join(''),
+                        digitVariation: Math.max(...digits) - Math.min(...digits),
+                        digitPattern: parityPattern(digits) ? "PARITY" : 
+                                      centerMirror(digits) ? "MIRROR" : 
+                                      digitDominance(digits) ? "DOMINANCE" : "RANDOM"
+                    }
+                };
+            }
+
             // Chat Predictor Logic
             let previousResults = [];
             let latestPeriod = null;
@@ -1077,6 +1311,23 @@
                     </div>
                 `;
                 
+                // Create recovery level indicators
+                const recoveryDots = [];
+                for (let i = 0; i < 4; i++) {
+                    let dotClass = 'recovery-dot';
+                    if (i < predictionData.recoveryLevel) {
+                        dotClass += predictionData.recoveryLevel >= 4 ? ' critical' : ' active';
+                    }
+                    recoveryDots.push(`<div class="${dotClass}"></div>`);
+                }
+                
+                let recoveryStatus = '';
+                if (predictionData.recoveryLevel > 0) {
+                    recoveryStatus = predictionData.recoveryLevel >= 4 ? 
+                        `<div class="recovery-status critical">CRITICAL RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>` :
+                        `<div class="recovery-status warning">RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>`;
+                }
+                
                 return `
                     <div class="prediction-card">
                         <div class="period-display">${latestPeriod}</div>
@@ -1091,6 +1342,13 @@
                             <span>Confidence</span>
                             <span class="confidence-value">${confidencePercentage}%</span>
                         </div>
+                        
+                        ${predictionData.recoveryLevel > 0 ? `
+                        <div class="recovery-level">
+                            ${recoveryDots.join('')}
+                        </div>
+                        ${recoveryStatus}
+                        ` : ''}
                     </div>
                 `;
             }
@@ -1157,43 +1415,42 @@
                 if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
                     const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
                     
-                    // Simple prediction algorithm
-                    const bigCount = last10Numbers.filter(n => n >= 5).length;
-                    const smallCount = 10 - bigCount;
+                    // Get the last 4 digits of the current period for our prediction
+                    const periodDigits = currentPeriod.slice(-4).split('').map(Number);
                     
-                    let prediction;
-                    let confidence;
-                    
-                    if (bigCount >= 7) {
-                        prediction = "SMALL";
-                        confidence = 85;
-                    } else if (smallCount >= 7) {
-                        prediction = "BIG";
-                        confidence = 85;
-                    } else {
-                        // Time-based prediction (changes every 30 seconds)
-                        prediction = currentTime.getUTCSeconds() < 30 ? "SMALL" : "BIG";
-                        confidence = 75;
-                    }
+                    // Make prediction using our enhanced system
+                    const predictionResult = predictStrict(currentPeriod);
                     
                     // Get 1-2 random numbers for the predicted category
-                    const numbers = prediction === "SMALL" 
+                    const numbers = predictionResult.prediction === "SMALL" 
                         ? [Math.floor(Math.random() * 5), Math.floor(Math.random() * 5)]
                         : [5 + Math.floor(Math.random() * 5), 5 + Math.floor(Math.random() * 5)];
                     
                     // Remove duplicates and limit to 2 numbers
                     const uniqueNumbers = [...new Set(numbers)].slice(0, 2);
                     
-                    currentPrediction = prediction;
+                    // Calculate confidence based on recovery level and patterns
+                    let confidence = 75;
+                    if (predictionResult.recoveryLevel > 0) {
+                        confidence = 85 - (predictionResult.recoveryLevel * 5);
+                    } else {
+                        // Higher confidence if we detect strong patterns
+                        if (predictionResult.analysis.digitPattern !== "RANDOM") {
+                            confidence = 85;
+                        }
+                    }
+                    
+                    currentPrediction = predictionResult.prediction;
                     lastPredictionPeriod = currentPeriod;
                     
                     // Show prediction message
                     showTyping();
                     setTimeout(() => {
                         addMessage('received', createPredictionMessage({
-                            prediction: prediction,
+                            prediction: predictionResult.prediction,
                             confidence: confidence,
-                            numbers: uniqueNumbers
+                            numbers: uniqueNumbers,
+                            recoveryLevel: predictionResult.recoveryLevel
                         }), 'Zmx Trader');
                     }, 1000);
                 }
