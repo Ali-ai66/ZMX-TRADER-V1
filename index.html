@@ -649,65 +649,45 @@
         }
 
         .predicted-number {
-            background: rgba(0, 240, 255, 0.1);
             border-radius: 8px;
             padding: 8px 12px;
             font-weight: 600;
-            color: var(--primary);
-            border: 1px solid rgba(0, 240, 255, 0.2);
             min-width: 30px;
             text-align: center;
+            color: white;
+            border: 1px solid transparent;
+        }
+
+        .predicted-number.red {
+            background: rgba(255, 0, 85, 0.2);
+            border-color: var(--loss);
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.3);
+        }
+
+        .predicted-number.green {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: var(--win);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
         }
 
         .predicted-number.highlight {
-            background: rgba(0, 255, 136, 0.2);
-            border: 1px solid var(--win);
-            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
             transform: scale(1.1);
         }
 
-        /* Recovery Level Indicators */
-        .recovery-level {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .recovery-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--text-dim);
-            transition: all 0.3s ease;
-        }
-
-        .recovery-dot.active {
-            background: var(--warning);
-            border-color: var(--warning);
-            box-shadow: 0 0 8px var(--warning);
-        }
-
-        .recovery-dot.critical {
-            background: var(--loss);
-            border-color: var(--loss);
-            box-shadow: 0 0 8px var(--loss);
-        }
-
-        .recovery-status {
+        .win-message {
+            color: var(--win);
             text-align: center;
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-top: 5px;
+            font-weight: 700;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
         }
 
-        .recovery-status.warning {
-            color: var(--warning);
-        }
-
-        .recovery-status.critical {
+        .loss-message {
             color: var(--loss);
+            text-align: center;
+            font-weight: 700;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(255, 0, 85, 0.3);
         }
 
         /* Responsive Adjustments */
@@ -777,7 +757,7 @@
     <!-- Tab System -->
     <div class="tab-system">
         <div class="tab active" data-tab="web">
-            <div class="tab-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAyMmM1LjUyMyAwIDEwLTQuNDc3IDEwLTEwUzE3LjUyMyAyIDEyIDIgMiA2LjQ3NyAyIDEyczQuNDc3IDEwIDEwIDEwek0yIDEyaDIwIj48L3BhdGg+PHBhdGggZD0iTTEyIDJhMTUuMyAxNS4zIDAgMCAxIDQgMTAgMTUuMyAxNS4zIDAgMCAxLTQgMTAgMTUuMyAxNS4zIDAgMCAxLTQtMTAgMTUuMyAxNS4zIDAgMCAxIDQtMTB6Ij48L3BhdGg+PC9zdmc+')"></div>
+            <div class="tab-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAyMmM1LjUyMyAwIDEwLTQuNDc3IDEwLTEwUzE3LjUyMyAyIDEyIDIgMiA6LjQ3NyAyIDEyczQuNDc3IDEwIDEwIDEwek0yIDEyaDIwIj48L3BhdGg+PHBhdGggZD0iTTEyIDJhMTUuMyAxNS4zIDAgMCAxIDQgMTAgMTUuMyAxNS4zIDAgMCAxLTQgMTAgMTUuMyAxNS4zIDAgMCAxLTQtMTAgMTUuMyAxNS4zIDAgMCAxIDQtMTB6Ij48L3BhdGg+PC9zdmc+')"></div>
             <div class="tab-label">Games</div>
         </div>
         <div class="tab" data-tab="predictor">
@@ -1311,55 +1291,26 @@
             }
 
             function createPredictionMessage(predictionData) {
-                const confidencePercentage = Math.round(predictionData.confidence);
-                const confidenceWidth = `${confidencePercentage}%`;
-                
                 const numbersHTML = `
                     <div class="predicted-numbers">
                         ${predictionData.numbers.map(num => `
-                            <div class="predicted-number ${num === predictionData.mainPrediction ? 'highlight' : ''}">${num}</div>
+                            <div class="predicted-number ${num <= 4 ? 'red' : 'green'} ${num === predictionData.mainPrediction ? 'highlight' : ''}">${num}</div>
                         `).join('')}
                     </div>
                 `;
                 
-                // Create recovery level indicators
-                const recoveryDots = [];
-                for (let i = 0; i < 4; i++) {
-                    let dotClass = 'recovery-dot';
-                    if (i < predictionData.recoveryLevel) {
-                        dotClass += predictionData.recoveryLevel >= 4 ? ' critical' : ' active';
-                    }
-                    recoveryDots.push(`<div class="${dotClass}"></div>`);
-                }
-                
-                let recoveryStatus = '';
-                if (predictionData.recoveryLevel > 0) {
-                    recoveryStatus = predictionData.recoveryLevel >= 4 ? 
-                        `<div class="recovery-status critical">CRITICAL RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>` :
-                        `<div class="recovery-status warning">RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>`;
+                let resultMessage = '';
+                if (predictionData.result === 'win') {
+                    resultMessage = `<div class="win-message">WIN! ${predictionData.actualNumber} was predicted</div>`;
+                } else if (predictionData.result === 'loss') {
+                    resultMessage = `<div class="loss-message">LOSS! ${predictionData.actualNumber} was not predicted</div>`;
                 }
                 
                 return `
                     <div class="prediction-card">
                         <div class="period-display">${latestPeriod}</div>
-                        <div class="prediction-value">${predictionData.mainPrediction}</div>
-                        
+                        ${resultMessage}
                         ${numbersHTML}
-                        
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${confidenceWidth}"></div>
-                        </div>
-                        <div class="confidence-display">
-                            <span>Confidence</span>
-                            <span class="confidence-value">${confidencePercentage}%</span>
-                        </div>
-                        
-                        ${predictionData.recoveryLevel > 0 ? `
-                        <div class="recovery-level">
-                            ${recoveryDots.join('')}
-                        </div>
-                        ${recoveryStatus}
-                        ` : ''}
                     </div>
                 `;
             }
@@ -1430,32 +1381,31 @@
                     // Make prediction using our enhanced system
                     const mainPrediction = predictNumberUltra(currentPeriod);
                     
-                    // Generate 2-3 related numbers based on the main prediction
-                    const relatedNumbers = [];
-                    relatedNumbers.push(mainPrediction);
+                    // Generate related number (either +1 or -1 from main prediction)
+                    const relatedNumber = (mainPrediction + (Math.random() > 0.5 ? 1 : -1) + 10) % 10;
                     
-                    // Add numbers with similar patterns
-                    if (isArithmeticSequence(periodDigits)) {
-                        relatedNumbers.push((mainPrediction + 1) % 10);
-                        relatedNumbers.push((mainPrediction - 1 + 10) % 10);
-                    } else if (isGeometricSequence(periodDigits)) {
-                        relatedNumbers.push((mainPrediction * 2) % 10);
-                    } else {
-                        relatedNumbers.push((mainPrediction + 2) % 10);
-                        relatedNumbers.push((mainPrediction - 2 + 10) % 10);
-                    }
+                    // Create array with exactly 2 numbers
+                    const predictedNumbers = [mainPrediction, relatedNumber];
                     
-                    // Remove duplicates and limit to 3 numbers
-                    const uniqueNumbers = [...new Set(relatedNumbers)].slice(0, 3);
+                    // Check if we have an actual result to compare with
+                    let resultData = {
+                        mainPrediction: mainPrediction,
+                        numbers: predictedNumbers,
+                        result: null,
+                        actualNumber: null
+                    };
                     
-                    // Calculate confidence based on recovery level and patterns
-                    let confidence = 75;
-                    if (predictionState.recoveryLevel > 0) {
-                        confidence = 85 - (predictionState.recoveryLevel * 5);
-                    } else {
-                        // Higher confidence if we detect strong patterns
-                        if (fibonacciPattern(periodDigits) || isArithmeticSequence(periodDigits) || digitSymmetry(periodDigits)) {
-                            confidence = 90;
+                    if (previousResults[0].issueNumber === currentPeriod) {
+                        const actualNumber = parseInt(previousResults[0].number, 10);
+                        resultData.actualNumber = actualNumber;
+                        
+                        // Check if prediction was correct
+                        if (predictedNumbers.includes(actualNumber)) {
+                            resultData.result = 'win';
+                            predictNumberStrict(currentPeriod, actualNumber);
+                        } else {
+                            resultData.result = 'loss';
+                            predictNumberStrict(currentPeriod, actualNumber);
                         }
                     }
                     
@@ -1464,12 +1414,7 @@
                     // Show prediction message
                     showTyping();
                     setTimeout(() => {
-                        addMessage('received', createPredictionMessage({
-                            mainPrediction: mainPrediction,
-                            confidence: confidence,
-                            numbers: uniqueNumbers,
-                            recoveryLevel: predictionState.recoveryLevel
-                        }), 'Zmx Trader');
+                        addMessage('received', createPredictionMessage(resultData), 'Zmx Trader');
                     }, 1000);
                 }
             }
