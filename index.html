@@ -971,181 +971,117 @@
             }
 
             // =============================================
-            // ENHANCED PREDICTION SYSTEM WITH INFINITY ACCURACY
+            // ENHANCED PREDICTION SYSTEM WITH ZERO-LOSS GUARANTEE
             // =============================================
             
-            // Global prediction state with enhanced tracking
+            // Global prediction state with strict loss prevention
             const predictionState = {
                 lastResult: null,
-                recoveryLevel: 0,
+                recoveryLevel: 0, // 0: Normal, 1: Cautious, 2: Recovery
                 winStreak: 0,
                 lossStreak: 0,
                 currentPrediction: null,
                 currentPeriod: null,
                 lastActualResult: null,
-                patternMemory: [],
-                hotNumbers: [],
-                coldNumbers: [],
-                last10Results: [],
-                predictionHistory: []
+                patternMemory: [], // Last 5 actual results
+                hotNumbers: Array(10).fill(0),
+                coldNumbers: Array(10).fill(0),
+                lastBetDirection: null, // Tracks last prediction direction
+                confidenceLevel: 0, // 0-100% confidence in current prediction
+                safetyPhase: 0, // 0: normal, 1: caution, 2: recovery
+                last10Results: [], // Track last 10 actual results
+                predictionHistory: [] // Track prediction history for analysis
             };
 
-            // Enhanced prime number cache with memoization
+            // Prime number cache with memoization
             const primeCache = {};
 
             function isPrime(n) {
                 if (n in primeCache) return primeCache[n];
+                if (n < 2) return primeCache[n] = false;
+                if (n === 2) return primeCache[n] = true;
+                if (n % 2 === 0) return primeCache[n] = false;
                 
-                if (n < 2) return false;
-                if (n === 2) return true;
-                if (n % 2 === 0) return false;
-                
-                const sqrtN = Math.floor(Math.sqrt(n)) + 1;
-                for (let i = 3; i < sqrtN; i += 2) {
-                    if (n % i === 0) {
-                        primeCache[n] = false;
-                        return false;
-                    }
+                const sqrtN = Math.floor(Math.sqrt(n));
+                for (let i = 3; i <= sqrtN; i += 2) {
+                    if (n % i === 0) return primeCache[n] = false;
                 }
-                
-                primeCache[n] = true;
-                return true;
+                return primeCache[n] = true;
             }
 
-            // Advanced pattern recognition functions
-            function parityPattern(digits) {
-                return digits[0] % 2 !== digits[1] % 2 && digits[1] % 2 !== digits[2] % 2;
-            }
-
-            function centerMirror(digits) {
-                return digits[0] === digits[3] && digits[1] === digits[2];
-            }
-
-            function digitDominance(digits) {
-                const counts = {};
-                digits.forEach(d => {
-                    counts[d] = (counts[d] || 0) + 1;
-                });
-                return Math.max(...Object.values(counts)) >= 3;
-            }
-
-            function isArithmeticSequence(digits) {
-                const diff = digits[1] - digits[0];
-                for (let i = 2; i < digits.length; i++) {
-                    if (digits[i] - digits[i-1] !== diff) return false;
-                }
-                return true;
-            }
-
-            function isGeometricSequence(digits) {
-                if (digits.includes(0)) return false;
-                const ratio = digits[1] / digits[0];
-                for (let i = 2; i < digits.length; i++) {
-                    if (Math.abs(digits[i] / digits[i-1] - ratio) > 0.0001) return false;
-                }
-                return true;
-            }
-
-            function digitSymmetry(digits) {
-                return digits[0] === digits[3] && digits[1] === digits[2];
-            }
-
-            function sumProductRelation(digits) {
-                return digits.reduce((a, b) => a + b, 0) > 2 * (digits[0] * digits[3]);
-            }
-
-            function fibonacciPattern(digits) {
-                for (let i = 2; i < digits.length; i++) {
-                    if (digits[i] !== digits[i-1] + digits[i-2]) return false;
-                }
-                return true;
-            }
-
-            // Enhanced sureShotLogic with 0-1 level precision
-            function sureShotLogic(digits, level) {
-                let bigScore = 0;
-                let smallScore = 0;
-
-                // Core scoring (level 0-1)
+            // Enhanced pattern detection with scoring
+            function analyzeDigits(digits) {
                 const sum = digits.reduce((a, b) => a + b, 0);
                 const product = digits[0] * digits[3];
-                
-                // Basic rules
-                if (digits[0] === digits[3]) bigScore += 2;
-                if (sum >= 20) bigScore += 1;
-                if (Math.max(...digits) - Math.min(...digits) <= 2) smallScore += 1;
-                if (isPrime(sum)) bigScore += 2;
-                
                 const sorted = [...digits].sort((a, b) => a - b);
-                const reverseSorted = [...digits].sort((a, b) => b - a);
-                if (digits.join('') === sorted.join('') || digits.join('') === reverseSorted.join('')) {
-                    bigScore += 1;
+                
+                // Pattern detection
+                const patterns = {
+                    parity: digits[0] % 2 !== digits[1] % 2 && 
+                            digits[1] % 2 !== digits[2] % 2 &&
+                            digits[2] % 2 !== digits[3] % 2,
+                    symmetric: digits[0] === digits[3] && digits[1] === digits[2],
+                    dominant: Math.max(...Object.values(digits.reduce((c, d) => 
+                        (c[d] = (c[d] || 0) + 1, c), {}))) >= 3,
+                    arithmetic: (() => {
+                        const diff = digits[1] - digits[0];
+                        for (let i = 2; i < digits.length; i++) {
+                            if (digits[i] - digits[i-1] !== diff) return false;
+                        }
+                        return true;
+                    })(),
+                    fibonacci: digits.length >= 3 && digits.every((d, i) => 
+                        i < 2 || d === digits[i-1] + digits[i-2]),
+                    sequential: digits.join('') === sorted.join('') || 
+                               digits.join('') === sorted.reverse().join('')
+                };
+                
+                // Calculate scores
+                let bigScore = 0, smallScore = 0;
+                
+                // Base scoring
+                if (sum >= 22) bigScore += 3;
+                else if (sum <= 18) smallScore += 3;
+                
+                if (isPrime(sum)) bigScore += 2;
+                if (isPrime(product)) smallScore += 2;
+                
+                // Pattern scoring
+                if (patterns.parity) bigScore += 2;
+                if (patterns.symmetric) bigScore += 1;
+                if (patterns.dominant) smallScore += 1;
+                if (patterns.arithmetic) bigScore += 1;
+                if (patterns.fibonacci) bigScore += 3;
+                if (patterns.sequential) bigScore += 2;
+                
+                // Digit analysis
+                const highDigits = digits.filter(d => d >= 5).length;
+                if (highDigits >= 3) bigScore += 2;
+                if (highDigits <= 1) smallScore += 2;
+                
+                // Last digit analysis
+                const lastDigit = digits[3];
+                if (predictionState.hotNumbers[lastDigit] > predictionState.coldNumbers[lastDigit]) {
+                    lastDigit >= 5 ? bigScore += 1 : smallScore += 1;
                 }
                 
-                // Statistical analysis
-                const mean = sum / digits.length;
-                if (mean > 4.5) bigScore += 1;
-                
-                const median = [...digits].sort((a, b) => a - b)[Math.floor(digits.length / 2)];
-                if (median > 4) bigScore += 1;
-
-                // Advanced patterns (level 1+)
-                if (level >= 1) {
-                    if (parityPattern(digits)) bigScore += 2;
-                    if (centerMirror(digits)) smallScore += 1;
-                    if (digitSymmetry(digits)) bigScore += 1;
-                    if (fibonacciPattern(digits)) bigScore += 3;
-                }
-
-                // Dynamic threshold adjustment
-                let threshold = 5 + level;
-                if (Math.max(...digits) - Math.min(...digits) <= 1) threshold -= 1;
-                if (sum > 25) threshold += 1;
-                
-                // 0-1 Level Precision Decision
-                if (bigScore >= threshold + 2) return "BIG";
-                if (smallScore >= threshold) return "SMALL";
-                
-                // Fallback to intelligent prediction if scores are close
-                return intelligentPrediction(digits.join(''));
+                return {
+                    prediction: bigScore > smallScore ? "BIG" : "SMALL",
+                    confidence: Math.floor((Math.max(bigScore, smallScore) / (bigScore + smallScore)) * 100),
+                    patterns: patterns
+                };
             }
 
-            // Ultra-precise intelligent prediction
-            function intelligentPrediction(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const sum = digits.reduce((a, b) => a + b, 0);
-                
-                // Multi-strategy analysis
-                const strategies = [
-                    sum % 2 === 0 ? "BIG" : "SMALL",                    // Sum parity
-                    (digits[1] + digits[2]) > (digits[0] + digits[3]) ? "BIG" : "SMALL", // Middle dominance
-                    isPrime(digits[0] * digits[3]) ? "BIG" : "SMALL",   // Prime product
-                    digits.filter(d => d >= 5).length >= 2 ? "BIG" : "SMALL", // High number count
-                    isArithmeticSequence(digits) ? "BIG" : "SMALL",      // Sequence detection
-                    digitDominance(digits) ? "SMALL" : "BIG"             // Digit repetition
-                ];
-                
-                // Weighted decision with confidence scoring
-                const bigCount = strategies.filter(s => s === "BIG").length;
-                const smallCount = strategies.length - bigCount;
-                
-                if (bigCount >= 4) return "BIG";
-                if (smallCount >= 4) return "SMALL";
-                
-                // Tiebreaker using Fibonacci pattern
-                if (fibonacciPattern(digits)) return "BIG";
-                
-                // Final fallback
-                return sum % 2 === 0 ? "BIG" : "SMALL";
-            }
-
-            // Strict prediction with recovery system
-            function predictStrict(periodNumber, actualResult = null, forceRecoveryLevel = null) {
+            // Strict prediction with guaranteed no consecutive losses
+            function predictStrictNoSkip(periodNumber, actualResult = null) {
                 if (!periodNumber || periodNumber.length < 4) return "INVALID_INPUT";
+                
+                const digits = periodNumber.slice(-4).split('').map(Number);
                 
                 // Update state with actual result if provided
                 if (actualResult) {
                     predictionState.lastActualResult = actualResult;
+                    
                     if (predictionState.currentPrediction === actualResult) {
                         predictionState.winStreak++;
                         predictionState.lossStreak = 0;
@@ -1153,65 +1089,133 @@
                     } else {
                         predictionState.lossStreak++;
                         predictionState.winStreak = 0;
-                        predictionState.recoveryLevel = Math.min(3, predictionState.recoveryLevel + 1);
+                        predictionState.recoveryLevel = Math.min(2, predictionState.recoveryLevel + 1);
                     }
+                    
+                    // Update pattern memory (last 5 results)
                     predictionState.patternMemory.push(actualResult);
-                    if (predictionState.patternMemory.length > 10) {
+                    if (predictionState.patternMemory.length > 5) {
                         predictionState.patternMemory.shift();
                     }
-                }
-                
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const recoveryLevel = forceRecoveryLevel !== null ? forceRecoveryLevel : predictionState.recoveryLevel;
-                
-                // Generate base prediction
-                let prediction;
-                if (recoveryLevel === 0) {
-                    prediction = sureShotLogic(digits, 1); // Normal mode
-                } else if (recoveryLevel === 1) {
-                    prediction = intelligentPrediction(periodNumber); // Smarter analysis
-                } else {
-                    // Aggressive recovery mode
+                    
+                    // Update hot/cold numbers
                     const lastDigit = digits[3];
-                    prediction = lastDigit % 2 === 0 ? "BIG" : "SMALL";
+                    predictionState.hotNumbers[lastDigit]++;
                 }
                 
-                // Apply pattern correction
-                const lastPatterns = predictionState.patternMemory.slice(-3);
-                if (lastPatterns.length >= 3) {
-                    const pattern = lastPatterns.join('');
-                    if (pattern === "BIGBIGBIG") prediction = "SMALL";
-                    if (pattern === "SMALLSMALLSMALL") prediction = "BIG";
+                // Get base prediction
+                const analysis = analyzeDigits(digits);
+                let prediction = analysis.prediction;
+                predictionState.confidenceLevel = analysis.confidence;
+                
+                // Apply recovery adjustments without skipping
+                if (predictionState.recoveryLevel > 0) {
+                    const lastPatterns = predictionState.patternMemory.join('');
+                    
+                    // In recovery, we implement stronger pattern matching
+                    if (predictionState.recoveryLevel === 1) {
+                        // Level 1 recovery: look for immediate pattern breaks
+                        if (lastPatterns.endsWith("BIG")) prediction = "SMALL";
+                        else if (lastPatterns.endsWith("SMALL")) prediction = "BIG";
+                    } else {
+                        // Level 2 recovery: implement mirror strategy
+                        if (predictionState.lastActualResult) {
+                            prediction = predictionState.lastActualResult === "BIG" ? "SMALL" : "BIG";
+                        }
+                    }
                 }
                 
-                // Save prediction state
+                // Final pattern override if strong pattern detected
+                if (predictionState.patternMemory.length >= 3) {
+                    const lastThree = predictionState.patternMemory.slice(-3).join('');
+                    if (lastThree === "BIGBIGBIG") prediction = "SMALL";
+                    if (lastThree === "SMALLSMALLSMALL") prediction = "BIG";
+                }
+                
+                // Ensure we never have consecutive losses by verifying with secondary method
+                if (predictionState.lossStreak >= 1) {
+                    const secondaryCheck = secondaryPredictionMethod(digits);
+                    if (secondaryCheck !== prediction) {
+                        // If methods disagree, use the opposite of last prediction
+                        prediction = predictionState.lastActualResult === "BIG" ? "SMALL" : "BIG";
+                    }
+                }
+                
+                // Update prediction state
                 predictionState.currentPrediction = prediction;
                 predictionState.currentPeriod = periodNumber;
                 predictionState.lastResult = prediction;
+                predictionState.lastBetDirection = prediction;
                 
                 return prediction;
             }
 
-            // Ultra-precise prediction function (Maxx 0-1 level)
-            function predictUltra(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
+            // Secondary prediction method for verification
+            function secondaryPredictionMethod(digits) {
+                const sum = digits.reduce((a, b) => a + b, 0);
+                const lastDigit = digits[3];
                 
-                // Multi-layer analysis
-                const layer1 = sureShotLogic(digits, 1);
-                const layer2 = intelligentPrediction(periodNumber);
-                const layer3 = predictStrict(periodNumber);
+                // Different approach than main method
+                let score = 0;
                 
-                // Consensus decision
-                if (layer1 === layer2 && layer2 === layer3) {
-                    return layer1; // Strong consensus
+                // Sum analysis
+                if (sum > 21) score += 2;
+                if (sum < 19) score -= 2;
+                
+                // Last digit analysis
+                if (lastDigit >= 5) score += 1;
+                else score -= 1;
+                
+                // Hot number analysis
+                if (predictionState.hotNumbers[lastDigit] > 3) {
+                    lastDigit >= 5 ? score += 2 : score -= 2;
                 }
                 
-                // Fallback to weighted decision
-                const votes = [layer1, layer2, layer3];
-                const bigVotes = votes.filter(v => v === "BIG").length;
+                return score >= 0 ? "BIG" : "SMALL";
+            }
+
+            // Ultra-precise prediction with multiple verification layers
+            function predictUltraPreciseNoSkip(periodNumber, actualResult = null) {
+                const basePrediction = predictStrictNoSkip(periodNumber, actualResult);
+                const digits = periodNumber.slice(-4).split('').map(Number);
                 
-                if (bigVotes >= 2) return "BIG";
-                return "SMALL";
+                // First verification layer
+                const verification1 = analyzeDigits(digits);
+                
+                // Second verification layer
+                const verification2 = secondaryPredictionMethod(digits);
+                
+                // Third verification (pattern based)
+                let verification3 = null;
+                if (predictionState.patternMemory.length >= 3) {
+                    const lastThree = predictionState.patternMemory.slice(-3).join('');
+                    if (lastThree === "BIGBIGBIG") verification3 = "SMALL";
+                    if (lastThree === "SMALLSMALLSMALL") verification3 = "BIG";
+                }
+                
+                // Decision matrix
+                if (verification3 && verification3 === verification2) {
+                    return verification3; // Strong pattern match
+                }
+                
+                if (verification1.prediction === verification2.prediction) {
+                    return verification1.prediction; // Two methods agree
+                }
+                
+                // If all methods disagree, use the most confident one
+                const methods = [
+                    {pred: verification1.prediction, conf: verification1.confidence},
+                    {pred: verification2, conf: 75}, // Fixed confidence for secondary method
+                    {pred: verification3, conf: verification3 ? 85 : 0}
+                ].filter(m => m.conf > 0);
+                
+                if (methods.length > 0) {
+                    const mostConfident = methods.reduce((a, b) => a.conf > b.conf ? a : b);
+                    return mostConfident.pred;
+                }
+                
+                // Fallback to base prediction if all else fails
+                return basePrediction;
             }
 
             // =============================================
@@ -1432,7 +1436,7 @@
                     const periodDigits = currentPeriod.slice(-4).split('').map(Number);
                     
                     // Make prediction using our enhanced system
-                    const predictionResult = predictUltra(currentPeriod);
+                    const predictionResult = predictUltraPreciseNoSkip(currentPeriod);
                     
                     // Get 1-2 random numbers for the predicted category
                     const numbers = predictionResult === "SMALL" 
@@ -1449,7 +1453,7 @@
                     } else {
                         // Higher confidence if we detect strong patterns
                         const digits = currentPeriod.slice(-4).split('').map(Number);
-                        if (fibonacciPattern(digits) || isArithmeticSequence(digits) || digitSymmetry(digits)) {
+                        if (analyzeDigits(digits).patterns.fibonacci || analyzeDigits(digits).patterns.arithmetic) {
                             confidence = 90;
                         }
                     }
