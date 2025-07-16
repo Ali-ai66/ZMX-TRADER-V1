@@ -990,6 +990,17 @@
                 predictionHistory: []
             };
 
+            // BigSmall Model with Fibonacci, Prime Numbers, and Markov Chain
+            const bigSmallModel = {
+                fibonacciSequence: [61.822, 38.178],
+                primeNumbers: [],
+                markovChain: [],
+                trendReversalThreshold: 5,
+                trendReversal: false,
+                lastResult: null,
+                currentPrediction: null
+            };
+
             // Enhanced prime number cache with memoization
             const primeCache = {};
 
@@ -1139,6 +1150,53 @@
                 return sum % 2 === 0 ? "BIG" : "SMALL";
             }
 
+            // BigSmall prediction using Fibonacci, Prime Numbers, and Markov Chain
+            function predictBigSmall(periodNumber) {
+                const randomNumber = Math.random() * 100;
+                let predictedResult;
+                
+                // Fibonacci Sequence
+                if (randomNumber < bigSmallModel.fibonacciSequence[0]) {
+                    predictedResult = 'BIG';
+                } else {
+                    predictedResult = 'SMALL';
+                }
+                
+                // Prime Number Distribution
+                if (isPrime(randomNumber * 10)) {
+                    predictedResult = getAlternateResult(predictedResult);
+                }
+                
+                // Markov Chain
+                if (bigSmallModel.markovChain.length >= 15) {
+                    const last15Results = bigSmallModel.markovChain.slice(-15);
+                    const mostFrequentResult = getMostFrequentResult(last15Results);
+                    predictedResult = getAlternateResult(mostFrequentResult);
+                }
+                
+                // Trend Reversal Detection
+                if (bigSmallModel.trendReversal) {
+                    predictedResult = getAlternateResult(predictedResult);
+                }
+                
+                bigSmallModel.currentPrediction = predictedResult;
+                return predictedResult;
+            }
+
+            function getAlternateResult(result) {
+                return result === 'BIG' ? 'SMALL' : 'BIG';
+            }
+
+            function getMostFrequentResult(results) {
+                let bigCount = 0;
+                let smallCount = 0;
+                for (let result of results) {
+                    if (result === 'BIG') bigCount++;
+                    if (result === 'SMALL') smallCount++;
+                }
+                return bigCount > smallCount ? 'BIG' : 'SMALL';
+            }
+
             // Strict prediction with recovery system
             function predictStrict(periodNumber, actualResult = null, forceRecoveryLevel = null) {
                 if (!periodNumber || periodNumber.length < 4) return "INVALID_INPUT";
@@ -1196,22 +1254,24 @@
             function predictUltra(periodNumber) {
                 const digits = periodNumber.slice(-4).split('').map(Number);
                 
-                // Multi-layer analysis
+                // Multi-layer analysis combining all prediction methods
                 const layer1 = sureShotLogic(digits, 1);
                 const layer2 = intelligentPrediction(periodNumber);
                 const layer3 = predictStrict(periodNumber);
+                const layer4 = predictBigSmall(periodNumber);
                 
                 // Consensus decision
-                if (layer1 === layer2 && layer2 === layer3) {
-                    return layer1; // Strong consensus
-                }
-                
-                // Fallback to weighted decision
-                const votes = [layer1, layer2, layer3];
+                const votes = [layer1, layer2, layer3, layer4];
                 const bigVotes = votes.filter(v => v === "BIG").length;
                 
-                if (bigVotes >= 2) return "BIG";
-                return "SMALL";
+                if (bigVotes >= 3) return "BIG";
+                if (bigVotes <= 1) return "SMALL";
+                
+                // If tied (2-2), use Fibonacci pattern as tiebreaker
+                if (fibonacciPattern(digits)) return "BIG";
+                
+                // Final fallback to intelligent prediction
+                return intelligentPrediction(periodNumber);
             }
 
             // =============================================
