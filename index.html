@@ -469,6 +469,7 @@
             padding: 14px;
             margin: 12px 0;
             border: 1px solid rgba(0, 240, 255, 0.15);
+            position: relative;
         }
 
         .prediction-title {
@@ -1264,14 +1265,14 @@
                 const votes = [layer1, layer2, layer3, layer4];
                 const bigVotes = votes.filter(v => v === "BIG").length;
                 
-                if (bigVotes >= 3) return "BIG";
-                if (bigVotes <= 1) return "SMALL";
+                if (bigVotes >= 3) return "SMALL"; // Changed to always return opposite
+                if (bigVotes <= 1) return "BIG";   // Changed to always return opposite
                 
                 // If tied (2-2), use Fibonacci pattern as tiebreaker
-                if (fibonacciPattern(digits)) return "BIG";
+                if (fibonacciPattern(digits)) return "SMALL"; // Changed to always return opposite
                 
                 // Final fallback to intelligent prediction
-                return intelligentPrediction(periodNumber);
+                return intelligentPrediction(periodNumber) === "BIG" ? "SMALL" : "BIG"; // Always return opposite
             }
 
             // =============================================
@@ -1491,7 +1492,7 @@
                     // Get the last 4 digits of the current period for our prediction
                     const periodDigits = currentPeriod.slice(-4).split('').map(Number);
                     
-                    // Make prediction using our enhanced system
+                    // Make prediction using our enhanced system (and get the opposite)
                     const predictionResult = predictUltra(currentPeriod);
                     
                     // Get 1-2 random numbers for the predicted category
