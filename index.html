@@ -60,11 +60,13 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       font-weight: 700;
+      letter-spacing: 1px;
     }
 
     .logo-icon {
       font-size: 2rem;
       color: var(--accent);
+      animation: pulse-glow 1.5s infinite alternate;
     }
 
     .server-status {
@@ -75,6 +77,7 @@
       background: rgba(255, 255, 255, 0.05);
       border-radius: 20px;
       font-size: 0.9rem;
+      backdrop-filter: blur(5px);
     }
 
     .status-indicator {
@@ -111,6 +114,7 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       width: 100%;
       max-width: 500px;
+      backdrop-filter: blur(10px);
     }
 
     .card:hover {
@@ -170,6 +174,8 @@
       animation: pulse-glow 1.5s infinite alternate;
       margin-bottom: 10px;
       text-align: center;
+      width: 100%;
+      backdrop-filter: blur(5px);
     }
 
     @keyframes pulse-glow {
@@ -262,33 +268,58 @@
       gap: 15px;
       width: 100%;
       justify-content: center;
+      margin-top: 20px;
     }
 
     .predict-btn {
       background: linear-gradient(90deg, var(--accent), var(--success));
       color: white;
       border: none;
-      padding: 14px 35px;
+      padding: 16px 40px;
       font-size: 1.1rem;
-      border-radius: 30px;
+      border-radius: 12px;
       cursor: pointer;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
       transition: all 0.3s ease;
       box-shadow: 0 5px 15px rgba(58, 123, 213, 0.3);
-      min-width: 180px;
+      min-width: 200px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 1;
+    }
+
+    .predict-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: all 0.5s;
+      z-index: -1;
+    }
+
+    .predict-btn:hover::before {
+      left: 100%;
     }
 
     .predict-btn:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(58, 123, 213, 0.4);
+      box-shadow: 0 8px 25px rgba(58, 123, 213, 0.5);
       background: linear-gradient(90deg, var(--accent-light), var(--success));
     }
 
     .predict-btn:active {
       transform: translateY(1px);
+      box-shadow: 0 2px 10px rgba(58, 123, 213, 0.3);
     }
 
     .predict-btn:disabled {
@@ -296,6 +327,15 @@
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
+    }
+
+    .predict-btn i {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .predict-btn:hover i {
+      transform: rotate(15deg);
     }
 
     footer {
@@ -359,7 +399,6 @@
       border-radius: 50%;
       border-top-color: white;
       animation: spin 1s ease-in-out infinite;
-      margin-left: 10px;
     }
 
     @keyframes spin {
@@ -370,28 +409,14 @@
       display: none;
     }
 
-    .confidence-meter {
-      width: 100%;
-      max-width: 280px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 4px;
-      margin-top: 10px;
-      overflow: hidden;
-    }
-
-    .confidence-level {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-
-    .accuracy-display {
+    .info-box {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 15px;
+      border-left: 3px solid var(--accent);
       font-size: 0.9rem;
       color: var(--text-secondary);
-      margin-top: 5px;
-      text-align: center;
     }
 
     @media (max-width: 480px) {
@@ -410,9 +435,13 @@
       }
       
       .predict-btn {
-        padding: 12px 25px;
+        padding: 14px 30px;
         font-size: 1rem;
-        min-width: 150px;
+        min-width: 180px;
+      }
+      
+      .logo h1 {
+        font-size: 1.5rem;
       }
     }
   </style>
@@ -441,24 +470,23 @@
           <div class="prediction-box">
             <div class="prediction-result hidden" id="prediction-result">?</div>
           </div>
-          
-          <div class="confidence-meter">
-            <div class="confidence-level" id="confidence-level" style="width: 0%"></div>
-          </div>
-          <div class="accuracy-display" id="accuracy-display"> --%</div>
         </div>
         
         <div class="action-buttons">
           <button class="predict-btn" id="predict-btn">
-            CHANGE
+            <i class="fas fa-sync-alt"></i> CHANGE 
           </button>
+        </div>
+        
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i> CLICK ON CHANGE AT 20-40 SEC TIMER
         </div>
       </div>
     </div>
   </div>
 
   <footer>
-    <p></p>
+    <p>ZMX TRADER &copy; 2024 - Advanced Market Prediction System</p>
   </footer>
 
   <script>
@@ -838,24 +866,13 @@
       }, 10);
     }
 
-    function updatePredictionDisplay(prediction, confidence) {
+    function updatePredictionDisplay(prediction) {
       const predictionElement = document.getElementById('prediction-result');
-      const confidenceElement = document.getElementById('confidence-level');
-      const accuracyElement = document.getElementById('accuracy-display');
       
       // Update prediction display
       predictionElement.textContent = prediction;
       predictionElement.className = 'prediction-result ' + prediction.toLowerCase();
       predictionElement.classList.remove('hidden');
-      
-      // Update confidence meter
-      confidenceElement.style.width = `${confidence}%`;
-      
-      // Update accuracy display
-      const accuracy = predictionState.accuracyStats.totalPredictions > 0 
-        ? Math.round((predictionState.accuracyStats.correctPredictions / predictionState.accuracyStats.totalPredictions) * 100)
-        : '--';
-      accuracyElement.textContent = `${Math.round(confidence)}%`;
       
       // Add animation
       predictionElement.classList.remove('flip-in');
@@ -868,10 +885,10 @@
       const btn = document.getElementById('predict-btn');
       if (show) {
         btn.disabled = true;
-        btn.innerHTML = 'Analyzing <span class="loading"></span>';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ANALYZING';
       } else {
         btn.disabled = false;
-        btn.textContent = 'CHANGE';
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> CHANGE';
       }
     }
 
@@ -934,15 +951,15 @@
         // Add slight delay for better UX
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        const { prediction, confidence } = predictUltra(predictionState.currentPeriod);
-        updatePredictionDisplay(prediction, confidence);
+        const { prediction } = predictUltra(predictionState.currentPeriod);
+        updatePredictionDisplay(prediction);
         
         // Simulate tracking accuracy (in real app, you'd use actual results)
         trackPredictionAccuracy(prediction, null);
         
       } catch (error) {
         console.error('Error generating prediction:', error);
-        updatePredictionDisplay('ERR', 0);
+        updatePredictionDisplay('ERR');
       } finally {
         predictionState.isPredicting = false;
         showLoading(false);
@@ -957,6 +974,9 @@
       
       // Set up prediction button
       document.getElementById('predict-btn').addEventListener('click', generatePrediction);
+      
+      // Generate initial prediction
+      setTimeout(generatePrediction, 1000);
     });
   </script>
 </body>
