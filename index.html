@@ -1,1124 +1,744 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZMX TRADER</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
-
-    :root {
-      --primary-bg: #0a0e1a;
-      --card-bg: #141a2d;
-      --card-border: rgba(255, 255, 255, 0.08);
-      --accent: #4a80f0;
-      --accent-dark: #1a4b8c;
-      --accent-light: #6d9eff;
-      --success: #00c9a7;
-      --warning: #ffb800;
-      --error: #ff5c5c;
-      --text: #f0f4ff;
-      --text-secondary: #a0a8c0;
-      --text-tertiary: #6a7185;
-      --glow: 0 0 20px rgba(74, 128, 240, 0.4);
-      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    @supports (font-variation-settings: normal) {
-      * {
-        font-family: 'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      }
-    }
-
-    body {
-      background: var(--primary-bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(74, 128, 240, 0.08) 0%, transparent 25%),
-        radial-gradient(circle at 90% 80%, rgba(26, 75, 140, 0.12) 0%, transparent 25%);
-      overflow-x: hidden;
-      line-height: 1.5;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 0;
-      margin-bottom: 25px;
-      position: relative;
-    }
-
-    header::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(74, 128, 240, 0.3), transparent);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo h1 {
-      font-size: 1.8rem;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    .logo-icon {
-      font-size: 1.8rem;
-      color: var(--accent);
-      background: rgba(74, 128, 240, 0.1);
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(74, 128, 240, 0.2);
-    }
-
-    .server-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      font-weight: 500;
-    }
-
-    .status-indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--success);
-      box-shadow: 0 0 10px var(--success);
-      position: relative;
-    }
-
-    .status-indicator::before {
-      content: '';
-      position: absolute;
-      inset: -3px;
-      border-radius: 50%;
-      border: 1px solid var(--success);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.8); opacity: 0.8; }
-      70% { transform: scale(1.2); opacity: 0.3; }
-      100% { transform: scale(0.8); opacity: 0.8; }
-    }
-
-    .status-indicator.offline {
-      background: var(--warning);
-      box-shadow: 0 0 10px var(--warning);
-    }
-
-    .status-indicator.offline::before {
-      border-color: var(--warning);
-    }
-
-    .main-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 30px;
-      flex: 1;
-      padding: 20px 0;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--card-border);
-      position: relative;
-      overflow: hidden;
-      transition: var(--transition);
-      width: 100%;
-      max-width: 500px;
-      backdrop-filter: blur(10px);
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-      border-color: rgba(74, 128, 240, 0.3);
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-    }
-
-    .card-header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 25px;
-      text-align: center;
-    }
-
-    .card-title {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-
-    .card-subtitle {
-      font-size: 0.95rem;
-      color: var(--text-secondary);
-      font-weight: 400;
-      max-width: 80%;
-      line-height: 1.5;
-    }
-
-    .prediction-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 25px;
-      padding: 10px 0;
-    }
-
-    .period-display {
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 1.8rem;
-      letter-spacing: 3px;
-      color: var(--text);
-      font-weight: 700;
-      padding: 16px 30px;
-      border-radius: 12px;
-      border: 1px solid rgba(74, 128, 240, 0.2);
-      background: rgba(16, 26, 51, 0.4);
-      margin-bottom: 10px;
-      text-align: center;
-      width: 100%;
-      backdrop-filter: blur(5px);
-      transition: var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .period-display::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, 
-        rgba(74, 128, 240, 0.1) 0%, 
-        rgba(0, 201, 167, 0.1) 100%);
-      z-index: -1;
-    }
-
-    .period-label {
-      display: block;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-weight: 500;
-    }
-
-    .prediction-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      width: 100%;
-    }
-
-    .prediction-box {
-      width: 280px;
-      height: 280px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      border: 2px solid var(--accent);
-      box-shadow: var(--glow);
-      background: rgba(20, 26, 45, 0.6);
-      transition: var(--transition);
-    }
-
-    .prediction-box:hover {
-      box-shadow: 0 0 40px rgba(74, 128, 240, 0.5);
-      transform: scale(1.02);
-    }
-
-    .prediction-result {
-      font-size: 4.5rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      position: relative;
-      z-index: 2;
-      letter-spacing: 2px;
-      transition: var(--transition);
-    }
-
-    .prediction-result.big {
-      color: var(--accent);
-      text-shadow: 0 0 20px rgba(74, 128, 240, 0.7);
-    }
-
-    .prediction-result.small {
-      color: var(--success);
-      text-shadow: 0 0 20px rgba(0, 201, 167, 0.7);
-    }
-
-    .prediction-box::before {
-      content: '';
-      position: absolute;
-      width: 200%;
-      height: 200%;
-      background: conic-gradient(
-        transparent, 
-        var(--accent), 
-        transparent 30%
-      );
-      animation: rotate 4s linear infinite;
-    }
-
-    @keyframes rotate {
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    .prediction-box::after {
-      content: '';
-      position: absolute;
-      inset: 6px;
-      background: var(--card-bg);
-      border-radius: 12px;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 15px;
-      width: 100%;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    .predict-btn {
-      background: linear-gradient(90deg, var(--accent), var(--success));
-      color: white;
-      border: none;
-      padding: 16px 40px;
-      font-size: 1.1rem;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: var(--transition);
-      box-shadow: 0 5px 20px rgba(74, 128, 240, 0.3);
-      min-width: 220px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      z-index: 1;
-    }
-
-    .predict-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, 
-        transparent, 
-        rgba(255, 255, 255, 0.2), 
-        transparent);
-      transition: all 0.6s;
-      z-index: -1;
-    }
-
-    .predict-btn:hover::before {
-      left: 100%;
-    }
-
-    .predict-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(74, 128, 240, 0.5);
-    }
-
-    .predict-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 2px 10px rgba(74, 128, 240, 0.3);
-    }
-
-    .predict-btn:disabled {
-      background: var(--text-tertiary);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .predict-btn i {
-      font-size: 1.2rem;
-      transition: transform 0.3s ease;
-    }
-
-    .predict-btn:hover i {
-      transform: rotate(15deg);
-    }
-
-    footer {
-      text-align: center;
-      padding: 30px 0 15px;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-top: 30px;
-      position: relative;
-    }
-
-    footer::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(74, 128, 240, 0.3), transparent);
-    }
-
-    .info-box {
-      background: rgba(74, 128, 240, 0.08);
-      border-radius: 12px;
-      padding: 16px;
-      margin-top: 15px;
-      border-left: 3px solid var(--accent);
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      width: 100%;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      line-height: 1.5;
-    }
-
-    .info-box i {
-      color: var(--accent);
-      margin-top: 2px;
-      flex-shrink: 0;
-    }
-
-    .flip-in {
-      animation: flip-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    }
-
-    @keyframes flip-in {
-      0% {
-        transform: perspective(600px) rotateX(90deg);
-        opacity: 0;
-      }
-      100% {
-        transform: perspective(600px) rotateX(0);
-        opacity: 1;
-      }
-    }
-
-    .loading {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease-in-out infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .confidence-meter {
-      width: 100%;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
-      margin-top: 15px;
-      overflow: hidden;
-    }
-
-    .confidence-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--success));
-      border-radius: 3px;
-      transition: width 0.5s ease;
-    }
-
-    /* Modern scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(74, 128, 240, 0.4);
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(74, 128, 240, 0.6);
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        padding: 24px;
-      }
-      
-      .prediction-box {
-        width: 240px;
-        height: 240px;
-      }
-      
-      .period-display {
-        font-size: 1.5rem;
-        padding: 14px 20px;
-      }
-      
-      .predict-btn {
-        padding: 14px 30px;
-        font-size: 1rem;
-        min-width: 180px;
-      }
-      
-      .logo h1 {
-        font-size: 1.5rem;
-      }
-
-      .card-title {
-        font-size: 1.2rem;
-      }
-
-      .card-subtitle {
-        font-size: 0.85rem;
-      }
-    }
-
-    /* Animation classes */
-    .pulse {
-      animation: pulse-animation 2s infinite;
-    }
-
-    @keyframes pulse-animation {
-      0% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.05);
-      }
-      100% {
-        transform: scale(1);
-      }
-    }
-
-    .fade-in {
-      animation: fade-in 0.5s ease-out;
-    }
-
-    @keyframes fade-in {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Cloud Storage</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
+    <style>
+        :root {
+            --primary: #4285F4;
+            --error: #EA4335;
+            --success: #34A853;
+            --warning: #FBBC05;
+            --gray: #f5f5f5;
+            --dark-gray: #333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--gray);
+            color: var(--dark-gray);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        #userInfo {
+            display: none;
+            align-items: center;
+        }
+        
+        #userPhoto {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            border: 2px solid white;
+        }
+        
+        #loginContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+        }
+        
+        .login-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-align: center;
+        }
+        
+        .login-subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        #fileUpload {
+            display: none;
+            margin-top: 30px;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        
+        #uploadArea {
+            border: 2px dashed #ccc;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 25px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        #uploadArea:hover {
+            border-color: var(--primary);
+            background-color: #f8fbff;
+        }
+        
+        #uploadArea.highlight {
+            border-color: var(--primary);
+            background-color: #f0f7ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-danger {
+            background-color: var(--error);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d33426;
+        }
+        
+        #filesList {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        
+        .files-header {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            padding: 15px 10px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .file-item {
+            display: grid;
+            grid-template-columns: 3fr 1fr 1fr 1fr;
+            padding: 15px 10px;
+            border-bottom: 1px solid #f5f5f5;
+            align-items: center;
+        }
+        
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        
+        .file-icon {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .file-icon i {
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            background: #f1f1f1;
+            border-radius: 8px;
+            height: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--dark-gray);
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background-color: var(--success);
+        }
+        
+        .toast.error {
+            background-color: var(--error);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 0;
+            color: #777;
+            font-size: 1.1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .files-header, .file-item {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
+            
+            .file-type {
+                display: none;
+            }
+            
+            #uploadArea {
+                padding: 30px 15px;
+            }
+            
+            .login-title {
+                font-size: 2rem;
+            }
+            
+            .login-subtitle {
+                font-size: 1rem;
+                padding: 0 15px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <div class="logo-icon">
-        <i class="fas fa-chart-line"></i>
-      </div>
-      <h1>ZMX TRADER</h1>
+    <header>
+        <div class="header-content">
+            <h1>Cloud Storage</h1>
+            <div id="userInfo">
+                <img id="userPhoto" src="" alt="User Photo">
+                <span id="userName"></span>
+                <button id="logoutBtn" class="btn btn-danger" style="margin-left: 15px;">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loginContainer">
+            <h2 class="login-title">Secure Cloud Storage</h2>
+            <p class="login-subtitle">Store your files, photos, and documents safely in the cloud with Google authentication. Access your data from anywhere, anytime.</p>
+            
+            <!-- Google Sign-In Button -->
+            <div id="g_id_onload"
+                data-client_id="16728591390-8v9h5v3m3a6q7b2p4r5t6y7u8i9o0p1a2s3d4f5g.apps.googleusercontent.com"
+                data-context="signin"
+                data-ux_mode="popup"
+                data-callback="handleGoogleSignIn"
+                data-auto_prompt="false">
+            </div>
+            
+            <div class="g_id_signin"
+                data-type="standard"
+                data-shape="rectangular"
+                data-theme="filled_blue"
+                data-text="signin_with"
+                data-size="large"
+                data-width="300"
+                data-logo_alignment="left">
+            </div>
+        </div>
+
+        <div id="fileUpload">
+            <div id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>Drag & Drop Files Here</h3>
+                <p>or</p>
+                <button id="uploadBtn" class="btn btn-primary">Select Files</button>
+                <input type="file" id="fileInput" multiple style="display: none;">
+            </div>
+            
+            <div id="uploadProgress" class="progress-container" style="display: none;">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="progressText" style="text-align: center; margin: 15px 0; color: #555; font-size: 0.9rem;"></div>
+            
+            <div id="filesList">
+                <div class="files-header">
+                    <span>Name</span>
+                    <span>Size</span>
+                    <span>Type</span>
+                    <span>Actions</span>
+                </div>
+                <div id="filesContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-cloud"></i><br>
+                        No files uploaded yet
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="server-status">
-      <div class="status-indicator"></div>
-      <span>API Connected</span>
-    </div>
-  </header>
 
-  <div class="main-container">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title"></h2>
-        <p class="card-subtitle"></p>
-      </div>
-      <div class="prediction-section">
-        <div class="period-display" id="current-period">
-          <span class="period-label"></span>
-          ----
-        </div>
-        
-        <div class="prediction-container">
-          <div class="prediction-box">
-            <div class="prediction-result hidden" id="prediction-result">?</div>
-          </div>
-        </div>
-        
-        <div class="action-buttons">
-          <button class="predict-btn" id="predict-btn">
-            <i class="fas fa-sync-alt"></i> CHANGE 
-          </button>
-        </div>
-        
-        <div class="info-box">
-          <i class="fas fa-info-circle"></i>
-          <div>
-            <strong></strong>        CLICK CHANGE AT 20-40 SEC TIMER
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    <div id="toast" class="toast"></div>
 
-  <footer>
-    <p></p>
-  </footer>
-
-  <script>
-    // Enhanced prediction state with accuracy tracking
-    let predictionState = {
-      lastResult: null,
-      currentPrediction: null,
-      currentPeriod: null,
-      lastActualResult: null,
-      isPredicting: false,
-      accuracyStats: {
-        totalPredictions: 0,
-        correctPredictions: 0,
-        last10: []
-      }
-    };
-
-    // API Configuration
-    const API_CONFIG = {
-      baseUrl: 'https://api.bdg88zf.com/api/webapi',
-      endpoints: {
-        currentIssue: '/GetGameIssue',
-        previousResults: '/GetNoaverageEmerdList'
-      },
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8'
-      },
-      requestData: {
-        typeId: 1,
-        language: 0,
-        random: "40079dcba93a48769c6ee9d4d4fae23f",
-        signature: "D12108C4F57C549D82B23A91E0FA20AE",
-        timestamp: 1727792520
-      }
-    };
-
-    // Prime number cache with memoization
-    const primeCache = {};
-
-    function isPrime(n) {
-      if (n in primeCache) return primeCache[n];
-      
-      if (n < 2) return false;
-      if (n === 2) return true;
-      if (n % 2 === 0) return false;
-      
-      const sqrtN = Math.floor(Math.sqrt(n)) + 1;
-      for (let i = 3; i < sqrtN; i += 2) {
-        if (n % i === 0) {
-          primeCache[n] = false;
-          return false;
-        }
-      }
-      
-      primeCache[n] = true;
-      return true;
-    }
-
-    // Enhanced pattern recognition functions
-    function parityPattern(digits) {
-      return digits[0] % 2 !== digits[1] % 2 && digits[1] % 2 !== digits[2] % 2;
-    }
-
-    function centerMirror(digits) {
-      return digits[0] === digits[3] && digits[1] === digits[2];
-    }
-
-    function digitDominance(digits) {
-      const counts = {};
-      digits.forEach(d => {
-        counts[d] = (counts[d] || 0) + 1;
-      });
-      return Math.max(...Object.values(counts)) >= 3;
-    }
-
-    function isArithmeticSequence(digits) {
-      const diff = digits[1] - digits[0];
-      for (let i = 2; i < digits.length; i++) {
-        if (digits[i] - digits[i-1] !== diff) return false;
-      }
-      return true;
-    }
-
-    function isGeometricSequence(digits) {
-      if (digits.includes(0)) return false;
-      const ratio = digits[1] / digits[0];
-      for (let i = 2; i < digits.length; i++) {
-        if (Math.abs(digits[i] / digits[i-1] - ratio) > 0.0001) return false;
-      }
-      return true;
-    }
-
-    function digitSymmetry(digits) {
-      return digits[0] === digits[3] && digits[1] === digits[2];
-    }
-
-    function sumProductRelation(digits) {
-      return digits.reduce((a, b) => a + b, 0) > 2 * (digits[0] * digits[3]);
-    }
-
-    function fibonacciPattern(digits) {
-      for (let i = 2; i < digits.length; i++) {
-        if (digits[i] !== digits[i-1] + digits[i-2]) return false;
-      }
-      return true;
-    }
-
-    // 0-1 Level Precision Prediction Algorithm
-    function predictWithPrecision(digits, level) {
-      let bigScore = 0;
-      let smallScore = 0;
-      let confidence = 0;
-
-      // Core scoring (level 0-1)
-      const sum = digits.reduce((a, b) => a + b, 0);
-      const product = digits[0] * digits[3];
-      const mean = sum / digits.length;
-      const median = [...digits].sort((a, b) => a - b)[Math.floor(digits.length / 2)];
-      
-      // Basic rules with weighted scoring
-      if (digits[0] === digits[3]) {
-        bigScore += 2.5;
-        confidence += 15;
-      }
-      
-      if (sum >= 20) {
-        bigScore += 1.8;
-        confidence += 10;
-      } else {
-        smallScore += 1.5;
-        confidence += 8;
-      }
-      
-      if (Math.max(...digits) - Math.min(...digits) <= 2) {
-        smallScore += 1.2;
-        confidence += 5;
-      }
-      
-      if (isPrime(sum)) {
-        bigScore += 2.2;
-        confidence += 12;
-      }
-      
-      const sorted = [...digits].sort((a, b) => a - b);
-      const reverseSorted = [...digits].sort((a, b) => b - a);
-      if (digits.join('') === sorted.join('') || digits.join('') === reverseSorted.join('')) {
-        bigScore += 1.5;
-        confidence += 8;
-      }
-      
-      // Statistical analysis
-      if (mean > 4.5) {
-        bigScore += 1.3;
-        confidence += 7;
-      }
-      
-      if (median > 4) {
-        bigScore += 1.1;
-        confidence += 6;
-      }
-
-      // Advanced patterns (level 1+)
-      if (level >= 1) {
-        if (parityPattern(digits)) {
-          bigScore += 2.3;
-          confidence += 12;
-        }
-        
-        if (centerMirror(digits)) {
-          smallScore += 1.7;
-          confidence += 9;
-        }
-        
-        if (digitSymmetry(digits)) {
-          bigScore += 1.4;
-          confidence += 7;
-        }
-        
-        if (fibonacciPattern(digits)) {
-          bigScore += 3.2;
-          confidence += 18;
-        }
-      }
-
-      // Calculate confidence percentage (capped at 95%)
-      confidence = Math.min(95, Math.max(5, confidence));
-      
-      // Dynamic threshold adjustment
-      let threshold = 5 + level;
-      if (Math.max(...digits) - Math.min(...digits) <= 1) threshold -= 1;
-      if (sum > 25) threshold += 1;
-      
-      // 0-1 Level Precision Decision
-      if (bigScore >= threshold + 2) {
-        return { prediction: "BIG", confidence };
-      }
-      
-      if (smallScore >= threshold) {
-        return { prediction: "SMALL", confidence };
-      }
-      
-      // Fallback to intelligent prediction if scores are close
-      return { 
-        prediction: intelligentPrediction(digits.join('')), 
-        confidence: Math.max(60, confidence - 15) 
-      };
-    }
-
-    // Ultra-precise intelligent prediction
-    function intelligentPrediction(periodNumber) {
-      const digits = periodNumber.slice(-4).split('').map(Number);
-      const sum = digits.reduce((a, b) => a + b, 0);
-      
-      // Multi-strategy analysis with weights
-      const strategies = [
-        { fn: () => sum % 2 === 0 ? "BIG" : "SMALL", weight: 1.2 }, // Sum parity
-        { fn: () => (digits[1] + digits[2]) > (digits[0] + digits[3]) ? "BIG" : "SMALL", weight: 1.0 }, // Middle dominance
-        { fn: () => isPrime(digits[0] * digits[3]) ? "BIG" : "SMALL", weight: 0.9 }, // Prime product
-        { fn: () => digits.filter(d => d >= 5).length >= 2 ? "BIG" : "SMALL", weight: 1.1 }, // High number count
-        { fn: () => isArithmeticSequence(digits) ? "BIG" : "SMALL", weight: 0.8 }, // Sequence detection
-        { fn: () => digitDominance(digits) ? "SMALL" : "BIG", weight: 1.3 } // Digit repetition
-      ];
-      
-      // Weighted decision with confidence scoring
-      let bigScore = 0;
-      let smallScore = 0;
-      
-      strategies.forEach(strategy => {
-        const result = strategy.fn();
-        if (result === "BIG") {
-          bigScore += strategy.weight;
-        } else {
-          smallScore += strategy.weight;
-        }
-      });
-      
-      if (bigScore >= smallScore + 1.5) return "BIG";
-      if (smallScore >= bigScore + 1.5) return "SMALL";
-      
-      // Tiebreaker using Fibonacci pattern
-      if (fibonacciPattern(digits)) return "BIG";
-      
-      // Final fallback to sum parity
-      return sum % 2 === 0 ? "BIG" : "SMALL";
-    }
-
-    // Strict prediction with recovery system
-    function predictStrict(periodNumber, actualResult = null, forceRecoveryLevel = null) {
-      if (!periodNumber || periodNumber.length < 4) return "INVALID_INPUT";
-      
-      // Update state with actual result if provided
-      if (actualResult) {
-        predictionState.lastActualResult = actualResult;
-      }
-      
-      const digits = periodNumber.slice(-4).split('').map(Number);
-      const recoveryLevel = forceRecoveryLevel !== null ? forceRecoveryLevel : 0;
-      
-      // Generate base prediction
-      let prediction;
-      if (recoveryLevel === 0) {
-        const result = predictWithPrecision(digits, 1);
-        prediction = result.prediction;
-      } else if (recoveryLevel === 1) {
-        prediction = intelligentPrediction(periodNumber); // Smarter analysis
-      } else {
-        // Aggressive recovery mode
-        const lastDigit = digits[3];
-        prediction = lastDigit % 2 === 0 ? "BIG" : "SMALL";
-      }
-      
-      // Save prediction state
-      predictionState.currentPrediction = prediction;
-      predictionState.currentPeriod = periodNumber;
-      predictionState.lastResult = prediction;
-      
-      return prediction;
-    }
-
-    // Ultra-precise prediction function (Maxx 0-1 level)
-    function predictUltra(periodNumber) {
-      const digits = periodNumber.slice(-4).split('').map(Number);
-      
-      // Multi-layer analysis with confidence
-      const layer1 = predictWithPrecision(digits, 1);
-      const layer2 = { 
-        prediction: intelligentPrediction(periodNumber),
-        confidence: 75 // Base confidence for intelligent prediction
-      };
-      
-      // Consensus decision
-      if (layer1.prediction === layer2.prediction) {
-        // Boost confidence when both methods agree
-        return {
-          prediction: layer1.prediction,
-          confidence: Math.min(95, layer1.confidence + 10)
+    <script>
+        // =================================
+        // Firebase Configuration and Setup
+        // =================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQCKkrAe9k20XGV1n58TVC6OZeaV3wDv8",
+            authDomain: "zmx-trader-v1-8a94a.firebaseapp.com",
+            projectId: "zmx-trader-v1-8a94a",
+            storageBucket: "zmx-trader-v1-8a94a.appspot.com",
+            messagingSenderId: "16728591390",
+            appId: "1:16728591390:web:3127669ba6f1b9a812320f"
         };
-      }
-      
-      // When methods disagree, use weighted decision
-      const layer1Weight = layer1.confidence / 100;
-      const layer2Weight = layer2.confidence / 100;
-      
-      if (layer1.prediction === "BIG") {
-        const combinedConfidence = (layer1.confidence * layer1Weight + layer2.confidence * (1 - layer2Weight)) / 2;
-        return {
-          prediction: layer1Weight > layer2Weight ? "BIG" : "SMALL",
-          confidence: combinedConfidence
-        };
-      } else {
-        const combinedConfidence = (layer2.confidence * layer2Weight + layer1.confidence * (1 - layer1Weight)) / 2;
-        return {
-          prediction: layer2Weight > layer1Weight ? "SMALL" : "BIG",
-          confidence: combinedConfidence
-        };
-      }
-    }
 
-    // API Functions
-    async function fetchCurrentGameIssue() {
-      try {
-        const response = await fetch(API_CONFIG.baseUrl + API_CONFIG.endpoints.currentIssue, {
-          method: 'POST',
-          headers: API_CONFIG.headers,
-          body: JSON.stringify(API_CONFIG.requestData)
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const storage = firebase.storage();
+
+        // =================================
+        // Google Sign-In Implementation
+        // =================================
+        function handleGoogleSignIn(response) {
+            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+            
+            auth.signInWithCredential(credential)
+                .then((userCredential) => {
+                    showToast('Signed in successfully!', 'success');
+                    const user = userCredential.user;
+                    updateUIAfterLogin(user);
+                    loadFiles();
+                })
+                .catch((error) => {
+                    console.error("Sign-in error:", error);
+                    showToast('Sign-in failed: ' + error.message, 'error');
+                    // Reset Google Sign-In button
+                    google.accounts.id.renderButton(
+                        document.querySelector('.g_id_signin'), 
+                        { 
+                            type: 'standard',
+                            shape: 'rectangular',
+                            theme: 'filled_blue',
+                            text: 'signin_with',
+                            size: 'large',
+                            width: 300,
+                            logo_alignment: 'left'
+                        }
+                    );
+                });
+        }
+
+        function updateUIAfterLogin(user) {
+            // Update user info in header
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/40';
+            document.getElementById('userName').textContent = user.displayName || 'User';
+            
+            // Switch to file upload interface
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('fileUpload').style.display = 'block';
+        }
+
+        // =================================
+        // Authentication State Management
+        // =================================
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                updateUIAfterLogin(user);
+                loadFiles();
+            } else {
+                // User is signed out
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('loginContainer').style.display = 'flex';
+                document.getElementById('fileUpload').style.display = 'none';
+                
+                // Render Google Sign-In button if not already rendered
+                if (!document.querySelector('.g_id_signin').hasChildNodes()) {
+                    google.accounts.id.renderButton(
+                        document.querySelector('.g_id_signin'), 
+                        { 
+                            type: 'standard',
+                            shape: 'rectangular',
+                            theme: 'filled_blue',
+                            text: 'signin_with',
+                            size: 'large',
+                            width: 300,
+                            logo_alignment: 'left'
+                        }
+                    );
+                }
+            }
         });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                showToast('Signed out successfully', 'success');
+                // Reset the Google Sign-In button
+                google.accounts.id.disableAutoSelect();
+                google.accounts.id.prompt();
+            }).catch((error) => {
+                console.error("Logout error:", error);
+                showToast('Logout failed: ' + error.message, 'error');
+            });
+        });
+
+        // =================================
+        // File Upload Functionality
+        // =================================
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            e.target.value = ''; // Reset input to allow uploading same file again
+        });
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
         
-        if (!response.ok) {
-          updateServerStatus(false);
-          throw new Error('Network response was not ok');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
-        
-        const data = await response.json();
-        
-        if (data.code === 0 && data.data) {
-          updateServerStatus(true);
-          return {
-            period: data.data.issueNumber,
-            result: data.data.lotteryResult,
-            endTime: data.data.endTime
-          };
-        } else {
-          updateServerStatus(false);
-          throw new Error('Invalid API response');
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            uploadArea.classList.add('highlight');
         }
-      } catch (error) {
-        console.error('Error fetching current game issue:', error);
-        updateServerStatus(false);
-        return null;
-      }
-    }
 
-    // UI Update Functions
-    function updateServerStatus(online) {
-      const statusIndicator = document.querySelector('.status-indicator');
-      const statusText = document.querySelector('.server-status span');
-      
-      if (online) {
-        statusIndicator.classList.remove('offline');
-        statusText.textContent = 'API Connected';
-      } else {
-        statusIndicator.classList.add('offline');
-        statusText.textContent = 'API Offline';
-      }
-    }
-
-    function updatePeriodDisplay(period) {
-      const periodElement = document.getElementById('current-period');
-      
-      // Format period to show only last 4 digits
-      const formattedPeriod = period ? period.slice(-4) : '----';
-      
-      // Update the period number while keeping the label
-      periodElement.innerHTML = `<span class="period-label">Current Period</span>${formattedPeriod}`;
-      periodElement.classList.remove('flip-in');
-      setTimeout(() => {
-        periodElement.classList.add('flip-in');
-      }, 10);
-    }
-
-    function updatePredictionDisplay(prediction) {
-      const predictionElement = document.getElementById('prediction-result');
-      
-      // Update prediction display
-      predictionElement.textContent = prediction;
-      predictionElement.className = 'prediction-result ' + prediction.toLowerCase();
-      predictionElement.classList.remove('hidden');
-      
-      // Add animation
-      predictionElement.classList.remove('flip-in');
-      setTimeout(() => {
-        predictionElement.classList.add('flip-in');
-      }, 10);
-    }
-
-    function showLoading(show) {
-      const btn = document.getElementById('predict-btn');
-      if (show) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ANALYZING';
-      } else {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-sync-alt"></i> CHANGE';
-      }
-    }
-
-    // Track prediction accuracy
-    function trackPredictionAccuracy(prediction, actualResult) {
-      if (!actualResult) return;
-      
-      predictionState.accuracyStats.totalPredictions++;
-      
-      // Simple check - in real app you'd compare with actual result
-      // For demo purposes, we'll simulate 85% accuracy
-      const isCorrect = Math.random() < 0.85;
-      
-      if (isCorrect) {
-        predictionState.accuracyStats.correctPredictions++;
-      }
-      
-      // Maintain last 10 predictions for recent accuracy
-      predictionState.accuracyStats.last10.push(isCorrect);
-      if (predictionState.accuracyStats.last10.length > 10) {
-        predictionState.accuracyStats.last10.shift();
-      }
-    }
-
-    // Main update function for period
-    async function updatePeriodData() {
-      try {
-        const currentGame = await fetchCurrentGameIssue();
-        if (!currentGame) return;
-        
-        updatePeriodDisplay(currentGame.period);
-        predictionState.currentPeriod = currentGame.period;
-        
-      } catch (error) {
-        console.error('Error updating period data:', error);
-        updateServerStatus(false);
-      }
-    }
-
-    // Prediction function triggered by button
-    async function generatePrediction() {
-      if (predictionState.isPredicting) return;
-      
-      try {
-        predictionState.isPredicting = true;
-        showLoading(true);
-        
-        // Hide previous prediction
-        document.getElementById('prediction-result').classList.add('hidden');
-        
-        // Get current period if not already available
-        if (!predictionState.currentPeriod) {
-          await updatePeriodData();
+        function unhighlight() {
+            uploadArea.classList.remove('highlight');
         }
-        
-        if (!predictionState.currentPeriod) {
-          throw new Error('No period data available');
-        }
-        
-        // Add slight delay for better UX
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const { prediction } = predictUltra(predictionState.currentPeriod);
-        updatePredictionDisplay(prediction);
-        
-        // Simulate tracking accuracy (in real app, you'd use actual results)
-        trackPredictionAccuracy(prediction, null);
-        
-      } catch (error) {
-        console.error('Error generating prediction:', error);
-        updatePredictionDisplay('ERR');
-      } finally {
-        predictionState.isPredicting = false;
-        showLoading(false);
-      }
-    }
 
-    // Initialize the application
-    document.addEventListener('DOMContentLoaded', () => {
-      // Set up periodic refresh (every 2 seconds)
-      updatePeriodData();
-      setInterval(updatePeriodData, 2000);
-      
-      // Set up prediction button
-      document.getElementById('predict-btn').addEventListener('click', generatePrediction);
-      
-      // Generate initial prediction
-      setTimeout(generatePrediction, 1000);
-    });
-  </script>
+        uploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            
+            const user = auth.currentUser;
+            if (!user) {
+                showToast('Please sign in to upload files', 'error');
+                return;
+            }
+            
+            // Show progress UI
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // Process each file
+            Array.from(files).forEach((file, index) => {
+                uploadFile(file, index, files.length);
+            });
+        }
+
+        function uploadFile(file, index, totalFiles) {
+            const user = auth.currentUser;
+            const storageRef = storage.ref();
+            const fileRef = storageRef.child(`users/${user.uid}/${file.name}`);
+            const uploadTask = fileRef.put(file);
+            
+            // Update progress text
+            let progressText = `Uploading ${file.name} (${index + 1}/${totalFiles})`;
+            document.getElementById('progressText').textContent = progressText;
+            
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('progressText').textContent = 
+                        `${progressText}: ${Math.round(progress)}%`;
+                },
+                (error) => {
+                    console.error("Upload error:", error);
+                    showToast(`Upload failed: ${file.name}`, 'error');
+                    if (index === totalFiles - 1) {
+                        document.getElementById('uploadProgress').style.display = 'none';
+                    }
+                },
+                () => {
+                    // Upload complete
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        showToast(`${file.name} uploaded successfully!`, 'success');
+                        
+                        if (index === totalFiles - 1) {
+                            document.getElementById('uploadProgress').style.display = 'none';
+                            document.getElementById('progressBar').style.width = '0%';
+                            loadFiles();
+                        }
+                    });
+                }
+            );
+        }
+
+        // =================================
+        // File Management Functions
+        // =================================
+        function loadFiles() {
+            const user = auth.currentUser;
+            if (!user) return;
+            
+            const storageRef = storage.ref();
+            const userRef = storageRef.child(`users/${user.uid}`);
+            const filesContainer = document.getElementById('filesContainer');
+            
+            filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading files...</div>';
+            
+            userRef.listAll().then((res) => {
+                if (res.items.length === 0) {
+                    filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><br>No files found. Upload some files to get started.</div>';
+                    return;
+                }
+                
+                filesContainer.innerHTML = '';
+                
+                res.items.forEach((itemRef) => {
+                    itemRef.getMetadata().then((metadata) => {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        
+                        const fileType = getFileType(metadata.name);
+                        const fileIcon = getFileIcon(fileType);
+                        
+                        fileItem.innerHTML = `
+                            <div class="file-icon">
+                                <i class="${fileIcon}"></i>
+                                <span>${metadata.name}</span>
+                            </div>
+                            <span>${formatFileSize(metadata.size)}</span>
+                            <span class="file-type">${fileType.toUpperCase()}</span>
+                            <div>
+                                <button class="btn btn-secondary" onclick="downloadFile('${metadata.name}')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteFile('${metadata.name}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                        filesContainer.appendChild(fileItem);
+                    }).catch((error) => {
+                        console.error("Error getting metadata:", error);
+                    });
+                });
+            }).catch((error) => {
+                console.error("Error listing files:", error);
+                filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Error loading files. Please try again.</div>';
+                showToast('Error loading files: ' + error.message, 'error');
+            });
+        }
+
+        function getFileType(filename) {
+            const extension = filename.split('.').pop().toLowerCase();
+            const typeMap = {
+                // Images
+                jpg: 'image', jpeg: 'image', png: 'image', gif: 'image', webp: 'image', svg: 'image', bmp: 'image',
+                // Documents
+                pdf: 'pdf', doc: 'doc', docx: 'doc', xls: 'xls', xlsx: 'xls', ppt: 'ppt', pptx: 'ppt',
+                txt: 'text', csv: 'text', rtf: 'text', md: 'text',
+                // Archives
+                zip: 'zip', rar: 'zip', '7z': 'zip', tar: 'zip', gz: 'zip',
+                // Audio/Video
+                mp3: 'audio', wav: 'audio', ogg: 'audio', mp4: 'video', mkv: 'video', mov: 'video', avi: 'video',
+                // Code
+                html: 'code', css: 'code', js: 'code', json: 'code', php: 'code', py: 'code', java: 'code', cpp: 'code',
+                // Other
+                exe: 'binary', dmg: 'binary', pkg: 'binary'
+            };
+            return typeMap[extension] || 'file';
+        }
+
+        function getFileIcon(fileType) {
+            const iconMap = {
+                image: 'fas fa-image',
+                pdf: 'fas fa-file-pdf',
+                doc: 'fas fa-file-word',
+                xls: 'fas fa-file-excel',
+                ppt: 'fas fa-file-powerpoint',
+                text: 'fas fa-file-alt',
+                zip: 'fas fa-file-archive',
+                audio: 'fas fa-file-audio',
+                video: 'fas fa-file-video',
+                code: 'fas fa-file-code',
+                binary: 'fas fa-file',
+                file: 'fas fa-file'
+            };
+            return iconMap[fileType] || 'fas fa-file';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function downloadFile(filename) {
+            const user = auth.currentUser;
+            const storageRef = storage.ref();
+            const fileRef = storageRef.child(`users/${user.uid}/${filename}`);
+            
+            showToast(`Preparing download for ${filename}...`, 'success');
+            
+            fileRef.getDownloadURL().then((url) => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast(`Download started: ${filename}`, 'success');
+            }).catch((error) => {
+                console.error("Download error:", error);
+                showToast(`Download failed: ${filename}`, 'error');
+            });
+        }
+
+        function deleteFile(filename) {
+            if (!confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) {
+                return;
+            }
+            
+            const user = auth.currentUser;
+            const storageRef = storage.ref();
+            const fileRef = storageRef.child(`users/${user.uid}/${filename}`);
+            
+            fileRef.delete().then(() => {
+                showToast(`File deleted: ${filename}`, 'success');
+                loadFiles();
+            }).catch((error) => {
+                console.error("Delete error:", error);
+                showToast(`Delete failed: ${filename}`, 'error');
+            });
+        }
+
+        // =================================
+        // UI Helper Functions
+        // =================================
+        function showToast(message, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast';
+            toast.classList.add(type);
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if the user is already logged in
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    updateUIAfterLogin(user);
+                    loadFiles();
+                }
+            });
+            
+            // Initialize Google Sign-In button
+            google.accounts.id.initialize({
+                client_id: "16728591390-8v9h5v3m3a6q7b2p4r5t6y7u8i9o0p1a2s3d4f5g.apps.googleusercontent.com",
+                callback: handleGoogleSignIn
+            });
+            
+            google.accounts.id.renderButton(
+                document.querySelector('.g_id_signin'), 
+                { 
+                    type: 'standard',
+                    shape: 'rectangular',
+                    theme: 'filled_blue',
+                    text: 'signin_with',
+                    size: 'large',
+                    width: 300,
+                    logo_alignment: 'left'
+                }
+            );
+            
+            google.accounts.id.prompt();
+        });
+    </script>
 </body>
 </html>
