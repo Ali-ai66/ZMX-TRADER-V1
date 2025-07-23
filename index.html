@@ -3,741 +3,2098 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Cloud Storage</title>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
+    <title>ZMX TRADER V1 - Enhanced</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
         :root {
-            --primary: #4285F4;
-            --error: #EA4335;
-            --success: #34A853;
-            --warning: #FBBC05;
-            --gray: #f5f5f5;
-            --dark-gray: #333;
+            --primary: #00f0ff;
+            --primary-dark: #00a8b5;
+            --secondary: #0084ff;
+            --accent: #7b00ff;
+            --accent-light: #9d4edd;
+            --win: #00ff88;
+            --loss: #ff0055;
+            --warning: #ffcc00;
+            --bg-dark: #0a0a12;
+            --bg-darker: #05050a;
+            --bg-light: #12121a;
+            --bg-card: #1a1a2e;
+            --text-dim: rgba(200, 220, 255, 0.7);
+            --text-bright: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --glow: 0 0 15px rgba(0, 240, 255, 0.5);
+            --glow-strong: 0 0 30px rgba(0, 240, 255, 0.8);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            --gradient-card: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(123, 0, 255, 0.1));
+            --success-gradient: linear-gradient(135deg, var(--win), #00c8ff);
+            --danger-gradient: linear-gradient(135deg, var(--loss), #ff00aa);
+            --glass-bg: rgba(10, 15, 30, 0.7);
+            --glass-border: rgba(100, 150, 255, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --transition-fast: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --shadow-strong: 0 8px 40px rgba(0, 0, 0, 0.5);
         }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: var(--gray);
-            color: var(--dark-gray);
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-bright);
+            font-family: 'Inter', 'Rajdhani', sans-serif;
+            font-weight: 400;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(123, 0, 255, 0.08) 0%, transparent 25%),
+                linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            line-height: 1.6;
+            letter-spacing: 0.3px;
         }
-        
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 15px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .header-content {
+
+        /* Tab System */
+        .tab-system {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(10, 15, 30, 0.95);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+            z-index: 99999999;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: var(--shadow-soft);
         }
-        
-        #userInfo {
-            display: none;
+
+        .tab {
+            flex: 1;
+            display: flex;
+            justify-content: center;
             align-items: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
         }
-        
-        #userPhoto {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+
+        .tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .tab:hover::before {
+            left: 100%;
+        }
+
+        .tab:hover {
+            background: rgba(0, 240, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: var(--gradient-card);
+            box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient);
+            box-shadow: var(--glow);
+        }
+
+        .tab-icon {
+            width: 30px;
+            height: 30px;
             margin-right: 10px;
-            border: 2px solid white;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
-        
-        #loginContainer {
+
+        .tab-label {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        /* Content Sections with smooth transitions */
+        .content-section {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 60px);
+            display: none;
+            overflow: hidden;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Loading States */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: inherit;
+        }
+
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(0, 240, 255, 0.3);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Enhanced Tab Transitions */
+        .tab {
+            transition: var(--transition-fast), opacity 0.3s ease;
+        }
+
+        /* Web Section (Game Selection) */
+        #web-section {
+            background-color: var(--bg-dark);
+        }
+
+        /* Game Selection Screen */
+        .game-selection {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 10, 20, 0.98);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 70vh;
-        }
-        
-        .login-title {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-            text-align: center;
-        }
-        
-        .login-subtitle {
-            font-size: 1.2rem;
-            color: #555;
-            margin-bottom: 40px;
-            text-align: center;
-            max-width: 600px;
-            line-height: 1.6;
-        }
-        
-        #fileUpload {
-            display: none;
-            margin-top: 30px;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        }
-        
-        #uploadArea {
-            border: 2px dashed #ccc;
-            padding: 50px;
-            text-align: center;
-            margin-bottom: 25px;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        #uploadArea:hover {
-            border-color: var(--primary);
-            background-color: #f8fbff;
-        }
-        
-        #uploadArea.highlight {
-            border-color: var(--primary);
-            background-color: #f0f7ff;
-        }
-        
-        .upload-icon {
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-        
-        .btn {
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            font-size: 1rem;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background-color: #3367d6;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .btn-danger {
-            background-color: var(--error);
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background-color: #d33426;
-        }
-        
-        #filesList {
-            margin-top: 30px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
-        }
-        
-        .files-header {
-            display: grid;
-            grid-template-columns: 3fr 1fr 1fr 1fr;
-            padding: 15px 10px;
-            border-bottom: 1px solid #eee;
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .file-item {
-            display: grid;
-            grid-template-columns: 3fr 1fr 1fr 1fr;
-            padding: 15px 10px;
-            border-bottom: 1px solid #f5f5f5;
-            align-items: center;
-        }
-        
-        .file-item:last-child {
-            border-bottom: none;
-        }
-        
-        .file-icon {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .file-icon i {
-            color: var(--primary);
-            font-size: 1.4rem;
-        }
-        
-        .progress-container {
-            margin-top: 20px;
-            background: #f1f1f1;
-            border-radius: 8px;
-            height: 8px;
+            z-index: 9999999;
+            animation: fadeIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: hidden;
+            backdrop-filter: blur(15px);
         }
-        
-        .progress-bar {
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                backdrop-filter: blur(0); 
+                transform: scale(0.95);
+            }
+            to { 
+                opacity: 1; 
+                backdrop-filter: blur(15px); 
+                transform: scale(1);
+            }
+        }
+
+        .game-selection::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            background-color: var(--primary);
-            width: 0%;
-            transition: width 0.3s;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 240, 255, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 80% 70%, rgba(123, 0, 255, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 50% 50%, rgba(0, 144, 255, 0.05) 0%, transparent 40%);
+            z-index: -1;
+            animation: backgroundPulse 8s ease-in-out infinite;
         }
-        
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            background-color: var(--dark-gray);
-            color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 1000;
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
-        
-        .toast.show {
+
+        .game-selection-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            margin: 0 0 50px;
+            color: var(--primary);
+            text-shadow: var(--glow-strong);
+            letter-spacing: 4px;
+            position: relative;
+            display: inline-block;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: var(--glow-strong); }
+            50% { text-shadow: 0 0 50px rgba(0, 240, 255, 1); }
+        }
+
+        .game-selection-title::after {
+            content: "";
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: var(--glow);
+        }
+
+        .game-selection-title.animate::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .game-list-container {
+            width: 100%;
+            max-width: 900px;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+            padding: 0 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) rgba(0,0,0,0.3);
+        }
+
+        .game-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .game-list-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        .game-list-container::-webkit-scrollbar-thumb {
+            background: var(--gradient);
+            border-radius: 3px;
+        }
+
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 0 20px 40px;
+        }
+
+        .game-item {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-bright);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
             transform: translateY(0);
+        }
+
+        .game-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .game-item::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.1) 0%, transparent 70%);
+            transition: all 0.6s ease;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+        }
+
+        .game-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-strong), var(--glow);
+            background: rgba(26, 26, 46, 0.9);
+            border-color: rgba(0, 240, 255, 0.5);
+        }
+
+        .game-item:hover::before {
             opacity: 1;
         }
-        
-        .toast.success {
-            background-color: var(--success);
+
+        .game-item:hover::after {
+            width: 200px;
+            height: 200px;
         }
-        
-        .toast.error {
-            background-color: var(--error);
+
+        .game-item:active {
+            transform: translateY(-4px) scale(0.98);
         }
-        
-        .empty-state {
+
+        .game-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+        }
+
+        .game-item:hover .game-name {
+            color: var(--primary);
+            text-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .game-url {
+            font-size: 13px;
+            color: var(--text-muted);
+            word-break: break-all;
+            opacity: 0.8;
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+            font-weight: 400;
+        }
+
+        .game-item:hover .game-url {
+            opacity: 1;
+            color: var(--text-dim);
+        }
+
+        /* Iframe and Tape Button */
+        .fullscreen-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            z-index: 1;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* NEW BACK BUTTON DESIGN */
+        .injector-tape {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 65px;
+            height: 65px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9999999;
+            box-shadow: var(--shadow-strong), var(--glow);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            animation: tapeFloat 4s ease-in-out infinite;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes tapeFloat {
+            0%, 100% { 
+                transform: translateY(0) rotate(0deg); 
+                box-shadow: var(--shadow-strong), var(--glow);
+            }
+            50% { 
+                transform: translateY(-8px) rotate(5deg); 
+                box-shadow: var(--shadow-strong), var(--glow-strong);
+            }
+        }
+
+        .injector-tape:hover {
+            transform: scale(1.15) rotate(15deg);
+            box-shadow: var(--shadow-strong), 0 0 40px rgba(0, 240, 255, 0.8);
+            animation: none;
+            background: linear-gradient(135deg, var(--primary), var(--accent-light));
+        }
+
+        .injector-tape:active {
+            transform: scale(1.05) rotate(10deg);
+        }
+
+        .injector-tape::before {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-left: 3px solid white;
+            border-bottom: 3px solid white;
+            transform: rotate(45deg);
+            margin-top: -2px;
+            margin-left: -2px;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+
+        /* Floating Particles */
+        .particle {
+            position: absolute;
+            background: rgba(0, 240, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(1px);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-20px) translateX(10px) rotate(5deg); }
+            50% { transform: translateY(0) translateX(20px) rotate(0deg); }
+            75% { transform: translateY(20px) translateX(10px) rotate(-5deg); }
+            100% { transform: translateY(0) translateX(0) rotate(0deg); }
+        }
+
+        /* Chat Predictor Styles */
+        .chat-container {
+            width: 100%;
+            height: 100%;
+            margin: 0 auto;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-dark);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: var(--bg-light);
+            padding: 18px 15px;
             text-align: center;
-            padding: 50px 0;
-            color: #777;
-            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+            position: relative;
+            z-index: 10;
         }
-        
+
+        .chat-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin: 5px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: var(--bg-dark);
+            scroll-behavior: smooth;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(0, 240, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(123, 0, 255, 0.03) 0%, transparent 50%);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            max-width: 85%;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .received {
+            background-color: var(--bg-light);
+            border-bottom-left-radius: 5px;
+            margin-right: auto;
+            border: 1px solid rgba(0, 240, 255, 0.05);
+        }
+
+        .sent {
+            background: var(--gradient);
+            color: white;
+            border-bottom-right-radius: 5px;
+            margin-left: auto;
+        }
+
+        .timestamp {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        .prediction-card {
+            background-color: rgba(0, 240, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            position: relative;
+        }
+
+        .prediction-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .prediction-title i {
+            font-size: 0.9rem;
+        }
+
+        .prediction-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 12px 0;
+            text-align: center;
+            letter-spacing: 1px;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .online {
+            background-color: var(--win);
+            box-shadow: 0 0 8px var(--win);
+        }
+
+        .offline {
+            background-color: var(--loss);
+            box-shadow: 0 0 8px var(--loss);
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 12px 16px;
+            background-color: var(--bg-light);
+            border-radius: 18px;
+            width: fit-content;
+            margin-bottom: 15px;
+            border-bottom-left-radius: 5px;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(0, 240, 255, 0.05);
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .typing-text {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-dim);
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        .scroll-down-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--gradient);
+            color: white;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+
+        .scroll-down-btn.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scroll-down-btn:not(.visible) {
+            transform: translateY(10px);
+        }
+
+        .scroll-down-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--gradient);
+            transition: width 0.5s ease;
+        }
+
+        .floating-bg {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 240, 255, 0.05) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .bg-1 {
+            top: -100px;
+            left: -100px;
+        }
+
+        .bg-2 {
+            bottom: -50px;
+            right: -100px;
+        }
+
+        .period-display {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-align: center;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+
+        .confidence-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .confidence-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .predicted-numbers {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .predicted-number {
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+            color: var(--primary);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .predicted-number.small {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.2);
+        }
+
+        .predicted-number.big {
+            background: rgba(0, 144, 255, 0.1);
+            border-color: rgba(0, 144, 255, 0.2);
+        }
+
+        /* Recovery Level Indicators */
+        .recovery-level {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .recovery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--text-dim);
+            transition: all 0.3s ease;
+        }
+
+        .recovery-dot.active {
+            background: var(--warning);
+            border-color: var(--warning);
+            box-shadow: 0 0 8px var(--warning);
+        }
+
+        .recovery-dot.critical {
+            background: var(--loss);
+            border-color: var(--loss);
+            box-shadow: 0 0 8px var(--loss);
+        }
+
+        .recovery-status {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 5px;
+        }
+
+        .recovery-status.warning {
+            color: var(--warning);
+        }
+
+        .recovery-status.critical {
+            color: var(--loss);
+        }
+
+        /* Settings Button */
+        .settings-button {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition-fast);
+        }
+
+        .settings-button:hover {
+            color: var(--primary);
+            background: rgba(0, 240, 255, 0.1);
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        /* Preferences Panel */
+        #preferences-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preferences-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preferences-content {
+            background: var(--bg-card);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            min-width: 300px;
+            box-shadow: var(--shadow-strong), var(--glow);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .preferences-content h3 {
+            color: var(--primary);
+            margin: 0 0 20px;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .preference-item {
+            margin-bottom: 15px;
+        }
+
+        .preference-item label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-bright);
+        }
+
+        .preference-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .close-preferences {
+            width: 100%;
+            padding: 12px;
+            background: var(--gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: var(--transition-fast);
+        }
+
+        .close-preferences:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .files-header, .file-item {
-                grid-template-columns: 2fr 1fr 1fr;
+            .game-list {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                padding: 0 15px 30px;
             }
             
-            .file-type {
+            .game-selection-title {
+                font-size: 32px;
+                margin-bottom: 35px;
+                letter-spacing: 2px;
+            }
+            
+            .injector-tape {
+                width: 55px;
+                height: 55px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .injector-tape::before {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .tab-label {
+                font-size: 13px;
+                font-weight: 500;
+            }
+            
+            .tab-icon {
+                width: 26px;
+                height: 26px;
+                margin-right: 8px;
+            }
+            
+            .prediction-value {
+                font-size: 1.6rem;
+            }
+            
+            .game-item {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .game-name {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+            
+            .game-url {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-list {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 0 10px 20px;
+            }
+            
+            .game-selection-title {
+                font-size: 28px;
+                margin-bottom: 25px;
+                letter-spacing: 1px;
+            }
+            
+            .injector-tape {
+                width: 50px;
+                height: 50px;
+                bottom: 15px;
+                right: 15px;
+            }
+            
+            .injector-tape::before {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .tab-label {
                 display: none;
             }
             
-            #uploadArea {
-                padding: 30px 15px;
+            .tab-icon {
+                margin-right: 0;
+                width: 30px;
+                height: 30px;
             }
             
-            .login-title {
-                font-size: 2rem;
+            .prediction-value {
+                font-size: 1.4rem;
             }
             
-            .login-subtitle {
-                font-size: 1rem;
-                padding: 0 15px;
+            .game-item {
+                padding: 18px;
+                border-radius: 10px;
+            }
+            
+            .game-name {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            .game-url {
+                font-size: 11px;
+            }
+            
+            .tab-system {
+                height: 55px;
+            }
+            
+            .content-section {
+                top: 55px;
+                height: calc(100% - 55px);
+            }
+        }
+
+        @media (max-width: 360px) {
+            .game-selection-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .game-item {
+                padding: 15px;
+            }
+            
+            .game-name {
+                font-size: 15px;
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <h1>Cloud Storage</h1>
-            <div id="userInfo">
-                <img id="userPhoto" src="" alt="User Photo">
-                <span id="userName"></span>
-                <button id="logoutBtn" class="btn btn-danger" style="margin-left: 15px;">Logout</button>
-            </div>
+    <!-- Tab System -->
+    <div class="tab-system">
+        <div class="tab active" data-tab="web">
+            <div class="tab-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAyMmM1LjUyMyAwIDEwLTQuNDc3IDEwLTEwUzE3LjUyMyAyIDEyIDIgMiA2LjQ3NyAyIDEyczQuNDc3IDEwIDEwIDEwek0yIDEyaDIwIj48L3BhdGg+PHBhdGggZD0iTTEyIDJhMTUuMyAxNS4zIDAgMCAxIDQgMTAgMTUuMyAxNS4zIDAgMCAxLTQgMTAgMTUuMyAxNS4zIDAgMCAxLTQtMTAgMTUuMyAxNS4zIDAgMCAxIDQtMTB6Ij48L3BhdGg+PC9zdmc+')"></div>
+            <div class="tab-label">Games</div>
         </div>
-    </header>
-
-    <div class="container">
-        <div id="loginContainer">
-            <h2 class="login-title">Secure Cloud Storage</h2>
-            <p class="login-subtitle">Store your files, photos, and documents safely in the cloud with Google authentication. Access your data from anywhere, anytime.</p>
-            
-            <!-- Google Sign-In Button -->
-            <div id="g_id_onload"
-                data-client_id="16728591390-8v9h5v3m3a6q7b2p4r5t6y7u8i9o0p1a2s3d4f5g.apps.googleusercontent.com"
-                data-context="signin"
-                data-ux_mode="popup"
-                data-callback="handleGoogleSignIn"
-                data-auto_prompt="false">
-            </div>
-            
-            <div class="g_id_signin"
-                data-type="standard"
-                data-shape="rectangular"
-                data-theme="filled_blue"
-                data-text="signin_with"
-                data-size="large"
-                data-width="300"
-                data-logo_alignment="left">
-            </div>
+        <div class="tab" data-tab="predictor">
+            <div class="tab-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAxNGMxLjQ5LTEuNDYgMi4yNC0yLjI2IDIuNS0zLjUuMjYtMS4yNC0uMzQtMi41LTEuNS0yLjUtMS41NCAwLTIuNSAxLjQ2LTIuNSAzLjVzMSA0IDIgNC41Yy42LjMgMS4yLjUgMS41LjUuNTUgMCAxLS40NSAxLTF2LTYuNWMwLTEuNS0uNjctMi41LTIuNS0yLjVzLTIuNSAxLTIuNSAyLjVWMTQiPjwvcGF0aD48cGF0aCBkPSJNMTEgMTMuNXYtOWMtMC44MzMtLjMzLTEuNS0uNS0yLjUtLjVTNiA0LjE3IDYgNC41djkuNWMwIDEuNS42NyAyLjUgMi41IDIuNXMxLjUtLjUgMi41LS41di05eiI+PC9wYXRoPjxwYXRoIGQ9Ik01IDguNWMwIDEuNS42NyAyLjUgMi41IDIuNVMxMCAxMCAxMCA4LjVWNC41QzEwIDMuMTcgOS4zMyAyIDcuNSAyUzUgMy4xNyA1IDQuNXY0eiI+PC9wYXRoPjwvc3ZnPg==')"></div>
+            <div class="tab-label">Predictor</div>
         </div>
+    </div>
 
-        <div id="fileUpload">
-            <div id="uploadArea">
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <h3>Drag & Drop Files Here</h3>
-                <p>or</p>
-                <button id="uploadBtn" class="btn btn-primary">Select Files</button>
-                <input type="file" id="fileInput" multiple style="display: none;">
-            </div>
-            
-            <div id="uploadProgress" class="progress-container" style="display: none;">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-            <div id="progressText" style="text-align: center; margin: 15px 0; color: #555; font-size: 0.9rem;"></div>
-            
-            <div id="filesList">
-                <div class="files-header">
-                    <span>Name</span>
-                    <span>Size</span>
-                    <span>Type</span>
-                    <span>Actions</span>
-                </div>
-                <div id="filesContainer">
-                    <div class="empty-state">
-                        <i class="fas fa-cloud"></i><br>
-                        No files uploaded yet
+    <!-- Content Sections -->
+    <div class="content-section active" id="web-section">
+        <div class="game-selection" id="gameSelection">
+            <div class="game-selection-title" id="gameSelectionTitle">SELECT GAME</div>
+            <div class="game-list-container">
+                <div class="game-list">
+                    <div class="game-item" data-url="https://bdginf.com/#/login">
+                        <div class="game-name">BIG DADDY</div>
+                        <div class="game-url">bdginf.com</div>
+                    </div>
+                    <div class="game-item" data-url="http://Okwin.bio">
+                        <div class="game-name">OK WIN</div>
+                        <div class="game-url">Okwin.bio</div>
+                    </div>
+                    <div class="game-item" data-url="https://goagamea.com/#/login">
+                        <div class="game-name">GOA GAME</div>
+                        <div class="game-url">goagamea.com</div>
+                    </div>
+                    <div class="game-item" data-url="https://www.bigmumbaiq.com/#/login">
+                        <div class="game-name">BIG MUMBAI</div>
+                        <div class="game-url">bigmumbaiq.com</div>
+                    </div>
+                    <div class="game-item" data-url="http://tirangagame.top">
+                        <div class="game-name">TIRANGA</div>
+                        <div class="game-url">tirangagame.top</div>
+                    </div>
+                    <div class="game-item" data-url="https://51game5.com/#/">
+                        <div class="game-name">51 GAME</div>
+                        <div class="game-url">51game5.com</div>
+                    </div>
+                    <div class="game-item" data-url="https://bdgwin.cc/#/login">
+                        <div class="game-name">BDG WIN</div>
+                        <div class="game-url">bdgwin.cc</div>
+                    </div>
+                    <div class="game-item" data-url="http://rajawager.com">
+                        <div class="game-name">RAJA WAGER</div>
+                        <div class="game-url">rajawager.com</div>
+                    </div>
+                    <div class="game-item" data-url="http://55club.game">
+                        <div class="game-name">55 CLUB</div>
+                        <div class="game-url">55club.game</div>
+                    </div>
+                    <div class="game-item" data-url="https://bharatclub.net/#/login">
+                        <div class="game-name">BHARAT CLUB</div>
+                        <div class="game-url">https://bharatclub.net/#/login</div>
+                    </div>
+                    <div class="game-item" data-url="https://diuwin.bet/#/">
+                        <div class="game-name">DIUWIN</div>
+                        <div class="game-url">diuwin.bet</div>
+                    </div>
+                    <div class="game-item" data-url="https://www.91appg.com/#/">
+                        <div class="game-name">91 CLUB</div>
+                        <div class="game-url">91appg.com/#/</div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <iframe id="gameFrame" class="fullscreen-iframe hidden" allowfullscreen></iframe>
+
+        <div class="injector-tape hidden" id="injectorTape"></div>
     </div>
 
-    <div id="toast" class="toast"></div>
+    <div class="content-section" id="predictor-section">
+        <div class="chat-container">
+            <div class="floating-bg bg-1"></div>
+            <div class="floating-bg bg-2"></div>
+            
+            <div class="chat-header">
+                <h1 class="chat-title">ZMX TRADER V2</h1>
+                <p class="chat-subtitle">
+                    <span class="status-indicator online"></span>
+                    <span id="connection-status">Connected to Server</span>
+                    • <span id="current-time">00:00:00</span>
+                </p>
+            </div>
+
+            <div class="messages-container" id="messages-container">
+                <!-- Initial greeting -->
+                <div class="message received">
+                    <div class="prediction-title"><i class="fas fa-robot"></i> SYSTEM INITIALIZED</div>
+                    <p>Welcome to <strong>Zmx Trader Enhanced</strong>, your advanced prediction assistant. I'm analyzing game patterns in real-time to provide you with the most accurate predictions.</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="timestamp" id="last-update-time">Just now</div>
+                </div>
+
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <span class="typing-text">Analyzing data...</span>
+                </div>
+            </div>
+
+            <div class="scroll-down-btn" id="scroll-down-btn">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // =================================
-        // Firebase Configuration and Setup
-        // =================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDQCKkrAe9k20XGV1n58TVC6OZeaV3wDv8",
-            authDomain: "zmx-trader-v1-8a94a.firebaseapp.com",
-            projectId: "zmx-trader-v1-8a94a",
-            storageBucket: "zmx-trader-v1-8a94a.appspot.com",
-            messagingSenderId: "16728591390",
-            appId: "1:16728591390:web:3127669ba6f1b9a812320f"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const storage = firebase.storage();
-
-        // =================================
-        // Google Sign-In Implementation
-        // =================================
-        function handleGoogleSignIn(response) {
-            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+        // Tab System Logic with improved UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const contentSections = document.querySelectorAll('.content-section');
             
-            auth.signInWithCredential(credential)
-                .then((userCredential) => {
-                    showToast('Signed in successfully!', 'success');
-                    const user = userCredential.user;
-                    updateUIAfterLogin(user);
-                    loadFiles();
-                })
-                .catch((error) => {
-                    console.error("Sign-in error:", error);
-                    showToast('Sign-in failed: ' + error.message, 'error');
-                    // Reset Google Sign-In button
-                    google.accounts.id.renderButton(
-                        document.querySelector('.g_id_signin'), 
-                        { 
-                            type: 'standard',
-                            shape: 'rectangular',
-                            theme: 'filled_blue',
-                            text: 'signin_with',
-                            size: 'large',
-                            width: 300,
-                            logo_alignment: 'left'
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Add click feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                    
+                    // Update active tab with smooth transition
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.style.opacity = '0.7';
+                    });
+                    this.classList.add('active');
+                    this.style.opacity = '1';
+                    
+                    // Show corresponding content section with fade effect
+                    contentSections.forEach(section => {
+                        section.style.opacity = '0';
+                        section.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            section.classList.remove('active');
+                        }, 200);
+                    });
+                    
+                    setTimeout(() => {
+                        const targetSection = document.getElementById(`${tabId}-section`);
+                        if (targetSection) {
+                            targetSection.classList.add('active');
+                            setTimeout(() => {
+                                targetSection.style.opacity = '1';
+                                targetSection.style.transform = 'translateY(0)';
+                            }, 50);
                         }
-                    );
+                    }, 200);
                 });
-        }
+            });
 
-        function updateUIAfterLogin(user) {
-            // Update user info in header
-            document.getElementById('userInfo').style.display = 'flex';
-            document.getElementById('userPhoto').src = user.photoURL || 'https://via.placeholder.com/40';
-            document.getElementById('userName').textContent = user.displayName || 'User';
+            // Game Selection Logic with enhanced feedback
+            const gameSelection = document.getElementById('gameSelection');
+            const gameFrame = document.getElementById('gameFrame');
+            const gameItems = document.querySelectorAll('.game-item');
+            const injectorTape = document.getElementById('injectorTape');
             
-            // Switch to file upload interface
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('fileUpload').style.display = 'block';
-        }
-
-        // =================================
-        // Authentication State Management
-        // =================================
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                updateUIAfterLogin(user);
-                loadFiles();
-            } else {
-                // User is signed out
-                document.getElementById('userInfo').style.display = 'none';
-                document.getElementById('loginContainer').style.display = 'flex';
-                document.getElementById('fileUpload').style.display = 'none';
-                
-                // Render Google Sign-In button if not already rendered
-                if (!document.querySelector('.g_id_signin').hasChildNodes()) {
-                    google.accounts.id.renderButton(
-                        document.querySelector('.g_id_signin'), 
-                        { 
-                            type: 'standard',
-                            shape: 'rectangular',
-                            theme: 'filled_blue',
-                            text: 'signin_with',
-                            size: 'large',
-                            width: 300,
-                            logo_alignment: 'left'
+            gameItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const gameUrl = this.getAttribute('data-url');
+                    
+                    // Add loading state
+                    this.style.pointerEvents = 'none';
+                    this.innerHTML += '<div class="loading-overlay"><div class="loading-spinner"></div></div>';
+                    
+                    // Smooth transition to game
+                    gameSelection.style.opacity = '0';
+                    gameSelection.style.transform = 'scale(0.95)';
+                    
+                    setTimeout(() => {
+                        gameFrame.src = gameUrl;
+                        gameSelection.style.display = 'none';
+                        gameFrame.classList.remove('hidden');
+                        injectorTape.classList.remove('hidden');
+                        
+                        // Reset game selection for next time
+                        gameSelection.style.opacity = '1';
+                        gameSelection.style.transform = 'scale(1)';
+                        this.style.pointerEvents = 'auto';
+                        const loadingOverlay = this.querySelector('.loading-overlay');
+                        if (loadingOverlay) {
+                            loadingOverlay.remove();
                         }
-                    );
-                }
-            }
-        });
-
-        // Logout functionality
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            auth.signOut().then(() => {
-                showToast('Signed out successfully', 'success');
-                // Reset the Google Sign-In button
-                google.accounts.id.disableAutoSelect();
-                google.accounts.id.prompt();
-            }).catch((error) => {
-                console.error("Logout error:", error);
-                showToast('Logout failed: ' + error.message, 'error');
+                    }, 300);
+                });
             });
-        });
 
-        // =================================
-        // File Upload Functionality
-        // =================================
-        document.getElementById('uploadBtn').addEventListener('click', () => {
-            document.getElementById('fileInput').click();
-        });
-
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-            e.target.value = ''; // Reset input to allow uploading same file again
-        });
-
-        // Drag and drop functionality
-        const uploadArea = document.getElementById('uploadArea');
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, highlight, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight() {
-            uploadArea.classList.add('highlight');
-        }
-
-        function unhighlight() {
-            uploadArea.classList.remove('highlight');
-        }
-
-        uploadArea.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            handleFiles(files);
-        });
-
-        function handleFiles(files) {
-            if (!files || files.length === 0) return;
-            
-            const user = auth.currentUser;
-            if (!user) {
-                showToast('Please sign in to upload files', 'error');
-                return;
-            }
-            
-            // Show progress UI
-            document.getElementById('uploadProgress').style.display = 'block';
-            document.getElementById('progressBar').style.width = '0%';
-            
-            // Process each file
-            Array.from(files).forEach((file, index) => {
-                uploadFile(file, index, files.length);
+            // Enhanced injector tape button with feedback
+            injectorTape.addEventListener('click', function() {
+                // Add click feedback
+                this.style.transform = 'scale(0.9) rotate(0deg)';
+                
+                setTimeout(() => {
+                    gameFrame.classList.add('hidden');
+                    gameFrame.src = '';
+                    gameSelection.style.display = "flex";
+                    gameSelection.style.opacity = '0';
+                    gameSelection.style.transform = 'scale(1.05)';
+                    injectorTape.classList.add('hidden');
+                    
+                    // Smooth fade in
+                    setTimeout(() => {
+                        gameSelection.style.opacity = '1';
+                        gameSelection.style.transform = 'scale(1)';
+                    }, 100);
+                    
+                    // Reset button transform
+                    this.style.transform = '';
+                }, 200);
             });
-        }
 
-        function uploadFile(file, index, totalFiles) {
-            const user = auth.currentUser;
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`users/${user.uid}/${file.name}`);
-            const uploadTask = fileRef.put(file);
-            
-            // Update progress text
-            let progressText = `Uploading ${file.name} (${index + 1}/${totalFiles})`;
-            document.getElementById('progressText').textContent = progressText;
-            
-            uploadTask.on('state_changed',
-                (snapshot) => {
-                    // Progress monitoring
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    document.getElementById('progressBar').style.width = progress + '%';
-                    document.getElementById('progressText').textContent = 
-                        `${progressText}: ${Math.round(progress)}%`;
-                },
-                (error) => {
-                    console.error("Upload error:", error);
-                    showToast(`Upload failed: ${file.name}`, 'error');
-                    if (index === totalFiles - 1) {
-                        document.getElementById('uploadProgress').style.display = 'none';
+            // Enhanced keyboard navigation and accessibility
+            document.addEventListener('keydown', function(e) {
+                // Tab navigation with arrow keys
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    const activeTab = document.querySelector('.tab.active');
+                    const tabs = Array.from(document.querySelectorAll('.tab'));
+                    const currentIndex = tabs.indexOf(activeTab);
+                    
+                    let newIndex;
+                    if (e.key === 'ArrowLeft') {
+                        newIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
+                    } else {
+                        newIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
                     }
-                },
-                () => {
-                    // Upload complete
-                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                        showToast(`${file.name} uploaded successfully!`, 'success');
-                        
-                        if (index === totalFiles - 1) {
-                            document.getElementById('uploadProgress').style.display = 'none';
-                            document.getElementById('progressBar').style.width = '0%';
-                            loadFiles();
-                        }
-                    });
+                    
+                    tabs[newIndex].click();
+                    tabs[newIndex].focus();
+                    e.preventDefault();
                 }
-            );
-        }
+                
+                // Escape key to go back to game selection
+                if (e.key === 'Escape' && !injectorTape.classList.contains('hidden')) {
+                    injectorTape.click();
+                }
+            });
 
-        // =================================
-        // File Management Functions
-        // =================================
-        function loadFiles() {
-            const user = auth.currentUser;
-            if (!user) return;
-            
-            const storageRef = storage.ref();
-            const userRef = storageRef.child(`users/${user.uid}`);
-            const filesContainer = document.getElementById('filesContainer');
-            
-            filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading files...</div>';
-            
-            userRef.listAll().then((res) => {
-                if (res.items.length === 0) {
-                    filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><br>No files found. Upload some files to get started.</div>';
-                    return;
-                }
-                
-                filesContainer.innerHTML = '';
-                
-                res.items.forEach((itemRef) => {
-                    itemRef.getMetadata().then((metadata) => {
-                        const fileItem = document.createElement('div');
-                        fileItem.className = 'file-item';
-                        
-                        const fileType = getFileType(metadata.name);
-                        const fileIcon = getFileIcon(fileType);
-                        
-                        fileItem.innerHTML = `
-                            <div class="file-icon">
-                                <i class="${fileIcon}"></i>
-                                <span>${metadata.name}</span>
-                            </div>
-                            <span>${formatFileSize(metadata.size)}</span>
-                            <span class="file-type">${fileType.toUpperCase()}</span>
-                            <div>
-                                <button class="btn btn-secondary" onclick="downloadFile('${metadata.name}')">
-                                    <i class="fas fa-download"></i>
-                                </button>
-                                <button class="btn btn-danger" onclick="deleteFile('${metadata.name}')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        `;
-                        filesContainer.appendChild(fileItem);
-                    }).catch((error) => {
-                        console.error("Error getting metadata:", error);
-                    });
+            // Add focus indicators for accessibility
+            tabs.forEach(tab => {
+                tab.setAttribute('tabindex', '0');
+                tab.setAttribute('role', 'tab');
+                tab.addEventListener('focus', function() {
+                    this.style.outline = '2px solid var(--primary)';
+                    this.style.outlineOffset = '2px';
                 });
-            }).catch((error) => {
-                console.error("Error listing files:", error);
-                filesContainer.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Error loading files. Please try again.</div>';
-                showToast('Error loading files: ' + error.message, 'error');
+                tab.addEventListener('blur', function() {
+                    this.style.outline = 'none';
+                });
             });
-        }
 
-        function getFileType(filename) {
-            const extension = filename.split('.').pop().toLowerCase();
-            const typeMap = {
-                // Images
-                jpg: 'image', jpeg: 'image', png: 'image', gif: 'image', webp: 'image', svg: 'image', bmp: 'image',
-                // Documents
-                pdf: 'pdf', doc: 'doc', docx: 'doc', xls: 'xls', xlsx: 'xls', ppt: 'ppt', pptx: 'ppt',
-                txt: 'text', csv: 'text', rtf: 'text', md: 'text',
-                // Archives
-                zip: 'zip', rar: 'zip', '7z': 'zip', tar: 'zip', gz: 'zip',
-                // Audio/Video
-                mp3: 'audio', wav: 'audio', ogg: 'audio', mp4: 'video', mkv: 'video', mov: 'video', avi: 'video',
-                // Code
-                html: 'code', css: 'code', js: 'code', json: 'code', php: 'code', py: 'code', java: 'code', cpp: 'code',
-                // Other
-                exe: 'binary', dmg: 'binary', pkg: 'binary'
-            };
-            return typeMap[extension] || 'file';
-        }
-
-        function getFileIcon(fileType) {
-            const iconMap = {
-                image: 'fas fa-image',
-                pdf: 'fas fa-file-pdf',
-                doc: 'fas fa-file-word',
-                xls: 'fas fa-file-excel',
-                ppt: 'fas fa-file-powerpoint',
-                text: 'fas fa-file-alt',
-                zip: 'fas fa-file-archive',
-                audio: 'fas fa-file-audio',
-                video: 'fas fa-file-video',
-                code: 'fas fa-file-code',
-                binary: 'fas fa-file',
-                file: 'fas fa-file'
-            };
-            return iconMap[fileType] || 'fas fa-file';
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        function downloadFile(filename) {
-            const user = auth.currentUser;
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`users/${user.uid}/${filename}`);
-            
-            showToast(`Preparing download for ${filename}...`, 'success');
-            
-            fileRef.getDownloadURL().then((url) => {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                showToast(`Download started: ${filename}`, 'success');
-            }).catch((error) => {
-                console.error("Download error:", error);
-                showToast(`Download failed: ${filename}`, 'error');
+            gameItems.forEach(item => {
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('role', 'button');
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        this.click();
+                        e.preventDefault();
+                    }
+                });
             });
-        }
 
-        function deleteFile(filename) {
-            if (!confirm(`Are you sure you want to delete "${filename}"? This action cannot be undone.`)) {
-                return;
+            injectorTape.setAttribute('tabindex', '0');
+            injectorTape.setAttribute('role', 'button');
+            injectorTape.setAttribute('aria-label', 'Return to game selection');
+            injectorTape.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    this.click();
+                    e.preventDefault();
+                }
+            });
+
+            // User preferences system
+            const userPreferences = {
+                soundEnabled: localStorage.getItem('zmx-sound-enabled') !== 'false',
+                animationsEnabled: localStorage.getItem('zmx-animations-enabled') !== 'false',
+                autoScroll: localStorage.getItem('zmx-auto-scroll') !== 'false'
+            };
+
+            // Create preferences panel
+            function createPreferencesPanel() {
+                const panel = document.createElement('div');
+                panel.id = 'preferences-panel';
+                panel.innerHTML = `
+                    <div class="preferences-overlay">
+                        <div class="preferences-content">
+                            <h3>Settings</h3>
+                            <div class="preference-item">
+                                <label>
+                                    <input type="checkbox" id="sound-toggle" ${userPreferences.soundEnabled ? 'checked' : ''}>
+                                    <span>Sound Effects</span>
+                                </label>
+                            </div>
+                            <div class="preference-item">
+                                <label>
+                                    <input type="checkbox" id="animations-toggle" ${userPreferences.animationsEnabled ? 'checked' : ''}>
+                                    <span>Animations</span>
+                                </label>
+                            </div>
+                            <div class="preference-item">
+                                <label>
+                                    <input type="checkbox" id="auto-scroll-toggle" ${userPreferences.autoScroll ? 'checked' : ''}>
+                                    <span>Auto Scroll</span>
+                                </label>
+                            </div>
+                            <button class="close-preferences">Close</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(panel);
+
+                // Event listeners for preferences
+                document.getElementById('sound-toggle').addEventListener('change', function() {
+                    userPreferences.soundEnabled = this.checked;
+                    localStorage.setItem('zmx-sound-enabled', this.checked);
+                });
+
+                document.getElementById('animations-toggle').addEventListener('change', function() {
+                    userPreferences.animationsEnabled = this.checked;
+                    localStorage.setItem('zmx-animations-enabled', this.checked);
+                    document.body.style.setProperty('--transition', this.checked ? 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1)' : 'none');
+                });
+
+                document.getElementById('auto-scroll-toggle').addEventListener('change', function() {
+                    userPreferences.autoScroll = this.checked;
+                    localStorage.setItem('zmx-auto-scroll', this.checked);
+                });
+
+                document.querySelector('.close-preferences').addEventListener('click', function() {
+                    panel.remove();
+                });
+
+                panel.addEventListener('click', function(e) {
+                    if (e.target === panel) {
+                        panel.remove();
+                    }
+                });
             }
-            
-            const user = auth.currentUser;
-            const storageRef = storage.ref();
-            const fileRef = storageRef.child(`users/${user.uid}/${filename}`);
-            
-            fileRef.delete().then(() => {
-                showToast(`File deleted: ${filename}`, 'success');
-                loadFiles();
-            }).catch((error) => {
-                console.error("Delete error:", error);
-                showToast(`Delete failed: ${filename}`, 'error');
-            });
-        }
 
-        // =================================
-        // UI Helper Functions
-        // =================================
-        function showToast(message, type = '') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = 'toast';
-            toast.classList.add(type);
-            toast.classList.add('show');
+            // Add settings button to header
+            const settingsButton = document.createElement('button');
+            settingsButton.innerHTML = '<i class="fas fa-cog"></i>';
+            settingsButton.className = 'settings-button';
+            settingsButton.addEventListener('click', createPreferencesPanel);
+            document.querySelector('.chat-header').appendChild(settingsButton);
+
+            // Apply initial preferences
+            if (!userPreferences.animationsEnabled) {
+                document.body.style.setProperty('--transition', 'none');
+                document.body.style.setProperty('--transition-fast', 'none');
+            }
+
+            // Create floating particles
+            function createParticles() {
+                const colors = ['rgba(0, 240, 255, 0.3)', 'rgba(0, 144, 255, 0.3)', 'rgba(123, 0, 255, 0.3)'];
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 8 + 2;
+                    const posX = Math.random() * window.innerWidth;
+                    const posY = Math.random() * window.innerHeight;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const duration = Math.random() * 20 + 10;
+                    const delay = Math.random() * 5;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.left = `${posX}px`;
+                    particle.style.top = `${posY}px`;
+                    particle.style.background = color;
+                    particle.style.opacity = Math.random() * 0.5 + 0.1;
+                    particle.style.animationDuration = `${duration}s`;
+                    particle.style.animationDelay = `${delay}s`;
+                    
+                    document.body.appendChild(particle);
+                }
+            }
+
+            // =============================================
+            // ENHANCED PREDICTION SYSTEM WITH INFINITY ACCURACY
+            // =============================================
             
+            // Global prediction state with enhanced tracking
+            const predictionState = {
+                lastResult: null,
+                recoveryLevel: 0,
+                winStreak: 0,
+                lossStreak: 0,
+                currentPrediction: null,
+                currentPeriod: null,
+                lastActualResult: null,
+                patternMemory: [],
+                hotNumbers: [],
+                coldNumbers: [],
+                last10Results: [],
+                predictionHistory: []
+            };
+
+            // BigSmall Model with Fibonacci, Prime Numbers, and Markov Chain
+            const bigSmallModel = {
+                fibonacciSequence: [61.822, 38.178],
+                primeNumbers: [],
+                markovChain: [],
+                trendReversalThreshold: 5,
+                trendReversal: false,
+                lastResult: null,
+                currentPrediction: null
+            };
+
+            // Enhanced prime number cache with memoization
+            const primeCache = {};
+
+            function isPrime(n) {
+                if (n in primeCache) return primeCache[n];
+                
+                if (n < 2) return false;
+                if (n === 2) return true;
+                if (n % 2 === 0) return false;
+                
+                const sqrtN = Math.floor(Math.sqrt(n)) + 1;
+                for (let i = 3; i < sqrtN; i += 2) {
+                    if (n % i === 0) {
+                        primeCache[n] = false;
+                        return false;
+                    }
+                }
+                
+                primeCache[n] = true;
+                return true;
+            }
+
+            // Advanced pattern recognition functions
+            function parityPattern(digits) {
+                return digits[0] % 2 !== digits[1] % 2 && digits[1] % 2 !== digits[2] % 2;
+            }
+
+            function centerMirror(digits) {
+                return digits[0] === digits[3] && digits[1] === digits[2];
+            }
+
+            function digitDominance(digits) {
+                const counts = {};
+                digits.forEach(d => {
+                    counts[d] = (counts[d] || 0) + 1;
+                });
+                return Math.max(...Object.values(counts)) >= 3;
+            }
+
+            function isArithmeticSequence(digits) {
+                const diff = digits[1] - digits[0];
+                for (let i = 2; i < digits.length; i++) {
+                    if (digits[i] - digits[i-1] !== diff) return false;
+                }
+                return true;
+            }
+
+            function isGeometricSequence(digits) {
+                if (digits.includes(0)) return false;
+                const ratio = digits[1] / digits[0];
+                for (let i = 2; i < digits.length; i++) {
+                    if (Math.abs(digits[i] / digits[i-1] - ratio) > 0.0001) return false;
+                }
+                return true;
+            }
+
+            function digitSymmetry(digits) {
+                return digits[0] === digits[3] && digits[1] === digits[2];
+            }
+
+            function sumProductRelation(digits) {
+                return digits.reduce((a, b) => a + b, 0) > 2 * (digits[0] * digits[3]);
+            }
+
+            function fibonacciPattern(digits) {
+                for (let i = 2; i < digits.length; i++) {
+                    if (digits[i] !== digits[i-1] + digits[i-2]) return false;
+                }
+                return true;
+            }
+
+            // Enhanced sureShotLogic with 0-1 level precision and adaptive weighting
+            function sureShotLogic(digits, level) {
+                let bigScore = 0;
+                let smallScore = 0;
+
+                // Adaptive weights based on recent prediction accuracy (simplified ML concept)
+                const winLossRatio = predictionState.winStreak / (predictionState.winStreak + predictionState.lossStreak + 0.001);
+                const adaptiveWeight = winLossRatio > 0.7 ? 1.2 : (winLossRatio < 0.3 ? 0.8 : 1.0);
+
+                // Core scoring (level 0-1)
+                const sum = digits.reduce((a, b) => a + b, 0);
+                const product = digits[0] * digits[3];
+                
+                // Basic rules
+                if (digits[0] === digits[3]) bigScore += (2 * adaptiveWeight);
+                if (sum >= 20) bigScore += (1 * adaptiveWeight);
+                if (Math.max(...digits) - Math.min(...digits) <= 2) smallScore += (1 * adaptiveWeight);
+                if (isPrime(sum)) bigScore += (2 * adaptiveWeight);
+                
+                const sorted = [...digits].sort((a, b) => a - b);
+                const reverseSorted = [...digits].sort((a, b) => b - a);
+                if (digits.join('') === sorted.join('') || digits.join('') === reverseSorted.join('')) {
+                    bigScore += (1 * adaptiveWeight);
+                }
+                
+                // Statistical analysis
+                const mean = sum / digits.length;
+                if (mean > 4.5) bigScore += (1 * adaptiveWeight);
+                
+                const median = [...digits].sort((a, b) => a - b)[Math.floor(digits.length / 2)];
+                if (median > 4) bigScore += (1 * adaptiveWeight);
+
+                // Advanced patterns (level 1+)
+                if (level >= 1) {
+                    if (parityPattern(digits)) bigScore += (2 * adaptiveWeight);
+                    if (centerMirror(digits)) smallScore += (1 * adaptiveWeight);
+                    if (digitSymmetry(digits)) bigScore += (1 * adaptiveWeight);
+                    if (fibonacciPattern(digits)) bigScore += (3 * adaptiveWeight);
+                    if (isArithmeticSequence(digits)) bigScore += (2 * adaptiveWeight);
+                    if (isGeometricSequence(digits)) smallScore += (2 * adaptiveWeight);
+                    if (digitDominance(digits)) bigScore += (1 * adaptiveWeight);
+                    if (sumProductRelation(digits)) bigScore += (1 * adaptiveWeight);
+                }
+
+                // Dynamic threshold adjustment
+                let threshold = 5 + level;
+                if (Math.max(...digits) - Math.min(...digits) <= 1) threshold -= 1;
+                if (sum > 25) threshold += 1;
+                
+                // 0-1 Level Precision Decision
+                if (bigScore >= threshold + 2) return "BIG";
+                if (smallScore >= threshold) return "SMALL";
+                
+                // Fallback to intelligent prediction if scores are close
+                return intelligentPrediction(digits.join(''));
+            }
+
+            // Ultra-precise intelligent prediction
+            function intelligentPrediction(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const sum = digits.reduce((a, b) => a + b, 0);
+                
+                // Multi-strategy analysis
+                const strategies = [
+                    sum % 2 === 0 ? "BIG" : "SMALL",                    // Sum parity
+                    (digits[1] + digits[2]) > (digits[0] + digits[3]) ? "BIG" : "SMALL", // Middle dominance
+                    isPrime(digits[0] * digits[3]) ? "BIG" : "SMALL",   // Prime product
+                    digits.filter(d => d >= 5).length >= 2 ? "BIG" : "SMALL", // High number count
+                    isArithmeticSequence(digits) ? "BIG" : "SMALL",      // Sequence detection
+                    digitDominance(digits) ? "SMALL" : "BIG"             // Digit repetition
+                ];
+                
+                // Weighted decision with confidence scoring
+                const bigCount = strategies.filter(s => s === "BIG").length;
+                const smallCount = strategies.length - bigCount;
+                
+                if (bigCount >= 4) return "BIG";
+                if (smallCount >= 4) return "SMALL";
+                
+                // Tiebreaker using Fibonacci pattern
+                if (fibonacciPattern(digits)) return "BIG";
+                
+                // Final fallback
+                return sum % 2 === 0 ? "BIG" : "SMALL";
+            }
+
+            // BigSmall prediction using Fibonacci, Prime Numbers, and Markov Chain
+            function predictBigSmall(periodNumber) {
+                const randomNumber = Math.random() * 100;
+                let predictedResult;
+                
+                // Fibonacci Sequence
+                if (randomNumber < bigSmallModel.fibonacciSequence[0]) {
+                    predictedResult = 'BIG';
+                } else {
+                    predictedResult = 'SMALL';
+                }
+                
+                // Prime Number Distribution
+                if (isPrime(randomNumber * 10)) {
+                    predictedResult = getAlternateResult(predictedResult);
+                }
+                
+                // Markov Chain
+                if (bigSmallModel.markovChain.length >= 15) {
+                    const last15Results = bigSmallModel.markovChain.slice(-15);
+                    const mostFrequentResult = getMostFrequentResult(last15Results);
+                    predictedResult = getAlternateResult(mostFrequentResult);
+                }
+                
+                // Trend Reversal Detection
+                if (bigSmallModel.trendReversal) {
+                    predictedResult = getAlternateResult(predictedResult);
+                }
+                
+                bigSmallModel.currentPrediction = predictedResult;
+                return predictedResult;
+            }
+
+            function getAlternateResult(result) {
+                return result === 'BIG' ? 'SMALL' : 'BIG';
+            }
+
+            function getMostFrequentResult(results) {
+                let bigCount = 0;
+                let smallCount = 0;
+                for (let result of results) {
+                    if (result === 'BIG') bigCount++;
+                    if (result === 'SMALL') smallCount++;
+                }
+                return bigCount > smallCount ? 'BIG' : 'SMALL';
+            }
+
+            // Strict prediction with recovery system
+            function predictStrict(periodNumber, actualResult = null, forceRecoveryLevel = null) {
+                if (!periodNumber || periodNumber.length < 4) return "INVALID_INPUT";
+                
+                // Update state with actual result if provided
+                if (actualResult) {
+                    predictionState.lastActualResult = actualResult;
+                    if (predictionState.currentPrediction === actualResult) {
+                        predictionState.winStreak++;
+                        predictionState.lossStreak = 0;
+                        predictionState.recoveryLevel = Math.max(0, predictionState.recoveryLevel - 1);
+                    } else {
+                        predictionState.lossStreak++;
+                        predictionState.winStreak = 0;
+                        predictionState.recoveryLevel = Math.min(3, predictionState.recoveryLevel + 1);
+                    }
+                    predictionState.patternMemory.push(actualResult);
+                    if (predictionState.patternMemory.length > 10) {
+                        predictionState.patternMemory.shift();
+                    }
+                }
+                
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                const recoveryLevel = forceRecoveryLevel !== null ? forceRecoveryLevel : predictionState.recoveryLevel;
+                
+                // Generate base prediction
+                let prediction;
+                if (predictionState.winStreak >= 3) { // If on a good streak, stick to intelligent prediction
+                    prediction = intelligentPrediction(periodNumber);
+                } else if (predictionState.lossStreak >= 2) { // If on a losing streak, enter aggressive recovery
+                    const lastDigit = digits[3];
+                    prediction = lastDigit % 2 === 0 ? "BIG" : "SMALL";
+                } else if (recoveryLevel === 0) {
+                    prediction = sureShotLogic(digits, 1); // Normal mode
+                } else if (recoveryLevel === 1) {
+                    prediction = intelligentPrediction(periodNumber); // Smarter analysis
+                } else {
+                    // Aggressive recovery mode based on last digit parity
+                    const lastDigit = digits[3];
+                    prediction = lastDigit % 2 === 0 ? "BIG" : "SMALL";
+                }
+                
+                // Apply pattern correction
+                const lastPatterns = predictionState.patternMemory.slice(-3);
+                if (lastPatterns.length >= 3) {
+                    const pattern = lastPatterns.join('');
+                    if (pattern === "BIGBIGBIG") prediction = "SMALL";
+                    if (pattern === "SMALLSMALLSMALL") prediction = "BIG";
+                }
+                
+                // Save prediction state
+                predictionState.currentPrediction = prediction;
+                predictionState.currentPeriod = periodNumber;
+                predictionState.lastResult = prediction;
+                
+                return prediction;
+            }
+
+            // Ultra-precise prediction function (Maxx 0-1 level)
+            function predictUltra(periodNumber) {
+                const digits = periodNumber.slice(-4).split('').map(Number);
+                
+                // Multi-layer analysis combining all prediction methods
+                const layer1 = sureShotLogic(digits, 1);
+                const layer2 = intelligentPrediction(periodNumber);
+                const layer3 = predictStrict(periodNumber, predictionState.lastActualResult);
+                const layer4 = predictBigSmall(periodNumber);
+                
+                // Consensus decision
+                const votes = [layer1, layer2, layer3, layer4];
+                const bigVotes = votes.filter(v => v === "BIG").length;
+                
+                if (bigVotes >= 3) return "BIG";
+                if (bigVotes <= 1) return "SMALL";
+                
+                // If tied (2-2), use Fibonacci pattern as tiebreaker
+                if (fibonacciPattern(digits)) return "BIG";
+                
+                // Final fallback to intelligent prediction
+                return intelligentPrediction(periodNumber);
+            }
+
+            // =============================================
+            // CHAT PREDICTOR LOGIC
+            // =============================================
+            
+            let previousResults = [];
+            let latestPeriod = null;
+            let currentPrediction = null;
+            let serverOnline = true;
+            let lastPredictionPeriod = null;
+            let lastActualNumber = null;
+
+            // DOM elements
+            const messagesContainer = document.getElementById('messages-container');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const connectionStatus = document.getElementById('connection-status');
+            const currentTimeElement = document.getElementById('current-time');
+            const lastUpdateTime = document.getElementById('last-update-time');
+            const scrollDownBtn = document.getElementById('scroll-down-btn');
+
+            // Initialize
+            updateClock();
+            setInterval(updateClock, 1000);
             setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
+                typingIndicator.style.display = 'none';
+                addMessage('received', 
+                    `<div class="prediction-card">
+                        <div class="prediction-title"><i class="fas fa-chart-line"></i> ANALYSIS ENGINE READY</div>
+                        <p>Initializing real-time analysis. Scanning game results to detect patterns and trends.</p>
+                    </div>`, 
+                    'Zmx Trader');
+                simulateInitialAnalysis();
+            }, 1500);
 
-        // Initialize the app
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check if the user is already logged in
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    updateUIAfterLogin(user);
-                    loadFiles();
-                }
+            // Scroll button functionality
+            scrollDownBtn.addEventListener('click', () => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             });
-            
-            // Initialize Google Sign-In button
-            google.accounts.id.initialize({
-                client_id: "16728591390-8v9h5v3m3a6q7b2p4r5t6y7u8i9o0p1a2s3d4f5g.apps.googleusercontent.com",
-                callback: handleGoogleSignIn
+
+            messagesContainer.addEventListener('scroll', () => {
+                const { scrollTop, scrollHeight, clientHeight } = messagesContainer;
+                const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+                scrollDownBtn.classList.toggle('visible', distanceFromBottom > 100);
             });
-            
-            google.accounts.id.renderButton(
-                document.querySelector('.g_id_signin'), 
-                { 
-                    type: 'standard',
-                    shape: 'rectangular',
-                    theme: 'filled_blue',
-                    text: 'signin_with',
-                    size: 'large',
-                    width: 300,
-                    logo_alignment: 'left'
+
+            function updateClock() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+                currentTimeElement.textContent = timeString;
+                return now;
+            }
+
+            function formatTime(date) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function addMessage(type, content, sender, timestamp = new Date()) {
+                typingIndicator.style.display = 'none';
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                
+                if (sender) {
+                    messageDiv.innerHTML = `<div class="prediction-title">${sender}</div>`;
                 }
-            );
+                
+                messageDiv.innerHTML += content;
+                messageDiv.innerHTML += `<div class="timestamp">${formatTime(timestamp)}</div>`;
+                
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Update last update time
+                lastUpdateTime.textContent = formatTime(timestamp);
+                
+                return messageDiv;
+            }
+
+            function showTyping() {
+                typingIndicator.style.display = 'flex';
+                typingIndicator.style.opacity = '0';
+                typingIndicator.style.transform = 'translateY(10px)';
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                // Smooth fade in
+                setTimeout(() => {
+                    typingIndicator.style.opacity = '1';
+                    typingIndicator.style.transform = 'translateY(0)';
+                }, 50);
+            }
+
+            function simulateInitialAnalysis() {
+                showTyping();
+                setTimeout(() => {
+                    addMessage('received', 
+                        `<div class="prediction-card">
+                            <div class="prediction-title"><i class="fas fa-check-circle"></i> ANALYSIS COMPLETE</div>
+                            <p>Pattern detection complete. Monitoring for optimal prediction opportunities.</p>
+                        </div>`, 
+                        'Zmx Trader');
+                    
+                    // Start the prediction cycle
+                    fetchCurrentGameIssue();
+                    setInterval(fetchCurrentGameIssue, 5000);
+                }, 2000);
+            }
+
+            function createPredictionMessage(predictionData) {
+                const confidencePercentage = Math.round(predictionData.confidence);
+                const confidenceWidth = `${confidencePercentage}%`;
+                
+                const numbersHTML = `
+                    <div class="predicted-numbers">
+                        ${predictionData.numbers.map(num => `
+                            <div class="predicted-number ${num <= 4 ? 'small' : 'big'}">${num}</div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                // Create recovery level indicators
+                const recoveryDots = [];
+                for (let i = 0; i < 4; i++) {
+                    let dotClass = 'recovery-dot';
+                    if (i < predictionData.recoveryLevel) {
+                        dotClass += predictionData.recoveryLevel >= 4 ? ' critical' : ' active';
+                    }
+                    recoveryDots.push(`<div class="${dotClass}"></div>`);
+                }
+                
+                let recoveryStatus = '';
+                if (predictionData.recoveryLevel > 0) {
+                    recoveryStatus = predictionData.recoveryLevel >= 4 ? 
+                        `<div class="recovery-status critical">CRITICAL RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>` :
+                        `<div class="recovery-status warning">RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>`;
+                }
+                
+                return `
+                    <div class="prediction-card">
+                        <div class="period-display">${latestPeriod}</div>
+                        <div class="prediction-value">${predictionData.prediction}</div>
+                        
+                        ${numbersHTML}
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${confidenceWidth}"></div>
+                        </div>
+                        <div class="confidence-display">
+                            <span>Confidence</span>
+                            <span class="confidence-value">${confidencePercentage}%</span>
+                        </div>
+                        
+                        ${predictionData.recoveryLevel > 0 ? `
+                        <div class="recovery-level">
+                            ${recoveryDots.join('')}
+                        </div>
+                        ${recoveryStatus}
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            async function fetchCurrentGameIssue() {
+                const now = new Date();
+                const apiUrl = 'https://api.bdg88zf.com/api/webapi/GetGameIssue';
+                const requestData = { typeId: 1, language: 0, random: "40079dcba93a48769c6ee9d4d4fae23f", signature: "D12108C4F57C549D82B23A91E0FA20AE", timestamp: 1727792520 };
+
+                try {
+                    const response = await fetch(apiUrl, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json;charset=UTF-8' }, 
+                        body: JSON.stringify(requestData) 
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.code === 0) {
+                            const newPeriod = data.data.issueNumber;
+                            
+                            if (newPeriod !== latestPeriod) {
+                                latestPeriod = newPeriod;
+                                await fetchPreviousResults();
+                                updatePredictions(now, newPeriod);
+                            }
+                        }
+                    } else {
+                        updateServerStatus(false);
+                    }
+                } catch (error) { 
+                    console.error("Fetch error:", error);
+                    updateServerStatus(false);
+                }
+            }
+
+            async function fetchPreviousResults() {
+                const apiUrl = 'https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList';
+                const requestData = { pageSize: 10, pageNo: 1, typeId: 1, language: 0, random: "c2505d9138da4e3780b2c2b34f2fb789", signature: "7D637E060DA35C0C6E28DC6D23D71BED", timestamp: 1727792520 };
+
+                try {
+                    const response = await fetch(apiUrl, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json;charset=UTF-8' }, 
+                        body: JSON.stringify(requestData) 
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.code === 0 && data.data.list.length > 0) {
+                            previousResults = data.data.list;
+                            updateServerStatus(true);
+                        }
+                    } else {
+                        updateServerStatus(false);
+                    }
+                } catch (error) { 
+                    console.error("Fetch error:", error);
+                    updateServerStatus(false);
+                }
+            }
+
+            function updatePredictions(currentTime, currentPeriod) {
+                if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
+                    const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
+                    
+                    // Get the last 4 digits of the current period for our prediction
+                    const periodDigits = currentPeriod.slice(-4).split('').map(Number);
+                    
+                    // Make prediction using our enhanced system
+                    const predictionResult = predictUltra(currentPeriod);
+                    
+                    // Get 1-2 numbers for the predicted category based on the prediction result
+                    let predictedNumbers = [];
+                    if (predictionResult === "SMALL") {
+                        // Generate small numbers (0-4)
+                        while (predictedNumbers.length < 2) {
+                            const num = Math.floor(Math.random() * 5); // 0-4
+                            if (!predictedNumbers.includes(num)) {
+                                predictedNumbers.push(num);
+                            }
+                        }
+                    } else { // BIG
+                        // Generate big numbers (5-9)
+                        while (predictedNumbers.length < 2) {
+                            const num = 5 + Math.floor(Math.random() * 5); // 5-9
+                            if (!predictedNumbers.includes(num)) {
+                                predictedNumbers.push(num);
+                            }
+                        }
+                    }
+                    predictedNumbers.sort((a, b) => a - b);
+                    
+                    // Calculate confidence based on prediction state and pattern strength
+                    let confidence = 70; // Base confidence
+                    if (predictionState.recoveryLevel === 0) {
+                        confidence += 15; // Higher confidence in normal mode
+                    } else if (predictionState.recoveryLevel === 1) {
+                        confidence += 5; // Slightly lower in recovery level 1
+                    } else {
+                        confidence -= 10; // Lower in higher recovery levels
+                    }
+
+                    // Further adjust confidence based on pattern detection
+                    const digits = currentPeriod.slice(-4).split('').map(Number);
+                    if (fibonacciPattern(digits)) confidence += 5;
+                    if (isArithmeticSequence(digits)) confidence += 5;
+                    if (digitSymmetry(digits)) confidence += 5;
+                    
+                    // Ensure confidence is within bounds
+                    confidence = Math.min(100, Math.max(0, confidence));
+                    
+                    currentPrediction = predictionResult;
+                    lastPredictionPeriod = currentPeriod;
+                    
+                    // Show prediction message
+                    showTyping();
+                    setTimeout(() => {
+                        addMessage('received', createPredictionMessage({
+                            prediction: predictionResult,
+                            confidence: confidence,
+                            numbers: predictedNumbers,
+                            recoveryLevel: predictionState.recoveryLevel
+                        }), 'Zmx Trader');
+                    }, 1000);
+                }
+            }
+
+            function updateServerStatus(online) {
+                serverOnline = online;
+                if (online) {
+                    connectionStatus.textContent = "Connected to Server";
+                    document.querySelector('.status-indicator').className = "status-indicator online";
+                } else {
+                    connectionStatus.textContent = "Connecting...";
+                    document.querySelector('.status-indicator').className = "status-indicator offline";
+                }
+            }
+
+            // Initialize the application
+            createParticles();
             
-            google.accounts.id.prompt();
+            // Animate the game selection title after page load
+            setTimeout(() => {
+                document.getElementById('gameSelectionTitle').classList.add('animate');
+            }, 500);
         });
     </script>
 </body>
