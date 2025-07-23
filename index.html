@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZMX TRADER V1 - Enhanced</title>
+    <title>ZMX TRADER</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -793,6 +793,7 @@
             border: 1px solid rgba(0, 240, 255, 0.2);
             min-width: 30px;
             text-align: center;
+            display: none; /* Hide the numbers */
         }
 
         .predicted-number.big {
@@ -1050,7 +1051,7 @@
                     </div>
                     <div class="game-item" data-url="https://www.91appg.com/#/">
                         <div class="game-name">91 CLUB</div>
-                        <div class="game-url">91appg.com/#/</div>
+                        <div class="game-url">https://www.91appg.com/#/</div>
                     </div>
                 </div>
             </div>
@@ -1693,13 +1694,8 @@
                 const confidencePercentage = Math.round(predictionData.confidence);
                 const confidenceWidth = `${confidencePercentage}%`;
                 
-                const numbersHTML = `
-                    <div class="predicted-numbers">
-                        ${predictionData.numbers.map(num => `
-                            <div class="predicted-number ${num <= 4 ? 'big' : 'small'}">${num}</div>
-                        `).join('')}
-                    </div>
-                `;
+                // Show opposite outcome
+                const oppositePrediction = predictionData.prediction === 'BIG' ? 'SMALL' : 'BIG';
                 
                 // Create recovery level indicators
                 const recoveryDots = [];
@@ -1721,9 +1717,7 @@
                 return `
                     <div class="prediction-card">
                         <div class="period-display">${latestPeriod}</div>
-                        <div class="prediction-value">${predictionData.prediction}</div>
-                        
-                        ${numbersHTML}
+                        <div class="prediction-value">${oppositePrediction}</div>
                         
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${confidenceWidth}"></div>
@@ -1811,27 +1805,6 @@
                     // Make prediction using our enhanced system
                     const predictionResult = predictUltra(currentPeriod);
                     
-                    // Get 1-2 numbers for the predicted category based on the prediction result
-                    let predictedNumbers = [];
-                    if (predictionResult === "BIG") {
-                        // Generate big numbers (0-4)
-                        while (predictedNumbers.length < 2) {
-                            const num = Math.floor(Math.random() * 5); // 0-4
-                            if (!predictedNumbers.includes(num)) {
-                                predictedNumbers.push(num);
-                            }
-                        }
-                    } else { // SMALL
-                        // Generate small numbers (5-9)
-                        while (predictedNumbers.length < 2) {
-                            const num = 5 + Math.floor(Math.random() * 5); // 5-9
-                            if (!predictedNumbers.includes(num)) {
-                                predictedNumbers.push(num);
-                            }
-                        }
-                    }
-                    predictedNumbers.sort((a, b) => a - b);
-                    
                     // Calculate confidence based on prediction state and pattern strength
                     let confidence = 70; // Base confidence
                     if (predictionState.recoveryLevel === 0) {
@@ -1860,7 +1833,7 @@
                         addMessage('received', createPredictionMessage({
                             prediction: predictionResult,
                             confidence: confidence,
-                            numbers: predictedNumbers,
+                            numbers: [],
                             recoveryLevel: predictionState.recoveryLevel
                         }), 'Zmx Trader');
                     }, 1000);
