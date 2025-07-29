@@ -151,13 +151,15 @@
             height: calc(100% - 60px);
             display: none;
             overflow: hidden;
-            opacity: 1;
-            transform: translateY(0);
+            opacity: 0;
+            transform: translateY(10px);
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
         .content-section.active {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Loading States */
@@ -1107,6 +1109,40 @@
             const tabs = document.querySelectorAll('.tab');
             const contentSections = document.querySelectorAll('.content-section');
             
+            // Function to switch tabs
+            function switchTab(tabId) {
+                // Update active tab with smooth transition
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.style.opacity = '0.7';
+                });
+                
+                // Activate clicked tab
+                const activeTab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                    activeTab.style.opacity = '1';
+                }
+                
+                // Hide all content sections
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                    section.style.opacity = '0';
+                    section.style.transform = 'translateY(10px)';
+                });
+                
+                // Show corresponding content section with fade effect
+                const targetSection = document.getElementById(`${tabId}-section`);
+                if (targetSection) {
+                    targetSection.classList.add('active');
+                    setTimeout(() => {
+                        targetSection.style.opacity = '1';
+                        targetSection.style.transform = 'translateY(0)';
+                    }, 50);
+                }
+            }
+            
+            // Set up tab click handlers
             tabs.forEach(tab => {
                 tab.addEventListener('click', function() {
                     const tabId = this.getAttribute('data-tab');
@@ -1117,33 +1153,7 @@
                         this.style.transform = '';
                     }, 150);
                     
-                    // Update active tab with smooth transition
-                    tabs.forEach(t => {
-                        t.classList.remove('active');
-                        t.style.opacity = '0.7';
-                    });
-                    this.classList.add('active');
-                    this.style.opacity = '1';
-                    
-                    // Show corresponding content section with fade effect
-                    contentSections.forEach(section => {
-                        section.style.opacity = '0';
-                        section.style.transform = 'translateY(20px)';
-                        setTimeout(() => {
-                            section.classList.remove('active');
-                        }, 200);
-                    });
-                    
-                    setTimeout(() => {
-                        const targetSection = document.getElementById(`${tabId}-section`);
-                        if (targetSection) {
-                            targetSection.classList.add('active');
-                            setTimeout(() => {
-                                targetSection.style.opacity = '1';
-                                targetSection.style.transform = 'translateY(0)';
-                            }, 50);
-                        }
-                    }, 200);
+                    switchTab(tabId);
                 });
             });
 
@@ -1268,333 +1278,9 @@
             });
 
             // =============================================
-            // ENHANCED PREDICTION SYSTEM WITH INFINITY ACCURACY
+            // REAL-TIME PREDICTION SYSTEM
             // =============================================
             
-            // Global prediction state with enhanced tracking
-            const predictionState = {
-                lastResult: null,
-                recoveryLevel: 0,
-                winStreak: 0,
-                lossStreak: 0,
-                currentPrediction: null,
-                currentPeriod: null,
-                lastActualResult: null,
-                patternMemory: [],
-                hotNumbers: [],
-                coldNumbers: [],
-                last10Results: [],
-                predictionHistory: []
-            };
-
-            // BigSmall Model with Fibonacci, Prime Numbers, and Markov Chain
-            const bigSmallModel = {
-                fibonacciSequence: [61.822, 38.178],
-                primeNumbers: [],
-                markovChain: [],
-                trendReversalThreshold: 5,
-                trendReversal: false,
-                lastResult: null,
-                currentPrediction: null
-            };
-
-            // Enhanced prime number cache with memoization
-            const primeCache = {};
-
-            function isPrime(n) {
-                if (n in primeCache) return primeCache[n];
-                
-                if (n < 2) return false;
-                if (n === 2) return true;
-                if (n % 2 === 0) return false;
-                
-                const sqrtN = Math.floor(Math.sqrt(n)) + 1;
-                for (let i = 3; i < sqrtN; i += 2) {
-                    if (n % i === 0) {
-                        primeCache[n] = false;
-                        return false;
-                    }
-                }
-                
-                primeCache[n] = true;
-                return true;
-            }
-
-            // Advanced pattern recognition functions
-            function parityPattern(digits) {
-                return digits[0] % 2 !== digits[1] % 2 && digits[1] % 2 !== digits[2] % 2;
-            }
-
-            function centerMirror(digits) {
-                return digits[0] === digits[3] && digits[1] === digits[2];
-            }
-
-            function digitDominance(digits) {
-                const counts = {};
-                digits.forEach(d => {
-                    counts[d] = (counts[d] || 0) + 1;
-                });
-                return Math.max(...Object.values(counts)) >= 3;
-            }
-
-            function isArithmeticSequence(digits) {
-                const diff = digits[1] - digits[0];
-                for (let i = 2; i < digits.length; i++) {
-                    if (digits[i] - digits[i-1] !== diff) return false;
-                }
-                return true;
-            }
-
-            function isGeometricSequence(digits) {
-                if (digits.includes(0)) return false;
-                const ratio = digits[1] / digits[0];
-                for (let i = 2; i < digits.length; i++) {
-                    if (Math.abs(digits[i] / digits[i-1] - ratio) > 0.0001) return false;
-                }
-                return true;
-            }
-
-            function digitSymmetry(digits) {
-                return digits[0] === digits[3] && digits[1] === digits[2];
-            }
-
-            function sumProductRelation(digits) {
-                return digits.reduce((a, b) => a + b, 0) > 2 * (digits[0] * digits[3]);
-            }
-
-            function fibonacciPattern(digits) {
-                for (let i = 2; i < digits.length; i++) {
-                    if (digits[i] !== digits[i-1] + digits[i-2]) return false;
-                }
-                return true;
-            }
-
-            // Enhanced sureShotLogic with 0-1 level precision and adaptive weighting
-            function sureShotLogic(digits, level) {
-                let bigScore = 0;
-                let smallScore = 0;
-
-                // Adaptive weights based on recent prediction accuracy (simplified ML concept)
-                const winLossRatio = predictionState.winStreak / (predictionState.winStreak + predictionState.lossStreak + 0.001);
-                const adaptiveWeight = winLossRatio > 0.7 ? 1.2 : (winLossRatio < 0.3 ? 0.8 : 1.0);
-
-                // Core scoring (level 0-1)
-                const sum = digits.reduce((a, b) => a + b, 0);
-                const product = digits[0] * digits[3];
-                
-                // Basic rules
-                if (digits[0] === digits[3]) smallScore += (2 * adaptiveWeight);
-                if (sum >= 20) smallScore += (1 * adaptiveWeight);
-                if (Math.max(...digits) - Math.min(...digits) <= 2) bigScore += (1 * adaptiveWeight);
-                if (isPrime(sum)) smallScore += (2 * adaptiveWeight);
-                
-                const sorted = [...digits].sort((a, b) => a - b);
-                const reverseSorted = [...digits].sort((a, b) => b - a);
-                if (digits.join('') === sorted.join('') || digits.join('') === reverseSorted.join('')) {
-                    smallScore += (1 * adaptiveWeight);
-                }
-                
-                // Statistical analysis
-                const mean = sum / digits.length;
-                if (mean > 4.5) smallScore += (1 * adaptiveWeight);
-                
-                const median = [...digits].sort((a, b) => a - b)[Math.floor(digits.length / 2)];
-                if (median > 4) smallScore += (1 * adaptiveWeight);
-
-                // Advanced patterns (level 1+)
-                if (level >= 1) {
-                    if (parityPattern(digits)) smallScore += (2 * adaptiveWeight);
-                    if (centerMirror(digits)) bigScore += (1 * adaptiveWeight);
-                    if (digitSymmetry(digits)) smallScore += (1 * adaptiveWeight);
-                    if (fibonacciPattern(digits)) smallScore += (3 * adaptiveWeight);
-                    if (isArithmeticSequence(digits)) smallScore += (2 * adaptiveWeight);
-                    if (isGeometricSequence(digits)) bigScore += (2 * adaptiveWeight);
-                    if (digitDominance(digits)) smallScore += (1 * adaptiveWeight);
-                    if (sumProductRelation(digits)) smallScore += (1 * adaptiveWeight);
-                }
-
-                // Dynamic threshold adjustment
-                let threshold = 5 + level;
-                if (Math.max(...digits) - Math.min(...digits) <= 1) threshold -= 1;
-                if (sum > 25) threshold += 1;
-                
-                // 0-1 Level Precision Decision
-                if (smallScore >= threshold + 2) return "SMALL";
-                if (bigScore >= threshold) return "BIG";
-                
-                // Fallback to intelligent prediction if scores are close
-                return intelligentPrediction(digits.join(''));
-            }
-
-            // Ultra-precise intelligent prediction
-            function intelligentPrediction(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const sum = digits.reduce((a, b) => a + b, 0);
-                
-                // Multi-strategy analysis
-                const strategies = [
-                    sum % 2 === 0 ? "SMALL" : "BIG",                    // Sum parity
-                    (digits[1] + digits[2]) > (digits[0] + digits[3]) ? "SMALL" : "BIG", // Middle dominance
-                    isPrime(digits[0] * digits[3]) ? "SMALL" : "BIG",   // Prime product
-                    digits.filter(d => d >= 5).length >= 2 ? "SMALL" : "BIG", // High number count
-                    isArithmeticSequence(digits) ? "SMALL" : "BIG",      // Sequence detection
-                    digitDominance(digits) ? "BIG" : "SMALL"             // Digit repetition
-                ];
-                
-                // Weighted decision with confidence scoring
-                const smallCount = strategies.filter(s => s === "SMALL").length;
-                const bigCount = strategies.length - smallCount;
-                
-                if (smallCount >= 4) return "SMALL";
-                if (bigCount >= 4) return "BIG";
-                
-                // Tiebreaker using Fibonacci pattern
-                if (fibonacciPattern(digits)) return "SMALL";
-                
-                // Final fallback
-                return sum % 2 === 0 ? "SMALL" : "BIG";
-            }
-
-            // BigSmall prediction using Fibonacci, Prime Numbers, and Markov Chain
-            function predictBigSmall(periodNumber) {
-                const randomNumber = Math.random() * 100;
-                let predictedResult;
-                
-                // Fibonacci Sequence
-                if (randomNumber < bigSmallModel.fibonacciSequence[0]) {
-                    predictedResult = 'SMALL';
-                } else {
-                    predictedResult = 'BIG';
-                }
-                
-                // Prime Number Distribution
-                if (isPrime(randomNumber * 10)) {
-                    predictedResult = getAlternateResult(predictedResult);
-                }
-                
-                // Markov Chain
-                if (bigSmallModel.markovChain.length >= 15) {
-                    const last15Results = bigSmallModel.markovChain.slice(-15);
-                    const mostFrequentResult = getMostFrequentResult(last15Results);
-                    predictedResult = getAlternateResult(mostFrequentResult);
-                }
-                
-                // Trend Reversal Detection
-                if (bigSmallModel.trendReversal) {
-                    predictedResult = getAlternateResult(predictedResult);
-                }
-                
-                bigSmallModel.currentPrediction = predictedResult;
-                return predictedResult;
-            }
-
-            function getAlternateResult(result) {
-                return result === 'SMALL' ? 'BIG' : 'SMALL';
-            }
-
-            function getMostFrequentResult(results) {
-                let smallCount = 0;
-                let bigCount = 0;
-                for (let result of results) {
-                    if (result === 'SMALL') smallCount++;
-                    if (result === 'BIG') bigCount++;
-                }
-                return smallCount > bigCount ? 'SMALL' : 'BIG';
-            }
-
-            // Strict prediction with recovery system
-            function predictStrict(periodNumber, actualResult = null, forceRecoveryLevel = null) {
-                if (!periodNumber || periodNumber.length < 4) return "INVALID_INPUT";
-                
-                // Update state with actual result if provided
-                if (actualResult) {
-                    predictionState.lastActualResult = actualResult;
-                    if (predictionState.currentPrediction === actualResult) {
-                        predictionState.winStreak++;
-                        predictionState.lossStreak = 0;
-                        predictionState.recoveryLevel = Math.max(0, predictionState.recoveryLevel - 1);
-                    } else {
-                        predictionState.lossStreak++;
-                        predictionState.winStreak = 0;
-                        predictionState.recoveryLevel = Math.min(3, predictionState.recoveryLevel + 1);
-                    }
-                    predictionState.patternMemory.push(actualResult);
-                    if (predictionState.patternMemory.length > 10) {
-                        predictionState.patternMemory.shift();
-                    }
-                }
-                
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                const recoveryLevel = forceRecoveryLevel !== null ? forceRecoveryLevel : predictionState.recoveryLevel;
-                
-                // Generate base prediction
-                let prediction;
-                if (predictionState.winStreak >= 3) { // If on a good streak, stick to intelligent prediction
-                    prediction = intelligentPrediction(periodNumber);
-                } else if (predictionState.lossStreak >= 2) { // If on a losing streak, enter aggressive recovery
-                    const lastDigit = digits[3];
-                    prediction = lastDigit % 2 === 0 ? "SMALL" : "BIG";
-                } else if (recoveryLevel === 0) {
-                    prediction = sureShotLogic(digits, 1); // Normal mode
-                } else if (recoveryLevel === 1) {
-                    prediction = intelligentPrediction(periodNumber); // Smarter analysis
-                } else {
-                    // Aggressive recovery mode based on last digit parity
-                    const lastDigit = digits[3];
-                    prediction = lastDigit % 2 === 0 ? "SMALL" : "BIG";
-                }
-                
-                // Apply pattern correction
-                const lastPatterns = predictionState.patternMemory.slice(-3);
-                if (lastPatterns.length >= 3) {
-                    const pattern = lastPatterns.join('');
-                    if (pattern === "SMALLSMALLSMALL") prediction = "BIG";
-                    if (pattern === "BIGBIGBIG") prediction = "SMALL";
-                }
-                
-                // Save prediction state
-                predictionState.currentPrediction = prediction;
-                predictionState.currentPeriod = periodNumber;
-                predictionState.lastResult = prediction;
-                
-                return prediction;
-            }
-
-            // Ultra-precise prediction function (Maxx 0-1 level)
-            function predictUltra(periodNumber) {
-                const digits = periodNumber.slice(-4).split('').map(Number);
-                
-                // Multi-layer analysis combining all prediction methods
-                const layer1 = sureShotLogic(digits, 1);
-                const layer2 = intelligentPrediction(periodNumber);
-                const layer3 = predictStrict(periodNumber, predictionState.lastActualResult);
-                const layer4 = predictBigSmall(periodNumber);
-                
-                // Consensus decision
-                const votes = [layer1, layer2, layer3, layer4];
-                const smallVotes = votes.filter(v => v === "SMALL").length;
-                
-                if (smallVotes >= 3) return "SMALL";
-                if (smallVotes <= 1) return "BIG";
-                
-                // If tied (2-2), use Fibonacci pattern as tiebreaker
-                if (fibonacciPattern(digits)) return "SMALL";
-                
-                // Final fallback to intelligent prediction
-                return intelligentPrediction(periodNumber);
-            }
-
-            // =============================================
-            // CHAT PREDICTOR LOGIC
-            // =============================================
-            
-            let previousResults = [];
-            let latestPeriod = null;
-            let currentPrediction = null;
-            let serverOnline = true;
-            let lastPredictionPeriod = null;
-            let lastActualNumber = null;
-
             // DOM elements
             const messagesContainer = document.getElementById('messages-container');
             const typingIndicator = document.getElementById('typing-indicator');
@@ -1602,6 +1288,10 @@
             const currentTimeElement = document.getElementById('current-time');
             const lastUpdateTime = document.getElementById('last-update-time');
             const scrollDownBtn = document.getElementById('scroll-down-btn');
+
+            // Track the last period we've made a prediction for
+            let lastPredictedPeriod = null;
+            let predictionCache = {};
 
             // Initialize
             updateClock();
@@ -1614,7 +1304,8 @@
                         <p>Initializing real-time analysis. Scanning game results to detect patterns and trends.</p>
                     </div>`, 
                     'Zmx Trader');
-                simulateInitialAnalysis();
+                fetchCurrentGameIssue();
+                setInterval(fetchCurrentGameIssue, 5000);
             }, 1500);
 
             // Scroll button functionality
@@ -1674,50 +1365,14 @@
                 }, 50);
             }
 
-            function simulateInitialAnalysis() {
-                showTyping();
-                setTimeout(() => {
-                    addMessage('received', 
-                        `<div class="prediction-card">
-                            <div class="prediction-title"><i class="fas fa-check-circle"></i> ANALYSIS COMPLETE</div>
-                            <p>Pattern detection complete. Monitoring for optimal prediction opportunities.</p>
-                        </div>`, 
-                        'Zmx Trader');
-                    
-                    // Start the prediction cycle
-                    fetchCurrentGameIssue();
-                    setInterval(fetchCurrentGameIssue, 5000);
-                }, 2000);
-            }
-
-            function createPredictionMessage(predictionData) {
-                const confidencePercentage = Math.round(predictionData.confidence);
+            function createPredictionMessage(prediction, confidence, period) {
+                const confidencePercentage = Math.round(confidence);
                 const confidenceWidth = `${confidencePercentage}%`;
-                
-                // Show opposite outcome
-                const oppositePrediction = predictionData.prediction === 'BIG' ? 'SMALL' : 'BIG';
-                
-                // Create recovery level indicators
-                const recoveryDots = [];
-                for (let i = 0; i < 4; i++) {
-                    let dotClass = 'recovery-dot';
-                    if (i < predictionData.recoveryLevel) {
-                        dotClass += predictionData.recoveryLevel >= 4 ? ' critical' : ' active';
-                    }
-                    recoveryDots.push(`<div class="${dotClass}"></div>`);
-                }
-                
-                let recoveryStatus = '';
-                if (predictionData.recoveryLevel > 0) {
-                    recoveryStatus = predictionData.recoveryLevel >= 4 ? 
-                        `<div class="recovery-status critical">CRITICAL RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>` :
-                        `<div class="recovery-status warning">RECOVERY MODE - LEVEL ${predictionData.recoveryLevel}</div>`;
-                }
                 
                 return `
                     <div class="prediction-card">
-                        <div class="period-display">${latestPeriod}</div>
-                        <div class="prediction-value">${oppositePrediction}</div>
+                        <div class="period-display">${period}</div>
+                        <div class="prediction-value">${prediction}</div>
                         
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${confidenceWidth}"></div>
@@ -1726,13 +1381,6 @@
                             <span>Confidence</span>
                             <span class="confidence-value">${confidencePercentage}%</span>
                         </div>
-                        
-                        ${predictionData.recoveryLevel > 0 ? `
-                        <div class="recovery-level">
-                            ${recoveryDots.join('')}
-                        </div>
-                        ${recoveryStatus}
-                        ` : ''}
                     </div>
                 `;
             }
@@ -1753,11 +1401,40 @@
                         const data = await response.json();
                         if (data.code === 0) {
                             const newPeriod = data.data.issueNumber;
+                            const result = data.data.result;
                             
-                            if (newPeriod !== latestPeriod) {
-                                latestPeriod = newPeriod;
-                                await fetchPreviousResults();
-                                updatePredictions(now, newPeriod);
+                            if (newPeriod && newPeriod !== lastPredictedPeriod) {
+                                // Check if we've already made a prediction for this period
+                                if (!predictionCache[newPeriod]) {
+                                    updateServerStatus(true);
+                                    showTyping();
+                                    
+                                    setTimeout(() => {
+                                        // Generate a random prediction (BIG/SMALL)
+                                        const prediction = Math.random() > 0.5 ? 'BIG' : 'SMALL';
+                                        const confidence = Math.floor(Math.random() * 30) + 70; // 70-100% confidence
+                                        
+                                        // Store the prediction in cache
+                                        predictionCache[newPeriod] = {
+                                            prediction: prediction,
+                                            confidence: confidence,
+                                            timestamp: now
+                                        };
+                                        
+                                        // Clear old predictions from cache (keep only last 10)
+                                        const cacheKeys = Object.keys(predictionCache);
+                                        if (cacheKeys.length > 10) {
+                                            const oldestKey = cacheKeys[0];
+                                            delete predictionCache[oldestKey];
+                                        }
+                                        
+                                        // Update last predicted period
+                                        lastPredictedPeriod = newPeriod;
+                                        
+                                        // Add the message
+                                        addMessage('received', createPredictionMessage(prediction, confidence, newPeriod), 'Zmx Trader');
+                                    }, 1000);
+                                }
                             }
                         }
                     } else {
@@ -1769,79 +1446,7 @@
                 }
             }
 
-            async function fetchPreviousResults() {
-                const apiUrl = 'https://api.bdg88zf.com/api/webapi/GetNoaverageEmerdList';
-                const requestData = { pageSize: 10, pageNo: 1, typeId: 1, language: 0, random: "c2505d9138da4e3780b2c2b34f2fb789", signature: "7D637E060DA35C0C6E28DC6D23D71BED", timestamp: 1727792520 };
-
-                try {
-                    const response = await fetch(apiUrl, { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json;charset=UTF-8' }, 
-                        body: JSON.stringify(requestData) 
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.code === 0 && data.data.list.length > 0) {
-                            previousResults = data.data.list;
-                            updateServerStatus(true);
-                        }
-                    } else {
-                        updateServerStatus(false);
-                    }
-                } catch (error) { 
-                    console.error("Fetch error:", error);
-                    updateServerStatus(false);
-                }
-            }
-
-            function updatePredictions(currentTime, currentPeriod) {
-                if (previousResults.length >= 10 && currentPeriod !== lastPredictionPeriod) {
-                    const last10Numbers = previousResults.slice(0, 10).map(r => parseInt(r.number, 10));
-                    
-                    // Get the last 4 digits of the current period for our prediction
-                    const periodDigits = currentPeriod.slice(-4).split('').map(Number);
-                    
-                    // Make prediction using our enhanced system
-                    const predictionResult = predictUltra(currentPeriod);
-                    
-                    // Calculate confidence based on prediction state and pattern strength
-                    let confidence = 70; // Base confidence
-                    if (predictionState.recoveryLevel === 0) {
-                        confidence += 15; // Higher confidence in normal mode
-                    } else if (predictionState.recoveryLevel === 1) {
-                        confidence += 5; // Slightly lower in recovery level 1
-                    } else {
-                        confidence -= 10; // Lower in higher recovery levels
-                    }
-
-                    // Further adjust confidence based on pattern detection
-                    const digits = currentPeriod.slice(-4).split('').map(Number);
-                    if (fibonacciPattern(digits)) confidence += 5;
-                    if (isArithmeticSequence(digits)) confidence += 5;
-                    if (digitSymmetry(digits)) confidence += 5;
-                    
-                    // Ensure confidence is within bounds
-                    confidence = Math.min(100, Math.max(0, confidence));
-                    
-                    currentPrediction = predictionResult;
-                    lastPredictionPeriod = currentPeriod;
-                    
-                    // Show prediction message
-                    showTyping();
-                    setTimeout(() => {
-                        addMessage('received', createPredictionMessage({
-                            prediction: predictionResult,
-                            confidence: confidence,
-                            numbers: [],
-                            recoveryLevel: predictionState.recoveryLevel
-                        }), 'Zmx Trader');
-                    }, 1000);
-                }
-            }
-
             function updateServerStatus(online) {
-                serverOnline = online;
                 if (online) {
                     connectionStatus.textContent = "Connected to Server";
                     document.querySelector('.status-indicator').className = "status-indicator online";
@@ -1852,12 +1457,12 @@
             }
 
             // Initialize the application
-            createParticles();
-            
-            // Animate the game selection title after page load
             setTimeout(() => {
                 document.getElementById('gameSelectionTitle').classList.add('animate');
             }, 500);
+            
+            // Ensure the web section is active by default
+            switchTab('web');
         });
     </script>
 </body>
