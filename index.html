@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PrediX ULTRA</title>
+    <title>FUSION ULTRA</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
@@ -115,7 +115,42 @@
             retina_detect: true
         });
 
+        // Prediction history storage
+        const predictionHistory = JSON.parse(localStorage.getItem('predictionHistory')) || [];
+        const maxHistoryLength = 100;
         let currentPeriod = "";
+
+        // Enhanced prediction algorithm
+        function generatePrediction(period) {
+            // Convert period to numerical seed
+            const seed = parseInt(period);
+            
+            // Use a combination of time-based and historical patterns
+            const now = new Date();
+            const timeFactor = now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
+            
+            // Create a pseudo-random but deterministic value based on seed and time
+            let predictionValue = (seed * 9301 + timeFactor * 49297) % 9973;
+            predictionValue = (predictionValue % 10); // Get last digit
+            
+            // Apply pattern recognition from history
+            if (predictionHistory.length > 5) {
+                const lastFive = predictionHistory.slice(-5).map(item => item.value);
+                const avg = lastFive.reduce((a, b) => a + b, 0) / lastFive.length;
+                
+                // Slight bias towards the opposite of recent average
+                if (avg < 5) {
+                    predictionValue = Math.min(9, predictionValue + 2);
+                } else if (avg > 5) {
+                    predictionValue = Math.max(0, predictionValue - 2);
+                }
+            }
+            
+            // Ensure value is between 0-9
+            predictionValue = Math.max(0, Math.min(9, Math.round(predictionValue)));
+            
+            return predictionValue;
+        }
 
         function getCurrentPeriod() {
             const now = new Date();
@@ -144,17 +179,32 @@
 
         function generateOrRetrievePrediction() {
             let storedPrediction = localStorage.getItem(`prediction_${currentPeriod}`);
-
+            
             if (!storedPrediction) {
-                let randomNumber = Math.floor(Math.random() * 10); // Generates a number from 0-9
-                storedPrediction = randomNumber;
+                // Generate new prediction with enhanced algorithm
+                storedPrediction = generatePrediction(currentPeriod);
                 localStorage.setItem(`prediction_${currentPeriod}`, storedPrediction);
+                
+                // Store in history
+                predictionHistory.push({
+                    period: currentPeriod,
+                    value: parseInt(storedPrediction),
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Trim history if too long
+                if (predictionHistory.length > maxHistoryLength) {
+                    predictionHistory.shift();
+                }
+                
+                localStorage.setItem('predictionHistory', JSON.stringify(predictionHistory));
             }
 
             let displayText = (storedPrediction < 5) ? `SMALL ${storedPrediction}` : `BIG ${storedPrediction}`;
             document.getElementById("resultText").innerText = displayText;
         }
 
+        // Initialize
         updatePeriod();
         setInterval(updatePeriod, 1000);
     </script>
