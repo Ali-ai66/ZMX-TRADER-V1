@@ -16,7 +16,7 @@
       padding: 0;
       font-family: 'Orbitron', sans-serif;
       background: #000;
-      color: #0f0;
+      color: #fff;
       overflow: hidden;
     }
 
@@ -30,13 +30,13 @@
 
     .container {
       backdrop-filter: blur(15px);
-      background: rgba(0, 255, 0, 0.05);
-      border: 1px solid rgba(0, 255, 0, 0.2);
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(0, 255, 0, 0.4);
       border-radius: 20px;
       padding: 25px 20px;
       max-width: 400px;
       margin: 8vh auto;
-      box-shadow: 0 0 25px rgba(0, 255, 0, 0.1);
+      box-shadow: 0 0 25px rgba(0, 255, 0, 0.3);
       text-align: center;
     }
 
@@ -44,11 +44,17 @@
       font-size: 28px;
       margin-bottom: 5px;
       text-shadow: 0 0 10px #0f0;
+      color: #0f0;
     }
 
     p {
       font-size: 15px;
       margin: 8px 0;
+      color: #fff;
+    }
+
+    strong {
+      color: #0f0;
     }
 
     #serverStatus {
@@ -57,14 +63,18 @@
     }
 
     input {
-      background-color: rgba(0,255,0,0.08);
-      color: #0f0;
+      background-color: rgba(0,255,0,0.1);
+      color: #fff;
       border: 2px solid #0f0;
       padding: 12px;
       font-size: 18px;
       border-radius: 10px;
       width: 100%;
       margin-top: 15px;
+    }
+
+    input::placeholder {
+      color: #aaa;
     }
 
     button {
@@ -85,6 +95,7 @@
       background: #000;
       color: #0f0;
       box-shadow: 0 0 10px #0f0;
+      border: 1px solid #0f0;
     }
 
     #hackResult {
@@ -96,6 +107,7 @@
       border-radius: 10px;
       animation: pulse 1.5s infinite;
       display: none;
+      color: #fff;
     }
 
     @keyframes pulse {
@@ -107,8 +119,8 @@
     #history {
       margin-top: 25px;
       text-align: left;
-      background: rgba(0,255,0,0.04);
-      border: 1px solid rgba(0,255,0,0.15);
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(0,255,0,0.3);
       border-radius: 12px;
       padding: 12px;
       max-height: 240px;
@@ -119,12 +131,13 @@
       margin: 0 0 10px;
       text-align: center;
       font-size: 18px;
-      border-bottom: 1px solid rgba(0,255,0,0.2);
+      border-bottom: 1px solid rgba(0,255,0,0.4);
       padding-bottom: 5px;
+      color: #0f0;
     }
 
     .history-item {
-      background: rgba(0, 255, 0, 0.08);
+      background: rgba(0, 255, 0, 0.1);
       border-left: 4px solid #0f0;
       margin-bottom: 8px;
       border-radius: 10px;
@@ -133,6 +146,7 @@
       justify-content: space-between;
       align-items: center;
       font-size: 16px;
+      color: #fff;
     }
 
     .history-item span {
