@@ -3,348 +3,179 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>FUSION</title>
+  <title>FUSION ULTRA</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&display=swap');
-
-    :root {
-      --primary: #00c853;
-      --primary-dark: #009624;
-      --primary-light: #5efc82;
-      --secondary: #1de9b6;
-      --background: #e8f5e9;
-      --text: #1b5e20;
-      --text-light: #4c8c4a;
-      --accent: #ff6d00;
-      --card-bg: rgba(255, 255, 255, 0.9);
-      --success: #00c853;
-      --warning: #ffab00;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
 
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
     }
 
     body {
-      font-family: 'Exo 2', sans-serif;
-      background: var(--background);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      background-image: 
-        radial-gradient(circle at 10% 20%, rgba(94, 252, 130, 0.1) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(29, 233, 182, 0.1) 0%, transparent 20%);
-    }
-
-    .particles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      opacity: 0.6;
-    }
-
-    .container {
-      background: var(--card-bg);
-      border-radius: 20px;
-      padding: 30px;
-      width: 100%;
-      max-width: 480px;
-      box-shadow: 
-        0 10px 30px rgba(0, 200, 83, 0.2),
-        0 0 0 1px rgba(0, 200, 83, 0.1);
-      text-align: center;
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      position: relative;
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #000;
+      color: #0f0;
       overflow: hidden;
     }
 
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
       width: 100%;
-      height: 5px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      height: 100%;
+      z-index: -1;
     }
 
-    .container:hover {
-      transform: translateY(-5px);
-      box-shadow: 
-        0 15px 40px rgba(0, 200, 83, 0.3),
-        0 0 0 1px rgba(0, 200, 83, 0.15);
+    .container {
+      backdrop-filter: blur(15px);
+      background: rgba(0, 255, 0, 0.05);
+      border: 1px solid rgba(0, 255, 0, 0.2);
+      border-radius: 20px;
+      padding: 25px 20px;
+      max-width: 400px;
+      margin: 8vh auto;
+      box-shadow: 0 0 25px rgba(0, 255, 0, 0.1);
+      text-align: center;
     }
 
     h2 {
-      font-size: 2.2rem;
-      margin-bottom: 15px;
-      color: var(--primary-dark);
-      font-weight: 700;
-      letter-spacing: 1px;
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 28px;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px #0f0;
     }
 
-    .stats {
-      display: flex;
-      justify-content: space-around;
-      margin: 20px 0;
-    }
-
-    .stat-item {
-      background: rgba(0, 200, 83, 0.1);
-      padding: 12px 15px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .stat-item strong {
-      color: var(--primary-dark);
-      font-weight: 600;
+    p {
+      font-size: 15px;
+      margin: 8px 0;
     }
 
     #serverStatus {
-      color: var(--warning);
-      font-weight: 600;
-    }
-
-    .connected {
-      color: var(--success) !important;
-    }
-
-    .input-group {
-      margin: 25px 0;
-      position: relative;
+      font-weight: bold;
+      color: #ff0;
     }
 
     input {
+      background-color: rgba(0,255,0,0.08);
+      color: #0f0;
+      border: 2px solid #0f0;
+      padding: 12px;
+      font-size: 18px;
+      border-radius: 10px;
       width: 100%;
-      padding: 16px 20px;
-      border: 2px solid rgba(0, 200, 83, 0.3);
-      border-radius: 12px;
-      font-size: 1.1rem;
-      font-family: 'Exo 2', sans-serif;
-      font-weight: 500;
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.8);
-      transition: all 0.3s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.2);
-    }
-
-    input::placeholder {
-      color: rgba(0, 100, 0, 0.4);
+      margin-top: 15px;
     }
 
     button {
+      background-color: #0f0;
+      color: #000;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      margin-top: 20px;
       width: 100%;
-      padding: 16px;
       border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      font-size: 1.1rem;
-      font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 200, 83, 0.3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 10px;
+      transition: 0.3s;
     }
 
     button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(0, 200, 83, 0.4);
-    }
-
-    button:active {
-      transform: translateY(1px);
+      background: #000;
+      color: #0f0;
+      box-shadow: 0 0 10px #0f0;
     }
 
     #hackResult {
-      margin: 25px 0;
-      padding: 18px;
-      border-radius: 12px;
-      font-size: 1.5rem;
-      font-weight: 700;
-      display: none;
+      margin-top: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      background: rgba(0,255,0,0.2);
+      padding: 10px;
+      border-radius: 10px;
       animation: pulse 1.5s infinite;
-      background: rgba(0, 200, 83, 0.1);
-      border: 2px dashed rgba(0, 200, 83, 0.3);
-      color: var(--primary-dark);
+      display: none;
     }
 
     @keyframes pulse {
       0% { transform: scale(1); }
-      50% { transform: scale(1.03); }
+      50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
 
     #history {
-      margin-top: 30px;
+      margin-top: 25px;
       text-align: left;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 15px;
-      padding: 20px;
-      max-height: 250px;
+      background: rgba(0,255,0,0.04);
+      border: 1px solid rgba(0,255,0,0.15);
+      border-radius: 12px;
+      padding: 12px;
+      max-height: 240px;
       overflow-y: auto;
-      box-shadow: inset 0 0 10px rgba(0, 200, 83, 0.1);
     }
 
     #history h3 {
-      margin: 0 0 15px;
+      margin: 0 0 10px;
       text-align: center;
-      font-size: 1.2rem;
-      color: var(--primary-dark);
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(0, 200, 83, 0.2);
+      font-size: 18px;
+      border-bottom: 1px solid rgba(0,255,0,0.2);
+      padding-bottom: 5px;
     }
 
     .history-item {
-      background: rgba(255, 255, 255, 0.9);
-      margin-bottom: 12px;
+      background: rgba(0, 255, 0, 0.08);
+      border-left: 4px solid #0f0;
+      margin-bottom: 8px;
       border-radius: 10px;
-      padding: 12px 15px;
+      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0, 200, 83, 0.1);
-    }
-
-    .history-item:hover {
-      transform: translateX(5px);
-      box-shadow: 0 5px 10px rgba(0, 200, 83, 0.2);
+      font-size: 16px;
     }
 
     .history-item span {
-      font-weight: 600;
-      color: var(--text);
+      font-weight: bold;
     }
 
     .tag {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: white;
-      min-width: 70px;
-      text-align: center;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      color: #000;
     }
 
     .big {
-      background: linear-gradient(135deg, var(--accent), #ff9100);
+      background-color: #00ff00;
     }
 
     .small {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    }
-
-    /* Scrollbar styling */
-    #history::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    #history::-webkit-scrollbar-track {
-      background: rgba(0, 200, 83, 0.1);
-      border-radius: 10px;
-    }
-
-    #history::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 10px;
-    }
-
-    /* Responsive design */
-    @media (max-width: 600px) {
-      .container {
-        padding: 25px 20px;
-      }
-      
-      h2 {
-        font-size: 1.8rem;
-      }
-      
-      .stats {
-        flex-direction: column;
-        gap: 10px;
-      }
-      
-      input, button {
-        padding: 14px;
-      }
-      
-      #hackResult {
-        font-size: 1.3rem;
-        padding: 15px;
-      }
-    }
-
-    /* Particle animation */
-    @keyframes float {
-      0% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(180deg); }
-      100% { transform: translateY(0) rotate(360deg); }
-    }
-
-    /* Floating animation for particles */
-    .particle {
-      position: absolute;
-      background: rgba(0, 200, 83, 0.3);
-      border-radius: 50%;
-      animation: float 15s infinite linear;
+      background-color: #ff0;
     }
   </style>
 </head>
 <body>
-  <div class="particles" id="particles"></div>
+  <canvas id="canvas"></canvas>
 
   <div class="container">
     <h2>FUSION ULTRA</h2>
-    
-    <div class="stats">
-      <div class="stat-item">Accuracy: <strong>98.7%</strong></div>
-      <div class="stat-item">Status: <span id="serverStatus">CONNECTING</span></div>
-    </div>
+    <p>Accuracy Mode: <strong>98%</strong></p>
+    <p>Server Status: <span id="serverStatus">CONNECTING...</span></p>
 
-    <div class="input-group">
-      <input 
-        type="number" 
-        id="periodNumber" 
-        placeholder="Enter 3-digit number" 
-        min="0" 
-        max="999" 
-        inputmode="numeric"
-      />
-    </div>
-
+    <input type="number" id="periodNumber" placeholder="Enter 3-digit Period Number" />
     <button onclick="getPrediction()">PREDICT</button>
 
     <div id="hackResult"></div>
 
     <div id="history">
-      <h3>HISTORY</h3>
+      <h3>History</h3>
     </div>
   </div>
 
   <script>
-    // Enhanced prediction system with modern design
+    // Enhanced prediction system with multiple algorithms
     const predictionSystem = {
       lastPeriod: null,
       history: [],
@@ -356,7 +187,7 @@
       init() {
         this.simulateServerConnection();
         this.setupEventListeners();
-        this.createParticles();
+        this.startMatrixBackground();
       },
       
       // Simulate server connection
@@ -364,24 +195,22 @@
         const status = document.getElementById('serverStatus');
         setTimeout(() => {
           status.textContent = 'CONNECTED';
-          status.classList.add('connected');
-        }, 2000);
+          status.style.color = '#0f0';
+        }, 1000);
       },
       
       // Setup event listeners
       setupEventListeners() {
-        const inputField = document.getElementById('periodNumber');
-        
-        inputField.addEventListener('input', function() {
+        document.getElementById('periodNumber').addEventListener('input', function() {
           if (this.value.length > 3) {
             this.value = this.value.slice(0, 3);
           }
         });
         
-        inputField.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            this.getPrediction();
-          }
+        window.addEventListener('resize', () => {
+          const canvas = document.getElementById('canvas');
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
         });
       },
       
@@ -391,12 +220,12 @@
         const period = input.value.trim();
 
         if (period.length !== 3) {
-          this.showError("Please enter a 3-digit number!");
+          alert("Please enter a 3-digit period number!");
           return;
         }
 
         if (period === this.lastPeriod) {
-          this.showError("Already predicted this number");
+          alert("Prediction already shown for this period.");
           return;
         }
 
@@ -404,27 +233,6 @@
         const prediction = this.predict(period);
         this.displayPrediction(prediction);
         this.updateHistory(period, prediction);
-        input.value = '';
-        input.focus();
-      },
-      
-      // Show error message
-      showError(message) {
-        const resultBox = document.getElementById('hackResult');
-        resultBox.style.display = 'block';
-        resultBox.textContent = message;
-        resultBox.style.animation = 'none';
-        resultBox.style.backgroundColor = 'rgba(255, 171, 0, 0.1)';
-        resultBox.style.borderColor = 'rgba(255, 171, 0, 0.3)';
-        resultBox.style.color = 'var(--warning)';
-        
-        setTimeout(() => {
-          resultBox.style.display = 'none';
-          resultBox.style.animation = 'pulse 1.5s infinite';
-          resultBox.style.backgroundColor = 'rgba(0, 200, 83, 0.1)';
-          resultBox.style.borderColor = 'rgba(0, 200, 83, 0.3)';
-          resultBox.style.color = 'var(--primary-dark)';
-        }, 2000);
       },
       
       // Enhanced prediction logic with multiple algorithms
@@ -432,19 +240,19 @@
         const num = parseInt(period);
         const results = [];
         
-        // Algorithm 1: Weighted digital root (reversed)
+        // Algorithm 1: Weighted digital root
         const weight = (num % 10) + (Math.floor(num / 10) % 10);
         const root = this.digitalRoot(num);
         const score1 = weight + root;
-        results.push(score1 % 2 === 0 ? 'SMALL' : 'BIG');
+        results.push(score1 % 2 === 0 ? 'BIG' : 'SMALL');
         
-        // Algorithm 2: Fibonacci sequence position (reversed)
-        const fibPos = this.getFibonacciPosition(num % 89);
-        results.push(fibPos % 2 === 0 ? 'SMALL' : 'BIG');
+        // Algorithm 2: Fibonacci sequence position
+        const fibPos = this.getFibonacciPosition(num % 89); // 89 is a common fib number
+        results.push(fibPos % 2 === 0 ? 'BIG' : 'SMALL');
         
-        // Algorithm 3: Prime number analysis (reversed)
+        // Algorithm 3: Prime number analysis
         const isPrimeLike = this.isPrimeLike(num);
-        results.push(isPrimeLike ? 'BIG' : 'SMALL');
+        results.push(isPrimeLike ? 'SMALL' : 'BIG');
         
         // Algorithm 4: Pattern recognition
         if (this.patternBuffer.length >= this.patternSize) {
@@ -452,16 +260,16 @@
           if (patternPred) results.push(patternPred);
         }
         
-        // Algorithm 5: Streak analysis (reversed)
-        if (this.streak.big >= 3) results.push('BIG');
-        if (this.streak.small >= 3) results.push('SMALL');
+        // Algorithm 5: Streak analysis
+        if (this.streak.big >= 3) results.push('SMALL');
+        if (this.streak.small >= 3) results.push('BIG');
         
         // Count votes
         const voteCount = { BIG: 0, SMALL: 0 };
         results.forEach(r => voteCount[r]++);
         
-        // Determine final prediction (reversed)
-        const prediction = voteCount.BIG > voteCount.SMALL ? 'SMALL' : 'BIG';
+        // Determine final prediction
+        const prediction = voteCount.BIG > voteCount.SMALL ? 'BIG' : 'SMALL';
         
         // Update pattern buffer
         this.updatePatternBuffer(prediction);
@@ -491,6 +299,7 @@
         if (num <= 3) return true;
         if (num % 2 === 0 || num % 3 === 0) return false;
         
+        // Check divisibility up to sqrt(num)
         for (let i = 5; i * i <= num; i += 6) {
           if (num % i === 0 || num % (i + 2) === 0) return false;
         }
@@ -498,6 +307,7 @@
       },
       
       analyzePattern() {
+        // Simple pattern recognition - look for alternations
         const lastPred = this.patternBuffer[this.patternBuffer.length - 1];
         const prevPred = this.patternBuffer[this.patternBuffer.length - 2];
         
@@ -526,8 +336,7 @@
       displayPrediction(prediction) {
         const resultBox = document.getElementById('hackResult');
         resultBox.style.display = 'block';
-        // Display reversed prediction
-        resultBox.textContent = prediction === 'BIG' ? 'SMALL' : 'BIG';
+        resultBox.textContent = prediction;
       },
       
       updateHistory(period, prediction) {
@@ -535,9 +344,7 @@
         const item = document.createElement('div');
         item.className = 'history-item';
 
-        // Store actual prediction but display reversed
-        const displayPred = prediction === 'BIG' ? 'SMALL' : 'BIG';
-        const sideTag = `<span class="tag ${displayPred === 'BIG' ? 'big' : 'small'}">${displayPred}</span>`;
+        const sideTag = `<span class="tag ${prediction === 'BIG' ? 'big' : 'small'}">${prediction}</span>`;
         item.innerHTML = `<span>#${period}</span> ${sideTag}`;
 
         history.insertBefore(item, history.children[1]);
@@ -546,39 +353,40 @@
         this.history.unshift({ period, prediction });
         if (this.history.length > 10) {
           this.history.pop();
-          if (history.children.length > 11) {
-            history.removeChild(history.lastChild);
-          }
         }
       },
       
-      // Create floating particles
-      createParticles() {
-        const particlesContainer = document.getElementById('particles');
-        const particleCount = 20;
-        
-        for (let i = 0; i < particleCount; i++) {
-          const particle = document.createElement('div');
-          particle.classList.add('particle');
-          
-          // Random properties
-          const size = Math.random() * 10 + 5;
-          const posX = Math.random() * 100;
-          const posY = Math.random() * 100;
-          const opacity = Math.random() * 0.4 + 0.1;
-          const duration = Math.random() * 20 + 10;
-          const delay = Math.random() * 10;
-          
-          particle.style.width = `${size}px`;
-          particle.style.height = `${size}px`;
-          particle.style.left = `${posX}%`;
-          particle.style.top = `${posY}%`;
-          particle.style.opacity = opacity;
-          particle.style.animationDuration = `${duration}s`;
-          particle.style.animationDelay = `${delay}s`;
-          
-          particlesContainer.appendChild(particle);
+      // Matrix background animation
+      startMatrixBackground() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#0f0';
+          ctx.font = fontSize + 'px monospace';
+
+          for (let i = 0; i < drops.length; i++) {
+            const char = characters[Math.floor(Math.random() * characters.length)];
+            ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+              drops[i] = 0;
+            }
+
+            drops[i]++;
+          }
         }
+
+        setInterval(drawMatrix, 33);
       }
     };
 
