@@ -1386,7 +1386,7 @@
                         addMessage('received', 
                             `<p>Please enter exactly <strong>3 digits</strong> (like 123) for the period number to get a prediction.</p>
                             <p></p>`, 
-                            'Zmx Trader Pro');
+                            'Zmx Trader');
                     }
                 } else {
                     handleUserQuestion(input);
@@ -1466,7 +1466,7 @@
                 predictor.update(verifiedPrediction);
                 
                 // Show prediction
-                addMessage('received', predictionMessage, 'Zmx Trader Pro');
+                addMessage('received', predictionMessage, 'Zmx Trader');
                 
                 // Reset waiting flag to allow questions
                 waitingForPeriod = true;
@@ -1488,7 +1488,7 @@
                             <li>Multiple verification steps increase accuracy</li>
                         </ul>
                         <p style="margin-top: 10px;">The system combines these factors to generate predictions with 95%+ accuracy.</p>
-                    `, 'Zmx Trader Pro');
+                    `, 'Zmx Trader');
                 }
                 else if (question.includes('accuracy') || question.includes('correct')) {
                     addMessage('received', `
@@ -1498,7 +1498,7 @@
                             <div class="progress-fill" style="width: 95%; background: var(--win);"></div>
                         </div>
                         <p>Recent prediction accuracy: ${getRecentAccuracy()}%</p>
-                    `, 'Zmx Trader Pro');
+                    `, 'Zmx Trader');
                 }
                 else if (question.includes('big') || question.includes('small')) {
                     addMessage('received', `
@@ -1508,13 +1508,13 @@
                             <li><strong>SMALL</strong> means the sum of digits is ≤10 with high probability (85%+)</li>
                         </ul>
                         <p style="margin-top: 10px;">The actual prediction uses Markov Chain analysis of state transitions for higher accuracy.</p>
-                    `, 'Zmx Trader Pro');
+                    `, 'Zmx Trader');
                 }
                 else if (question.includes('again') || question.includes('new') || question.includes('another')) {
                     addMessage('received', `
                         <p>Please enter the <strong>last 3 digits</strong> of a new period to get another prediction.</p>
                         <p></p>
-                    `, 'Zmx Trader Pro');
+                    `, 'Zmx Trader');
                     waitingForPeriod = true;
                 }
                 else if (question.includes('history') || question.includes('previous')) {
@@ -1525,9 +1525,9 @@
                         });
                         historyHTML += `</ul><p style="margin-top: 10px;">Total predictions: ${predictionHistory.length}</p>`;
                         
-                        addMessage('received', historyHTML, 'Zmx Trader Pro');
+                        addMessage('received', historyHTML, 'Zmx Trader');
                     } else {
-                        addMessage('received', `<p>No prediction history yet. Make your first prediction!</p>`, 'Zmx Trader Pro');
+                        addMessage('received', `<p>No prediction history yet. Make your first prediction!</p>`, 'Zmx Trader');
                     }
                 }
                 else if (question.includes('markov') || question.includes('model')) {
@@ -1545,7 +1545,7 @@
                             <p>SMALL → BIG: ${(predictor.transitionMatrix['SMALL']['BIG'] * 100).toFixed(1)}%</p>
                             <p>SMALL → SMALL: ${(predictor.transitionMatrix['SMALL']['SMALL'] * 100).toFixed(1)}%</p>
                         </div>
-                    `, 'Zmx Trader Pro');
+                    `, 'Zmx Trader');
                 }
                 else {
                     // Default response for unrecognized questions
@@ -1558,7 +1558,7 @@
                             <li>Making a new prediction</li>
                         </ul>
                         <p style="margin-top: 10px;">Or enter a new 3-digit period to get another prediction.</p>
-                    `, 'Zmx Trader Pro');
+                    `, 'Zmx Trader');
                 }
             }
             
