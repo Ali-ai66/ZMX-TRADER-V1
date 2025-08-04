@@ -250,6 +250,10 @@
             const timerElement = document.getElementById('timeRemaining');
             const issueNumberElement = document.getElementById('issueNumber');
 
+            // Current prediction cache
+            let currentPrediction = null;
+            let currentPeriod = null;
+
             // Categorize Big/Small and Color Coding
             const categorizeNumber = (number) => number <= 4 ? 'Small' : 'Big';
             const getNumberColor = (number) => [0, 2, 4, 6, 8].includes(number) ? 'red' : 'green';
@@ -258,6 +262,17 @@
             const generatePrediction = (period) => {
                 let lastThreeDigits = parseInt(period.slice(-3));
                 return (lastThreeDigits % 10 + Math.floor(Math.random() * 3)) % 10;
+            };
+
+            // Get opposite prediction
+            const getOppositePrediction = (prediction) => {
+                // For numbers 0-9, opposite would be (9 - number)
+                const oppositeNum = (9 - prediction.number) % 10;
+                return {
+                    number: oppositeNum,
+                    category: categorizeNumber(oppositeNum),
+                    color: getNumberColor(oppositeNum)
+                };
             };
 
             // Fetch period data
@@ -286,44 +301,43 @@
             const updatePrediction = async () => {
                 const data = await fetchGameIssue();
                 if (!data || !data.data || !data.data.issueNumber) {
-                    // Use cached data if API fails
-                    const cachedPrediction = JSON.parse(localStorage.getItem('lastPrediction'));
-                    const cachedPeriod = localStorage.getItem('lastPeriod');
-                    
-                    if (cachedPrediction && cachedPeriod) {
-                        issueNumberElement.textContent = `${cachedPeriod}`;
-                        predictedNumberElement.innerHTML = ` <span class="${cachedPrediction.color}">${cachedPrediction.number} (${cachedPrediction.category})</span>`;
-                    }
                     return;
                 }
 
-                let currentPeriod = data.data.issueNumber;
-                let lastDigit = parseInt(currentPeriod.slice(-1));
-                let newPeriod = currentPeriod.slice(0, -1) + ((lastDigit) % 10);
-
-                if (localStorage.getItem('lastPeriod') !== newPeriod) {
+                const newPeriod = data.data.issueNumber;
+                
+                // Only generate new prediction if period changed
+                if (currentPeriod !== newPeriod) {
+                    currentPeriod = newPeriod;
+                    
+                    // Generate actual prediction
                     const predictedNumber = generatePrediction(currentPeriod);
-                    const predictedCategory = categorizeNumber(predictedNumber);
-                    const colorClass = getNumberColor(predictedNumber);
-
-                    const predictionData = { 
+                    const actualPrediction = { 
                         number: predictedNumber, 
-                        category: predictedCategory, 
-                        color: colorClass 
+                        category: categorizeNumber(predictedNumber), 
+                        color: getNumberColor(predictedNumber) 
                     };
+                    
+                    // Randomly decide whether to show opposite (30-60% chance)
+                    const showOpposite = Math.random() < (0.3 + Math.random() * 0.3); // 30-60% chance
+                    
+                    // Store both actual and display prediction
+                    currentPrediction = {
+                        actual: actualPrediction,
+                        display: showOpposite ? getOppositePrediction(actualPrediction) : actualPrediction
+                    };
+                }
 
-                    localStorage.setItem('lastPrediction', JSON.stringify(predictionData));
-                    localStorage.setItem('lastPeriod', newPeriod);
-
-                    issueNumberElement.textContent = ` ${newPeriod}`;
-                    predictedNumberElement.innerHTML = ` <span class="${colorClass}">${predictedNumber} (${predictedCategory})</span>`;
+                // Always update display with current prediction
+                if (currentPrediction) {
+                    issueNumberElement.textContent = `${currentPeriod}`;
+                    predictedNumberElement.innerHTML = ` <span class="${currentPrediction.display.color}">${currentPrediction.display.number} (${currentPrediction.display.category})</span>`;
                 }
             };
 
             const updateTimer = async () => {
                 const data = await fetchGameIssue();
                 if (!data || !data.data) {
-                    // If API fails, show cached timer or generic message
                     timerElement.textContent = "--:--:--";
                     timerElement.classList.remove('pulse');
                     return;
